@@ -1,0 +1,22 @@
+{
+  "name": "@mosaik/example-notes",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun scripts/dev.ts",
+    "build": "bun --bun vite build",
+    "start": "bun server/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mosaik/sdk": "workspace:*",
+    "effect": "^4.0.5",
+    "solid-js": "^1.9.17"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
+  }
+}

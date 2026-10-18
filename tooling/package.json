@@ -1,0 +1,17 @@
+{
+  "name": "@mosaik/tooling",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/core": "workspace:*",
+    "@mosaik/db": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@effect/platform-bun": "^4.0.5",
+    "@effect/sql-pg": "^4.0.5",
+    "effect": "^4.0.5"
+  }
+}

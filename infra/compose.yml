@@ -1,0 +1,153 @@
+# Production-like deployment. Configure secrets in `.env` next to the repository root
+# (see .env.example), then:
+#
+#   docker compose -f infra/compose.yml --env-file .env up -d --build
+#
+# Core is auth, notifications, platform and the gateway; the Portal is the `portal` service and
+# the shell the gateway serves. Without the Portal (standalone apps only), remove `portal`,
+# UPSTREAM_PORTAL and STATIC_DIR.
+#
+# Adding a built-in app: add a service below (copy `status`), and add it to CONFIGURED_APPS
+# (platform) and MOSAIK_SERVICES. `bun create:app --builtin` prints the snippet. The examples
+# (`examples/`) are not deployed: `bun dev` runs them. The gateway routes apps from the
+# platform's registry; UPSTREAM_* variables are for platform services only.
+name: mosaik
+
+x-env: &env
+  NODE_ENV: production
+  PORT: "3000"
+  AUTH_URL: http://auth:3000
+  NOTIFICATIONS_URL: http://notifications:3000
+  PLATFORM_URL: http://platform:3000
+  INTERNAL_KEY: ${INTERNAL_KEY:?Set INTERNAL_KEY}
+  DB_SERVER_URL: postgres://postgres:5432
+  DB_PASSWORD_SECRET: ${DB_PASSWORD_SECRET:?Set DB_PASSWORD_SECRET}
+  OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  MOSAIK_SERVICES: gateway=http://gateway:3000,auth=http://auth:3000,notifications=http://notifications:3000,platform=http://platform:3000,portal=http://portal:3000,status=http://status:3000
+
+x-service: &service
+  image: ${MOSAIK_IMAGE:-mosaik:latest}
+  restart: unless-stopped
+  environment: *env
+  depends_on:
+    provision:
+      condition: service_completed_successfully
+  healthcheck:
+    test: ["CMD", "bun", "--eval", "fetch('http://localhost:3000/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+    interval: 10s
+    timeout: 3s
+    retries: 3
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    networks: [default, apps]
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Creates a role + database per service (idempotent), then exits.
+  provision:
+    image: ${MOSAIK_IMAGE:-mosaik:latest}
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    command: ["bun", "tooling/src/db-provision.ts"]
+    environment:
+      POSTGRES_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      DB_PASSWORD_SECRET: ${DB_PASSWORD_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  auth:
+    <<: *service
+    command: ["bun", "services/auth/src/main.ts"]
+    environment:
+      <<: *env
+      PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID:-}
+      ENTRA_CLIENT_SECRET: ${ENTRA_CLIENT_SECRET:-}
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID:-}
+      ENTRA_ALLOW_SIGNUP: ${ENTRA_ALLOW_SIGNUP:-true}
+
+  notifications:
+    <<: *service
+    command: ["bun", "services/notifications/src/main.ts"]
+    environment:
+      <<: *env
+      PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
+      SMTP_URL: ${SMTP_URL:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      MAIL_ALLOWED_DOMAINS: ${MAIL_ALLOWED_DOMAINS:-}
+      MESSAGES_PER_MINUTE: ${MESSAGES_PER_MINUTE:-120}
+      DELIVERY_MAX_ATTEMPTS: ${DELIVERY_MAX_ATTEMPTS:-8}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+
+  platform:
+    <<: *service
+    command: ["bun", "services/platform/src/main.ts"]
+    environment:
+      <<: *env
+      # Apps whose backends ship with the platform image (or run elsewhere), and where they run.
+      CONFIGURED_APPS: status=http://status:3000
+      # Databases for apps; image apps reach Postgres on the `mosaik-apps` network.
+      POSTGRES_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      APP_DB_SERVER_URL: postgres://postgres:5432
+    networks: [default, apps]
+
+  portal:
+    <<: *service
+    command: ["bun", "services/portal/src/main.ts"]
+    environment:
+      <<: *env
+      # Image apps run as sibling containers on the `mosaik-apps` network.
+      APP_ADDRESSING: network
+      APP_PLATFORM_URL: http://platform:3000
+      APP_OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    volumes:
+      # Runs image apps. Root-equivalent access to the host: only the Portal gets it.
+      - /var/run/docker.sock:/var/run/docker.sock
+    # The image runs as `bun`; give it the socket's group (`stat -c %g /var/run/docker.sock`).
+    group_add:
+      - "${DOCKER_GID:-999}"
+    networks: [default, apps]
+
+  status:
+    <<: *service
+    command: ["bun", "apps/status/server/main.ts"]
+
+  gateway:
+    <<: *service
+    command: ["bun", "services/gateway/src/main.ts"]
+    networks: [default, apps]
+    ports:
+      - "${HTTP_PORT:-8080}:3000"
+    environment:
+      <<: *env
+      STATIC_DIR: /app/shell/dist
+      UPSTREAM_AUTH: http://auth:3000
+      UPSTREAM_ADMIN: http://auth:3000
+      UPSTREAM_NOTIFICATIONS: http://notifications:3000
+      UPSTREAM_PLATFORM: http://platform:3000
+      UPSTREAM_PORTAL: http://portal:3000
+
+volumes:
+  pgdata:
+
+networks:
+  default: {}
+  # Image apps, the platform API, the Portal, the gateway and Postgres.
+  apps:
+    name: mosaik-apps

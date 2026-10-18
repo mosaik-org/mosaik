@@ -1,0 +1,3 @@
+#!/bin/sh
+# Conventional Commits, written to explain why (CONTRIBUTING.md, "Commit messages").
+exec bun tooling/src/check-commit-message.ts "$1"

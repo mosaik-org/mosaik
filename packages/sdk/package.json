@@ -1,0 +1,49 @@
+{
+  "name": "@mosaik/sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Mosaik SDK: everything an app builds on, one package with an entry point per side and layer.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./connectors": "./src/connectors/index.ts",
+    "./connectors/jira": "./src/connectors/jira.ts",
+    "./connectors/jira/model": "./src/connectors/jira-model.ts",
+    "./client": "./src/client.ts",
+    "./solid": "./src/solid.ts",
+    "./portal": "./src/portal.ts",
+    "./ui": "./src/ui.ts",
+    "./table": "./src/table.ts",
+    "./charts": "./src/charts.ts",
+    "./css": "./src/css.ts",
+    "./jsx": "./src/jsx.ts",
+    "./patterns": "./src/patterns.ts",
+    "./tokens": "./src/tokens.ts",
+    "./build/vite": "./src/build/vite.ts",
+    "./build/panda": "./src/build/panda.ts",
+    "./build/dev": "./src/build/dev.ts",
+    "./build/manifest": "./src/build/manifest.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/app-kit": "workspace:*",
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/charts": "workspace:*",
+    "@mosaik/client": "workspace:*",
+    "@mosaik/connectors": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/db": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/table": "workspace:*",
+    "@mosaik/ui": "workspace:*",
+    "@mosaik/web-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "vite": "^8.3.4"
+  }
+}

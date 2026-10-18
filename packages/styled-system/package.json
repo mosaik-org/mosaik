@@ -1,0 +1,44 @@
+{
+  "name": "@mosaik/styled-system",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./preset": "./src/preset.ts",
+    "./css": {
+      "types": "./generated/css/index.d.ts",
+      "default": "./generated/css/index.mjs"
+    },
+    "./jsx": {
+      "types": "./generated/jsx/index.d.ts",
+      "default": "./generated/jsx/index.mjs"
+    },
+    "./patterns": {
+      "types": "./generated/patterns/index.d.ts",
+      "default": "./generated/patterns/index.mjs"
+    },
+    "./tokens": {
+      "types": "./generated/tokens/index.d.ts",
+      "default": "./generated/tokens/index.mjs"
+    },
+    "./types": {
+      "types": "./generated/types/index.d.ts"
+    },
+    "./panda": "./panda.config.ts"
+  },
+  "scripts": {
+    "prepare": "panda codegen",
+    "codegen": "panda codegen",
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^2.2.0",
+    "@pandacss/preset-base": "^2.2.0",
+    "@pandacss/preset-panda": "^2.2.0"
+  },
+  "files": [
+    "generated",
+    "src",
+    "panda.config.ts"
+  ]
+}

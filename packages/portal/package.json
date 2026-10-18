@@ -1,0 +1,17 @@
+{
+  "name": "@mosaik/portal",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./contract": "./src/contract/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/core": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "effect": "^4.0.5"
+  }
+}

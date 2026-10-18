@@ -1,0 +1,17 @@
+{
+  "name": "@mosaik/notifications",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./contract": "./src/contract/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "effect": "^4.0.5"
+  }
+}

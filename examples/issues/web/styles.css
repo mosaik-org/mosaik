@@ -1,0 +1,2 @@
+/* The app's own styles (Panda extracts them from web/); the shell provides reset and base styles. */
+@layer reset, base, tokens, recipes, utilities;

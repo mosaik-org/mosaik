@@ -1,0 +1,26 @@
+{
+  "name": "@mosaik/auth-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/db": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "@effect/platform-bun": "^4.0.5",
+    "@effect/sql-pg": "^4.0.5",
+    "better-auth": "^1.7.10",
+    "effect": "^4.0.5",
+    "jose": "^6.1.0",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}

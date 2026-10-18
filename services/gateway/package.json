@@ -1,0 +1,16 @@
+{
+  "name": "@mosaik/gateway",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "effect": "^4.0.5"
+  }
+}

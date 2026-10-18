@@ -1,0 +1,9 @@
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+packages/styled-system/generated
+shell/src/routeTree.gen.ts
+.env
+.env.*
+.mosaik
+.git

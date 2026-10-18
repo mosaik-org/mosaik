@@ -1,0 +1,19 @@
+{
+  "name": "@mosaik/table",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/ui": "workspace:*",
+    "@tanstack/solid-table": "^9.3.1",
+    "lucide-solid": "^1.57.0",
+    "solid-js": "^1.9.17"
+  }
+}

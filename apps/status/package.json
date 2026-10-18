@@ -1,0 +1,30 @@
+{
+  "name": "@mosaik/builtin-status",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./manifest": "./manifest.ts",
+    "./api": "./api/index.ts"
+  },
+  "scripts": {
+    "start": "bun server/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/charts": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/client": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/table": "workspace:*",
+    "@mosaik/ui": "workspace:*",
+    "@mosaik/web-kit": "workspace:*",
+    "@tanstack/solid-query": "^5.104.3",
+    "@tanstack/solid-router": "^1.170.41",
+    "effect": "^4.0.5",
+    "lucide-solid": "^1.57.0",
+    "solid-js": "^1.9.17"
+  }
+}

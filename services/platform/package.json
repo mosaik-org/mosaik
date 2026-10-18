@@ -1,0 +1,25 @@
+{
+  "name": "@mosaik/platform-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/db": "workspace:*",
+    "@mosaik/notifications": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "effect": "^4.0.5",
+    "@effect/platform-bun": "^4.0.5",
+    "@effect/sql-pg": "^4.0.5",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}

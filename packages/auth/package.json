@@ -1,0 +1,22 @@
+{
+  "name": "@mosaik/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./contract": "./src/contract/index.ts",
+    "./server": "./src/server/index.ts",
+    "./web": "./src/web/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/core": "workspace:*",
+    "@mosaik/client": "workspace:*",
+    "effect": "^4.0.5",
+    "jose": "^6.1.0",
+    "@tanstack/solid-query": "^5.104.3",
+    "solid-js": "^1.9.17"
+  }
+}

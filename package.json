@@ -1,0 +1,37 @@
+{
+  "name": "mosaik",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "services/*",
+    "shell",
+    "packages/*",
+    "apps/*",
+    "examples/*",
+    "tooling"
+  ],
+  "scripts": {
+    "prepare": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
+    "dev": "bun tooling/src/dev.ts",
+    "infra:up": "docker compose -f infra/compose.dev.yml up -d --wait",
+    "infra:down": "docker compose -f infra/compose.dev.yml down",
+    "build": "bun --filter @mosaik/shell build",
+    "db:provision": "bun tooling/src/db-provision.ts",
+    "create:app": "bun tooling/src/create-app.ts",
+    "typecheck": "bun --filter '*' typecheck",
+    "lint": "biome check . && bun tooling/src/check-boundaries.ts",
+    "check": "bun run lint && bun run typecheck && bun run test",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sdk:pack": "bun tooling/src/sdk-pack.ts",
+    "examples:verify": "bun tooling/src/examples-verify.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@effect/vitest": "^4.0.5",
+    "@types/bun": "^1.4.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

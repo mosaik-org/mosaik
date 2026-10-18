@@ -1,0 +1,3 @@
+#!/bin/sh
+# Lint, boundaries, typecheck and tests: main always passes them.
+exec bun run check

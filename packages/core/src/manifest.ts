@@ -1,0 +1,273 @@
+import { Schema } from "effect"
+import type { PlatformEventType } from "./events"
+import { AppIdPattern, PermissionKey, PermissionNamePattern } from "./permission"
+import {
+  appRoleId,
+  expandRoleGrants,
+  ManifestRole,
+  MEMBER_ROLE_NAME,
+  OWNER_PERMISSION_NAME,
+  OWNER_ROLE_NAME,
+  ownerPermission,
+  RoleNamePattern,
+  type RoleSpec,
+} from "./roles"
+
+export interface PermissionSpec {
+  readonly description: string
+  /**
+   * Roles that receive this permission when it is registered for the first time.
+   * Later changes are owned by the admin panel and never overwritten.
+   */
+  readonly defaultRoles?: ReadonlyArray<string>
+  /** Highlighted in the admin panel (destructive or sensitive actions). */
+  readonly dangerous?: boolean
+}
+
+/** Channels a user can receive their notifications on (each user chooses per notification type). */
+export const PersonalChannel = Schema.Literals(["inApp", "email", "slack"])
+export type PersonalChannel = typeof PersonalChannel.Type
+
+export interface NotificationSpec {
+  /** Shown in notification settings, e.g. "An order was refunded". */
+  readonly description: string
+  /**
+   * Channels used until a user changes their settings. Defaults to `["inApp"]`.
+   * Admins can additionally route a type to Teams or Slack channels.
+   */
+  readonly defaultChannels?: ReadonlyArray<PersonalChannel>
+}
+
+export type NotificationKey<Id extends string = string, Name extends string = string> = `${Id}:${Name}`
+
+/**
+ * A setting the app reads from its environment (e.g. `JIRA_URL`). For apps the Portal
+ * runs, admins fill them in at install; secrets are stored encrypted and never shown again.
+ */
+export interface ConfigSpec {
+  readonly description: string
+  /** Defaults to `true`. */
+  readonly required?: boolean
+  /** Defaults to `false`. */
+  readonly secret?: boolean
+}
+
+/**
+ * How the Portal lists and runs the app. Core ignores it; a standalone app (on its own
+ * address, without the Portal) leaves it out.
+ */
+export interface PortalSpec {
+  /** Name of a lucide icon, e.g. `chart-line`. */
+  readonly icon?: string
+  /** Where the directory lists the app, e.g. `Sales` (its owners and admins can change it). */
+  readonly category?: string
+  /** Environment variables admins enter when the Portal runs the app's image, keyed by name (e.g. `JIRA_URL`). */
+  readonly config?: { readonly [name: string]: ConfigSpec }
+}
+
+export interface AppSpec<
+  Id extends string,
+  Name extends string,
+  Notification extends string = never,
+  Event extends PlatformEventType = never,
+> {
+  /** URL segment, API prefix and permission namespace. */
+  readonly id: Id
+  readonly name: string
+  /** The app's own version (semver). Built-in apps default to the platform version. */
+  readonly version?: string
+  readonly description?: string
+  /** Permission needed to see the app. Also the default for every API endpoint. */
+  readonly access: NoInfer<Name>
+  readonly permissions: { readonly [K in Name]: PermissionSpec }
+  /**
+   * Roles admins and the app's owners give people, smallest first, e.g.
+   * `{ editor: { name: "Editor", grants: ["orders.*"] } }`. Each includes `access`.
+   * Without any, the app gets a `member` role that only opens it. Every app also gets an
+   * `owner` role, for the people who decide who can use it.
+   */
+  readonly roles?: { readonly [role: string]: RoleSpec<NoInfer<Name>> }
+  /** Notification types this app sends (see `Notify` in `@mosaik/server`). */
+  readonly notifications?: { readonly [K in Notification]: NotificationSpec }
+  /** Platform events the app receives (see `Events` in `@mosaik/server`). */
+  readonly events?: ReadonlyArray<Event>
+  /** Needs a Postgres database (`DATABASE_URL`): provisioned by the platform, or the app's own. */
+  readonly database?: boolean
+  /** Whether the app runs its own backend process. Defaults to `true`. */
+  readonly backend?: boolean
+  /** How the Portal lists and runs the app (see {@link PortalSpec}). */
+  readonly portal?: PortalSpec
+}
+
+const AppTypeId: unique symbol = Symbol.for("@mosaik/core/App")
+
+export interface App<
+  Id extends string = string,
+  Name extends string = string,
+  Notification extends string = string,
+  Event extends PlatformEventType = PlatformEventType,
+> extends Omit<AppSpec<Id, Name, Notification, Event>, "roles" | "portal"> {
+  readonly [AppTypeId]: typeof AppTypeId
+  readonly portal: PortalSpec
+  readonly apiPrefix: `/api/${Id}`
+  readonly accessPermission: PermissionKey<Id, Name>
+  /** Decides who can use the app (see `OWNER_PERMISSION_NAME`). */
+  readonly ownerPermission: PermissionKey<Id, typeof OWNER_PERMISSION_NAME>
+  /** The app's roles as declared (or the default `member` role), then its `owner` role. */
+  readonly roles: ReadonlyArray<ManifestRole>
+  readonly events: ReadonlyArray<Event>
+  readonly database: boolean
+  readonly backend: boolean
+  /** Fully qualified, type-checked permission key. */
+  perm<N extends Name>(name: N): PermissionKey<Id, N>
+  /** Fully qualified, type-checked notification type key. */
+  notification<N extends Notification>(name: N): NotificationKey<Id, N>
+}
+
+export type AnyApp = App<string, string, string, PlatformEventType>
+
+/** Reserved ids that would clash with platform routes. */
+const RESERVED_IDS = new Set([
+  "api",
+  "auth",
+  "internal",
+  "login",
+  "assets",
+  "notifications",
+  "platform",
+  "apps",
+  // The shell's "All apps" page.
+  "directory",
+])
+
+/** Whether an id is taken by a platform route or service (apps cannot use it). */
+export const isReservedId = (id: string): boolean => RESERVED_IDS.has(id)
+
+export const defineApp = <
+  const Id extends string,
+  const Name extends string,
+  const Notification extends string = never,
+  const Event extends PlatformEventType = never,
+>(
+  spec: AppSpec<Id, Name, Notification, Event>,
+): App<Id, Name, Notification, Event> => {
+  if (!AppIdPattern.test(spec.id) || RESERVED_IDS.has(spec.id)) {
+    throw new Error(`Invalid app id "${spec.id}"`)
+  }
+  for (const name of Object.keys(spec.permissions)) {
+    if (!PermissionNamePattern.test(name)) {
+      throw new Error(`Invalid permission name "${name}" in app "${spec.id}"`)
+    }
+  }
+  for (const name of Object.keys(spec.notifications ?? {})) {
+    if (!PermissionNamePattern.test(name)) {
+      throw new Error(`Invalid notification name "${name}" in app "${spec.id}"`)
+    }
+  }
+  if (!(spec.access in spec.permissions)) {
+    throw new Error(`Access permission "${spec.access}" is not defined in app "${spec.id}"`)
+  }
+  if (OWNER_PERMISSION_NAME in spec.permissions) {
+    throw new Error(`Permission "${OWNER_PERMISSION_NAME}" is reserved (app "${spec.id}")`)
+  }
+  const perm = <N extends Name>(name: N): PermissionKey<Id, N> => `${spec.id}:${name}`
+  return {
+    ...spec,
+    [AppTypeId]: AppTypeId,
+    events: [...new Set(spec.events ?? [])],
+    database: spec.database ?? false,
+    backend: spec.backend ?? true,
+    portal: spec.portal ?? {},
+    apiPrefix: `/api/${spec.id}`,
+    accessPermission: perm(spec.access),
+    ownerPermission: ownerPermission(spec.id),
+    roles: appRoles(spec),
+    perm,
+    notification: (name) => `${spec.id}:${name}`,
+  }
+}
+
+/** The roles of an app: the declared ones (or `member`), then `owner`. */
+const appRoles = (spec: AppSpec<string, string, string, PlatformEventType>): ReadonlyArray<ManifestRole> => {
+  const access: PermissionKey = `${spec.id}:${spec.access}`
+  const role = (name: string, title: string, description: string | null, grants: ReadonlyArray<PermissionKey>) =>
+    new ManifestRole({
+      id: appRoleId(spec.id, name),
+      name: title,
+      description,
+      grants: [...new Set([access, ...grants])].sort(),
+    })
+  const declared = Object.entries(spec.roles ?? {})
+  for (const [name] of declared) {
+    if (!RoleNamePattern.test(name) || name === OWNER_ROLE_NAME) {
+      throw new Error(`Invalid role name "${name}" in app "${spec.id}"`)
+    }
+  }
+  const permissions = Object.keys(spec.permissions)
+  return [
+    ...(declared.length === 0
+      ? [role(MEMBER_ROLE_NAME, "Member", `Can open ${spec.name}`, [])]
+      : declared.map(([name, declaration]) =>
+          role(
+            name,
+            declaration.name,
+            declaration.description ?? null,
+            expandRoleGrants(spec.id, permissions, declaration.grants ?? []),
+          ),
+        )),
+    role(OWNER_ROLE_NAME, "Owner", `Decides who can use ${spec.name}`, [ownerPermission(spec.id)]),
+  ]
+}
+
+/** The app with how the Portal lists it, for an app defined without (e.g. Core's administration). */
+export const withPortal = <A extends AnyApp>(app: A, portal: PortalSpec): A => ({ ...app, portal })
+
+export const isApp = (u: unknown): u is AnyApp => typeof u === "object" && u !== null && AppTypeId in u
+
+/** What the auth service registers of an app: its identity, permissions and roles. */
+export class ManifestPermission extends Schema.Class<ManifestPermission>("@mosaik/core/ManifestPermission")({
+  key: PermissionKey,
+  description: Schema.String,
+  dangerous: Schema.Boolean,
+  defaultRoles: Schema.Array(Schema.String),
+}) {}
+
+export class ManifestPayload extends Schema.Class<ManifestPayload>("@mosaik/core/ManifestPayload")({
+  id: Schema.String.check(Schema.isPattern(AppIdPattern)),
+  name: Schema.String,
+  description: Schema.NullOr(Schema.String),
+  access: PermissionKey,
+  /** Includes the owner permission. */
+  permissions: Schema.Array(ManifestPermission),
+  /** Includes the owner role. */
+  roles: Schema.Array(ManifestRole),
+}) {}
+
+/** The app's permissions as registered: the declared ones, then the owner permission. */
+export const manifestPermissions = (app: AnyApp): ReadonlyArray<ManifestPermission> => [
+  ...Object.entries<PermissionSpec>(app.permissions).map(
+    ([name, spec]) =>
+      new ManifestPermission({
+        key: app.perm(name),
+        description: spec.description,
+        dangerous: spec.dangerous ?? false,
+        defaultRoles: spec.defaultRoles ?? [],
+      }),
+  ),
+  new ManifestPermission({
+    key: app.ownerPermission,
+    description: `Decide who can use ${app.name}`,
+    dangerous: true,
+    defaultRoles: [],
+  }),
+]
+
+export const toManifestPayload = (app: AnyApp): ManifestPayload =>
+  new ManifestPayload({
+    id: app.id,
+    name: app.name,
+    description: app.description ?? null,
+    access: app.accessPermission,
+    permissions: manifestPermissions(app),
+    roles: app.roles,
+  })

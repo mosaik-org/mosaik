@@ -1,0 +1,3 @@
+#!/bin/sh
+# Formatting and lint of the staged files (a second or two). The full check runs before pushing.
+exec bunx biome check --staged --no-errors-on-unmatched --files-ignore-unknown=true

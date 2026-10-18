@@ -1,0 +1,90 @@
+import { Schema } from "effect"
+
+export const OrderId = Schema.Int.pipe(Schema.brand("@mosaik/sales/OrderId"))
+export type OrderId = typeof OrderId.Type
+
+export const OrderStatus = Schema.Literals(["pending", "paid", "shipped", "refunded", "cancelled"])
+export type OrderStatus = typeof OrderStatus.Type
+
+/** Status changes allowed through `orders.edit` (refunds have their own permission). */
+export const StatusTransitions: Record<OrderStatus, ReadonlyArray<OrderStatus>> = {
+  pending: ["paid", "cancelled"],
+  paid: ["shipped", "cancelled"],
+  shipped: [],
+  refunded: [],
+  cancelled: [],
+}
+
+export const Region = Schema.Literals(["EMEA", "NA", "LATAM", "APAC"])
+export type Region = typeof Region.Type
+
+export class Order extends Schema.Class<Order>("@mosaik/sales/Order")({
+  id: OrderId,
+  number: Schema.String,
+  customer: Schema.String,
+  email: Schema.String,
+  region: Region,
+  status: OrderStatus,
+  amountCents: Schema.Int,
+  createdAt: Schema.DateTimeUtc,
+}) {}
+
+export const OrderSortField = Schema.Literals(["createdAt", "amountCents", "customer", "number"])
+export type OrderSortField = typeof OrderSortField.Type
+
+export const SortDirection = Schema.Literals(["asc", "desc"])
+
+/**
+ * Orders table state. The same schema is the API query and the page's URL search
+ * params, so `/sales/orders?status=paid&sort=amountCents` maps 1:1 to an API call.
+ */
+export const OrdersSearch = Schema.Struct({
+  page: Schema.optional(Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))),
+  pageSize: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 100 }))),
+  sort: Schema.optional(OrderSortField),
+  direction: Schema.optional(SortDirection),
+  status: Schema.optional(OrderStatus),
+  search: Schema.optional(Schema.String),
+})
+export type OrdersSearch = typeof OrdersSearch.Type
+
+export const ORDERS_DEFAULTS = {
+  page: 0,
+  pageSize: 20,
+  sort: "createdAt",
+  direction: "desc",
+} as const satisfies OrdersSearch
+
+export const SummarySearch = Schema.Struct({
+  days: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 365 }))),
+})
+export type SummarySearch = typeof SummarySearch.Type
+
+export const SUMMARY_DEFAULTS = { days: 30 } as const satisfies SummarySearch
+
+export class OrdersPage extends Schema.Class<OrdersPage>("@mosaik/sales/OrdersPage")({
+  rows: Schema.Array(Order),
+  total: Schema.Int,
+}) {}
+
+export class DailyRevenue extends Schema.Class<DailyRevenue>("@mosaik/sales/DailyRevenue")({
+  /** `YYYY-MM-DD` */
+  day: Schema.String,
+  revenueCents: Schema.Int,
+  orders: Schema.Int,
+}) {}
+
+export class RegionRevenue extends Schema.Class<RegionRevenue>("@mosaik/sales/RegionRevenue")({
+  region: Region,
+  revenueCents: Schema.Int,
+}) {}
+
+export class SalesSummary extends Schema.Class<SalesSummary>("@mosaik/sales/SalesSummary")({
+  days: Schema.Int,
+  revenueCents: Schema.Int,
+  orders: Schema.Int,
+  averageOrderCents: Schema.Int,
+  refundRate: Schema.Number,
+  daily: Schema.Array(DailyRevenue),
+  byRegion: Schema.Array(RegionRevenue),
+}) {}

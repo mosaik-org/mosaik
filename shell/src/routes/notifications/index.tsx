@@ -1,0 +1,99 @@
+import { sessionQueryOptions } from "@mosaik/auth/web"
+import { css } from "@mosaik/styled-system/css"
+import { Button, Card, EmptyState, PageHeader, Tabs } from "@mosaik/ui"
+import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
+import { useInfiniteQuery } from "@tanstack/solid-query"
+import { createFileRoute, Link, redirect } from "@tanstack/solid-router"
+import { Schema } from "effect"
+import Bell from "lucide-solid/icons/bell"
+import BellOff from "lucide-solid/icons/bell-off"
+import Settings from "lucide-solid/icons/settings"
+import { Show } from "solid-js"
+import { inboxQuery } from "../../notifications/api"
+import { NotificationList, useInboxActions } from "../../notifications/NotificationList"
+
+const InboxSearch = Schema.Struct({ unread: Schema.optional(Schema.Literals(["true"])) })
+
+export const Route = createFileRoute("/_app/notifications/")({
+  staticData: { title: "Notifications", keywords: ["inbox", "alerts", "unread"] },
+  validateSearch: searchValidator(InboxSearch),
+  beforeLoad: async ({ context, location }) => {
+    const { principal } = await context.queryClient.ensureQueryData(sessionQueryOptions())
+    if (!principal.isAuthenticated) throw redirect({ to: "/login", search: { redirect: location.href } })
+  },
+  component: NotificationsPage,
+})
+
+function NotificationsPage() {
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
+  const unreadOnly = () => search().unread === "true"
+  const inbox = useInfiniteQuery(() => inboxQuery(unreadOnly()))
+  const actions = useInboxActions()
+  const items = () => inbox.data?.pages.flatMap((page) => page.items) ?? []
+  const unread = () => inbox.data?.pages[0]?.unread ?? 0
+
+  return (
+    <div class={css({ display: "flex", flexDirection: "column", gap: "6", maxW: "3xl" })}>
+      <PageHeader
+        icon={<Bell size={22} />}
+        title="Notifications"
+        description="What the apps told you about. Choose how you get each kind in the settings."
+        actions={
+          <>
+            <Show when={unread() > 0}>
+              <Button
+                variant="outline"
+                size="sm"
+                loading={actions.markAllRead.isPending}
+                onClick={() => actions.markAllRead.mutate()}
+              >
+                Mark all as read
+              </Button>
+            </Show>
+            <Link to="/notifications/settings">
+              <Button variant="ghost" size="sm">
+                <Settings size={16} />
+                Settings
+              </Button>
+            </Link>
+          </>
+        }
+      />
+      <Tabs
+        value={unreadOnly() ? "unread" : "all"}
+        onValueChange={(value) => void navigate({ search: { unread: value === "unread" ? "true" : undefined } })}
+        items={[
+          { value: "all", label: "All" },
+          { value: "unread", label: unread() > 0 ? `Unread (${unread()})` : "Unread" },
+        ]}
+      />
+      <QueryBoundary query={inbox}>
+        {() => (
+          <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
+            <Card padding="none">
+              <NotificationList
+                items={items()}
+                onOpen={actions.open}
+                empty={
+                  <EmptyState
+                    icon={<BellOff size={24} />}
+                    title={unreadOnly() ? "No unread notifications" : "No notifications yet"}
+                    description="Apps notify you about things that need your attention."
+                  />
+                }
+              />
+            </Card>
+            <Show when={inbox.hasNextPage}>
+              <div class={css({ display: "flex", justifyContent: "center" })}>
+                <Button variant="outline" loading={inbox.isFetchingNextPage} onClick={() => void inbox.fetchNextPage()}>
+                  Load older notifications
+                </Button>
+              </div>
+            </Show>
+          </div>
+        )}
+      </QueryBoundary>
+    </div>
+  )
+}

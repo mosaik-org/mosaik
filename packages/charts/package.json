@@ -1,0 +1,18 @@
+{
+  "name": "@mosaik/charts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/ui": "workspace:*",
+    "echarts": "^6.1.0",
+    "solid-js": "^1.9.17"
+  }
+}

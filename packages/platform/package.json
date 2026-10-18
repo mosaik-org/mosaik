@@ -1,0 +1,19 @@
+{
+  "name": "@mosaik/platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./contract": "./src/contract/index.ts",
+    "./server": "./src/server/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/notifications": "workspace:*",
+    "effect": "^4.0.5"
+  }
+}

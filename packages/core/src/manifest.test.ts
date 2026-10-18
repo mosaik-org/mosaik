@@ -1,0 +1,120 @@
+import { describe, expect, it } from "@effect/vitest"
+import { defineApp, isApp, toManifestPayload } from "./manifest"
+import { expandRoleGrants } from "./roles"
+
+const sales = defineApp({
+  id: "sales",
+  name: "Sales",
+  access: "view",
+  permissions: {
+    view: { description: "View", defaultRoles: ["authenticated"] },
+    "orders.refund": { description: "Refund", dangerous: true },
+  },
+  notifications: {
+    "order.refunded": { description: "An order was refunded", defaultChannels: ["inApp", "email"] },
+  },
+})
+
+const crm = defineApp({
+  id: "crm",
+  name: "CRM",
+  access: "view",
+  permissions: {
+    view: { description: "View" },
+    "deals.edit": { description: "Edit deals" },
+    "deals.delete": { description: "Delete deals" },
+    export: { description: "Export" },
+  },
+  roles: {
+    viewer: { name: "Viewer" },
+    editor: { name: "Editor", description: "Changes deals", grants: ["deals.*", "export"] },
+    admin: { name: "Admin", grants: ["*"] },
+  },
+})
+
+describe("defineApp", () => {
+  it("derives namespaced permissions and the API prefix", () => {
+    expect(sales.perm("orders.refund")).toBe("sales:orders.refund")
+    expect(sales.accessPermission).toBe("sales:view")
+    expect(sales.apiPrefix).toBe("/api/sales")
+    expect(sales.backend).toBe(true)
+    expect(sales.database).toBe(false)
+    expect(isApp(sales)).toBe(true)
+    expect(sales.notification("order.refunded")).toBe("sales:order.refunded")
+  })
+
+  it("rejects invalid or reserved ids", () => {
+    expect(() =>
+      defineApp({ id: "Sales", name: "x", access: "view", permissions: { view: { description: "" } } }),
+    ).toThrow()
+    expect(() =>
+      defineApp({ id: "auth", name: "x", access: "view", permissions: { view: { description: "" } } }),
+    ).toThrow()
+  })
+
+  it("rejects invalid notification names", () => {
+    expect(() =>
+      defineApp({
+        id: "x",
+        name: "x",
+        access: "view",
+        permissions: { view: { description: "" } },
+        notifications: { "Bad Name": { description: "" } },
+      }),
+    ).toThrow()
+  })
+
+  it("rejects invalid permission names", () => {
+    expect(() =>
+      defineApp({
+        id: "x",
+        name: "x",
+        access: "view",
+        permissions: { view: { description: "" }, "Bad Name": { description: "" } },
+      }),
+    ).toThrow()
+  })
+})
+
+describe("roles", () => {
+  it("include the access permission and expand wildcards, owner last", () => {
+    expect(crm.roles.map((role) => [role.id, role.grants])).toEqual([
+      ["crm:viewer", ["crm:view"]],
+      ["crm:editor", ["crm:deals.delete", "crm:deals.edit", "crm:export", "crm:view"]],
+      ["crm:admin", ["crm:deals.delete", "crm:deals.edit", "crm:export", "crm:view"]],
+      ["crm:owner", ["crm:access.manage", "crm:view"]],
+    ])
+    expect(crm.roles[1]?.description).toBe("Changes deals")
+  })
+
+  it("default to a member role", () => {
+    expect(sales.roles.map((role) => role.id)).toEqual(["sales:member", "sales:owner"])
+    expect(sales.roles[0]?.grants).toEqual(["sales:view"])
+  })
+
+  it("reject reserved and invalid names", () => {
+    const base = { id: "x", name: "x", access: "view", permissions: { view: { description: "" } } } as const
+    expect(() => defineApp({ ...base, roles: { owner: { name: "Owner" } } })).toThrow()
+    expect(() => defineApp({ ...base, roles: { Bad: { name: "Bad" } } })).toThrow()
+    expect(() =>
+      defineApp({ ...base, permissions: { view: { description: "" }, "access.manage": { description: "" } } }),
+    ).toThrow()
+  })
+
+  it("reject wildcards that cover nothing", () => {
+    expect(() => expandRoleGrants("x", ["view"], ["orders.*"])).toThrow()
+  })
+})
+
+describe("toManifestPayload", () => {
+  it("serializes permissions with defaults", () => {
+    const payload = toManifestPayload(sales)
+    expect(payload.access).toBe("sales:view")
+    expect(payload.permissions).toEqual([
+      expect.objectContaining({ key: "sales:view", dangerous: false, defaultRoles: ["authenticated"] }),
+      expect.objectContaining({ key: "sales:orders.refund", dangerous: true, defaultRoles: [] }),
+      expect.objectContaining({ key: "sales:access.manage", dangerous: true, defaultRoles: [] }),
+    ])
+    expect(payload.roles.map((role) => role.id)).toEqual(["sales:member", "sales:owner"])
+  })
+})
