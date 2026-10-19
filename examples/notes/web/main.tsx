@@ -1,4 +1,4 @@
-import { errorMessage, IdentityApi, makeApiClient } from "@mosaik/sdk/client"
+import { errorMessage, IdentityApi, makeApiClient, standaloneLinks } from "@mosaik/sdk/client"
 import { createResource, createSignal, For, Show } from "solid-js"
 import { render } from "solid-js/web"
 import { NewNote, type Note, NotesApi } from "../api"
@@ -12,15 +12,17 @@ const identityApi = makeApiClient(IdentityApi)
 const [session] = createResource(() => identityApi((client) => client.identity.session()))
 const principal = () => session()?.principal
 
-const signInHref = () => `/auth/sign-in?return=${encodeURIComponent(location.pathname)}`
+// Served by the app's own backend, which takes the browser on to Core's pages and back.
+const here = () => location.pathname
 
 const Header = () => (
   <header class="header">
     <strong>Notes</strong>
-    <Show when={principal()?.user} fallback={<a href={signInHref()}>Sign in with Mosaik</a>}>
+    <Show when={principal()?.user} fallback={<a href={standaloneLinks.signIn(here())}>Sign in with Mosaik</a>}>
       {(user) => (
-        <form method="post" action="/auth/sign-out" class="who">
+        <form method="post" action={standaloneLinks.signOut} class="who">
           <span>{user().name}</span>
+          <a href={standaloneLinks.notificationSettings}>Notifications</a>
           <button type="submit" class="link">
             Sign out
           </button>
@@ -104,8 +106,8 @@ const App = () => (
           when={principal()?.can(app.accessPermission)}
           fallback={
             <p class="empty">
-              <Show when={principal()?.user} fallback={<a href={signInHref()}>Sign in</a>}>
-                You cannot read notes yet: ask an admin for access.
+              <Show when={principal()?.user} fallback={<a href={standaloneLinks.signIn(here())}>Sign in</a>}>
+                You cannot read notes yet. <a href={standaloneLinks.requestAccess(here())}>Request access</a>
               </Show>
             </p>
           }

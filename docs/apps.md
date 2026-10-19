@@ -336,11 +336,15 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   it serves the page at `/` and signs people in:
   - `/auth/sign-in?return=/path` sends the browser to Core's sign-in page and back; `/auth/callback`
     finishes it; a form posting to `/auth/sign-out` signs out of the app.
+  - `/auth/request-access?return=/path` and `/auth/notification-settings` take people to Core's pages for
+    asking for access to the app and choosing their notifications (and back).
   - The tokens stay in an encrypted, HTTP-only cookie and become `Authorization: Bearer` on every request,
     so `AccessControl` and `RequiredPermission` work as they do behind the gateway.
   - `/api/auth/identity/session` says who is signed in and what they may do (a `SessionInfo`, as in the
     shell). People who are not signed in get no token: the API answers 401.
 - **Calling the API.** `makeApiClient(Api)` as in the Portal; requests go to the app's own address.
+- **Links.** `standaloneLinks` from `@mosaik/sdk/client` builds them: `signIn(path)`, `requestAccess(path)`,
+  `notificationSettings`, `signOut` (to post a form to).
 - **Managing it.** Its owners and the admins give its roles and answer its requests in Core's console
   (`/manage/<id>`), as for every app.
 - **Running it.** Core must know the app (`CONFIGURED_APPS`) and the app its key; see

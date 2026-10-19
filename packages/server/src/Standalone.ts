@@ -7,19 +7,23 @@ import {
   OAUTH_TOKEN_PATH,
   OAuthTokens,
   SessionInfo,
+  STANDALONE_PATHS,
 } from "@mosaik/auth/contract"
 import { TokenVerifier } from "@mosaik/auth/server"
 import { type AnyApp, Principal } from "@mosaik/core"
+import { NOTIFICATION_SETTINGS_PAGE } from "@mosaik/notifications/contract"
+import { requestAccessUrl } from "@mosaik/platform/contract"
 import { appKey } from "@mosaik/platform/server"
 import { Config, Effect, Layer, Option, Redacted, Schema } from "effect"
 import { Cookies, Headers, HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
 import { localPath } from "./Pages"
 
-/** Where the app's backend serves sign-in (`/auth/*`) and the session the page reads. */
-export const SIGN_IN_PATH = "/auth/sign-in"
-export const CALLBACK_PATH = "/auth/callback"
-export const SIGN_OUT_PATH = "/auth/sign-out"
-export const SESSION_PATH = "/api/auth/identity/session"
+const {
+  signIn: SIGN_IN_PATH,
+  callback: CALLBACK_PATH,
+  signOut: SIGN_OUT_PATH,
+  session: SESSION_PATH,
+} = STANDALONE_PATHS
 
 /** Refresh a little before the access token expires, so the API never sees an expired one. */
 const EXPIRY_MARGIN_MS = 10_000
@@ -65,6 +69,8 @@ const makeSealer = (key: Redacted.Redacted<string>) => {
  *
  * - `/auth/sign-in`, `/auth/callback`, `/auth/sign-out`: OAuth with Core; the tokens stay in an
  *   encrypted, HTTP-only cookie on the app's domain and never reach the page.
+ * - `/auth/request-access`, `/auth/notification-settings`: on to Core's pages (and back), so
+ *   the page needs no address but its own (`STANDALONE_PATHS`).
  * - Every request: the cookie becomes `Authorization: Bearer <token>`, refreshed before it
  *   expires, so `AccessControl` and `RequiredPermission` work as they do behind the gateway.
  * - `/api/auth/identity/session`: who is signed in, for the page.
@@ -276,7 +282,24 @@ export const standaloneRoutes = (app: AnyApp) =>
         }),
       )
 
+      /** On to Core's page for asking for access to this app; it links back to `return` on this app. */
+      const requestAccess = HttpRouter.add(
+        "GET",
+        STANDALONE_PATHS.requestAccess,
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          const back = new URL(localPath(new URL(request.url, publicUrl).searchParams.get("return")), publicUrl)
+          return HttpServerResponse.redirect(new URL(requestAccessUrl(app.id, back.toString()), coreUrl))
+        }),
+      )
+
+      const notificationSettings = HttpRouter.add(
+        "GET",
+        STANDALONE_PATHS.notificationSettings,
+        Effect.succeed(HttpServerResponse.redirect(new URL(NOTIFICATION_SETTINGS_PAGE, coreUrl))),
+      )
+
       yield* Effect.logInfo("Standalone", { publicUrl: publicUrl.toString(), core: coreUrl.toString() })
-      return Layer.mergeAll(Bearer, signIn, callback, signOut, sessionInfo, page)
+      return Layer.mergeAll(Bearer, signIn, callback, signOut, sessionInfo, requestAccess, notificationSettings, page)
     }),
   )

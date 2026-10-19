@@ -117,6 +117,8 @@ The SDK does all of this when the app is given its public address (`MOSAIK_PUBLI
 (`MOSAIK_URL`); the same backend code runs mounted or standalone. Signing out of the app ends its refresh
 token; signing out of Core ends every app's within a minute (the access token's lifetime). People who are
 not signed in get no token, so the app's API answers 401 and its page offers to sign in.
+The page links to its own backend for the rest (`standaloneLinks` in `@mosaik/sdk/client`):
+`/auth/request-access` and `/auth/notification-settings` take the browser on to Core's pages and back.
 `bun dev --headless` runs Core with the console and the standalone apps, without the Portal or the shell.
 
 ## The SDK
