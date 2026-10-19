@@ -3,11 +3,14 @@
  *
  * The SDK's entry points follow where code runs and which layer it needs:
  * - `@mosaik/sdk` (both), `@mosaik/sdk/server`, `@mosaik/sdk/connectors/*` (server): Core
- * - `@mosaik/sdk/client` (any page), `@mosaik/sdk/solid` (Solid pages): Core
- * - `@mosaik/sdk/portal` (mounted in the shell), `@mosaik/sdk/ui`, `/table`, `/charts`, `/css`: the Portal
- * - `@mosaik/sdk/build/*`: building and running the app
+ * - `@mosaik/sdk/client` (any page), `@mosaik/sdk/solid` (Solid pages), `/ui`, `/table`, `/charts`,
+ *   `/css`: Core (Core's console uses the components and the table too)
+ * - `@mosaik/sdk/portal` (mounted in the shell): the Portal
+ * - `@mosaik/sdk/build/*`: building and running the app; `mosaikApp()` builds for the Portal's
+ *   shell or, with `standalone`, Core's own page
  *
- * An app that imports nothing from `@mosaik/sdk/portal` runs without the Portal.
+ * An app that imports nothing from `@mosaik/sdk/portal` runs without the Portal: only that entry
+ * point and the build plugin reach the Portal's code (`bun lint` checks it).
  */
 export {
   AccessControl,

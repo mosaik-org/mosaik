@@ -9,9 +9,11 @@
  * 6. Examples see only the SDK (`@mosaik/sdk` and its entry points), the component library
  *    (`@mosaik/mosaik-ui`) and their own files, like a team's app in its own repository; rules
  *    2–4 hold for the SDK's entry points too.
- * 7. Core (its services and the shared packages) never depends on the Portal.
- * 8. The Portal (its service, the shell, built-in apps) uses Core only through its contracts and
- *    the SDK, never the code of Core's services.
+ * 7. Core (its services and the shared packages) never depends on the Portal. The SDK spans both
+ *    layers for apps, through two modules only (`@mosaik/sdk/portal` and the build plugin): so an
+ *    app that imports neither of the Portal's entry points needs nothing of the Portal.
+ * 8. The Portal (its service, its package, the shell, built-in apps) uses Core only through its
+ *    contracts and the SDK, never the code of Core's services.
  * 9. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
  *    directory, so it can move to a repository of its own.
  */
@@ -42,6 +44,7 @@ const SERVER_ONLY = [
   // The SDK's server and build entry points; a connector's data model is isomorphic.
   /^@mosaik\/sdk\/(server|build\/.+)$/,
   /^@mosaik\/sdk\/connectors(?!\/[^/]+\/model$)(\/|$)/,
+  /^@mosaik\/portal\/build(\/|$)/,
   /^@effect\/(sql-pg|platform-bun)/,
   /^effect\/sql/,
   /^bun$/,
@@ -53,6 +56,7 @@ const BROWSER_ONLY = [
   /^solid-js/,
   /^@mosaik\/(table|charts|web-kit|styled-system)(\/|$)/,
   /^@mosaik\/auth\/web$/,
+  /^@mosaik\/portal\/web$/,
   // The component library, except its Panda preset (build time).
   /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
   /^@mosaik\/sdk\/(client|solid|portal|ui|table|charts|css|jsx|patterns|tokens)$/,
@@ -72,15 +76,23 @@ const target = (specifier: string, file: string): string | null =>
         .join("/")
     : null
 
-/** Core's services; the shared packages (`packages/`, except the Portal's contract) and the console are Core's too. */
+/** Core's services; the shared packages (`packages/`, except the Portal's) and the console are Core's too. */
 const CORE_SERVICES = ["auth", "notifications", "platform", "gateway"]
 
+/** The SDK's modules that give apps the Portal: the only way from the SDK to it (rule 7). */
+const SDK_PORTAL_MODULES: ReadonlySet<string> = new Set([
+  "packages/sdk/src/portal.ts",
+  "packages/sdk/src/build/vite.ts",
+])
+
 const isCore = (path: string) =>
-  CORE_SERVICES.some((service) => path.startsWith(`services/${service}/`)) ||
-  path.startsWith("console/") ||
-  (path.startsWith("packages/") && !path.startsWith("packages/portal/"))
+  !SDK_PORTAL_MODULES.has(path) &&
+  (CORE_SERVICES.some((service) => path.startsWith(`services/${service}/`)) ||
+    path.startsWith("console/") ||
+    (path.startsWith("packages/") && !path.startsWith("packages/portal/")))
 
 const isPortal = (path: string) =>
+  SDK_PORTAL_MODULES.has(path) ||
   path.startsWith("services/portal/") ||
   path.startsWith("packages/portal/") ||
   path.startsWith("shell/") ||
@@ -92,6 +104,7 @@ const exampleOf = (path: string) => /^examples\/([^/]+)\//.exec(path)?.[1]
 const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
   /^packages\/(table|charts|web-kit|client|console)\//.test(path) ||
+  path.startsWith("packages/portal/src/web/") ||
   path.startsWith("packages/mosaik-ui/src/") ||
   path.startsWith("packages/auth/src/web/") ||
   path.startsWith("shell/src/") ||
@@ -101,6 +114,7 @@ const isContract = (path: string) =>
   /^(apps|examples)\/[^/]+\/(manifest\.ts|api\/)/.test(path) ||
   /^packages\/connectors\/src\/[^/]+\/model\.ts$/.test(path) ||
   path.startsWith("packages/core/") ||
+  path.startsWith("packages/portal/src/contract/") ||
   path.startsWith("packages/auth/src/contract/") ||
   path.startsWith("packages/notifications/src/contract/") ||
   path.startsWith("packages/platform/src/contract/")

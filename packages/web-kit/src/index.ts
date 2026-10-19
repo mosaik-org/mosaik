@@ -11,7 +11,6 @@ export {
   type Keyed,
   useAction,
 } from "./api"
-export { defineWebApp, type WebApp } from "./app"
 export * from "./commands"
 export { Freshness, type FreshnessProps, type FreshnessQuery, QueryFreshness } from "./Freshness"
 export { createForm, type FieldBinding, type Form, type FormOptions } from "./form"

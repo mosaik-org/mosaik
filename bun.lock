@@ -292,9 +292,19 @@
       "name": "@mosaik/portal",
       "version": "0.0.0",
       "dependencies": {
+        "@mosaik/app-kit": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
+        "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.0.5",
+        "solid-js": "^1.9.17",
+        "vite-plugin-solid": "^2.11.14",
+      },
+      "devDependencies": {
+        "vite": "^8.3.4",
+      },
+      "peerDependencies": {
+        "vite": "^8.3.4",
       },
     },
     "packages/sdk": {
@@ -308,6 +318,7 @@
         "@mosaik/connectors": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
+        "@mosaik/portal": "workspace:*",
         "@mosaik/server": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
         "@mosaik/table": "workspace:*",

@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from "node:fs"
 import { join, relative, resolve } from "node:path"
-import { SHARED_MODULES, sharedSlug } from "@mosaik/app-kit/shared"
+// The list alone: Node loads this config's workspace imports as they are, and the list has no imports.
+import { SHARED_MODULES, sharedSlug } from "@mosaik/portal/build/shared"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import { index, layout, physical, rootRoute, route } from "@tanstack/virtual-file-routes"
 import { defineConfig, type Plugin } from "vite"
@@ -49,7 +50,7 @@ const SHARED_DIR = resolve(import.meta.dirname, "src/shared")
 const sharedEntry = (specifier: string) => join(SHARED_DIR, `${sharedSlug(specifier)}.ts`)
 
 /**
- * Provides the shared modules (`@mosaik/app-kit/shared`) to installed apps through an
+ * Provides the shared modules (`@mosaik/portal/build/shared`) to installed apps through an
  * import map. Each module has a wrapper (`src/shared/*.ts`) that re-exports it.
  * - Build: the wrappers are extra entries of the same bundle, so they re-export the very
  *   modules the shell uses (one copy of Solid, the router, the UI kit...).

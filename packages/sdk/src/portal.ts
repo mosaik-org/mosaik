@@ -1,4 +1,6 @@
 /** `@mosaik/sdk/portal`: an app mounted in the Portal's shell: its pages, frame, URL state and commands. */
+
+export { defineWebApp, type WebApp } from "@mosaik/portal/web"
 export {
   AccessDenied,
   AppLayout,
@@ -6,7 +8,6 @@ export {
   type Command,
   type CommandApp,
   defineSearchProvider,
-  defineWebApp,
   type NavTabItem,
   NavTabs,
   type SearchProvider,
@@ -23,5 +24,4 @@ export {
   useCommands,
   useSearchParams,
   useTableSearch,
-  type WebApp,
 } from "@mosaik/web-kit"

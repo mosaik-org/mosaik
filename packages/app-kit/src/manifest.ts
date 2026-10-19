@@ -2,7 +2,7 @@ import { join } from "node:path"
 import type { AnyApp } from "@mosaik/core"
 import { AppManifest, toAppManifest, WebBundle } from "@mosaik/platform/contract"
 import { Schema } from "effect"
-import { WEB_BUNDLE_FILE } from "./shared"
+import { WEB_BUNDLE_FILE } from "./bundle"
 
 export interface WriteManifestOptions {
   /** Where `mosaikApp()` built the browser bundle. Defaults to `dist/web`; a standalone app has no bundle. */

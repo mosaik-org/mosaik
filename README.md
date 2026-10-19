@@ -141,9 +141,9 @@ packages/         The SDK and shared code
   server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, observability
   notifications   contract (content, destinations, audiences, internal and browser APIs)
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
-  portal          contract of the Portal service (catalog, workspace, installs) and its permissions
+  portal          The Portal's package: contract (catalog, workspace, installs, permissions) · web (defineWebApp, what the shell mounts) · build (the mounted bundle, the shared-module list)
   console         Core's console pages (administration, apps people manage, access requests), mounted by both UIs
-  app-kit         Building apps: shared-module list, Vite plugin (bundle for the shell, or a standalone page), Panda config
+  app-kit         Building apps (Core): the standalone page, the app's Panda config and styles, the dev loop, the manifest
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (query defaults, event streams)
   mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README

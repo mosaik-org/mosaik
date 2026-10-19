@@ -76,7 +76,8 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
 
 - **Core or Portal.** An app that imports nothing from `@mosaik/sdk/portal` runs without the Portal
-  (standalone); the rest of the SDK is Core, and the components work either way.
+  (standalone); the rest of the SDK is Core, and the components work either way. `bun lint` checks that
+  only `/portal` and `mosaikApp()` (whose default is the bundle for the shell) reach the Portal's code.
 - **Sides.** Server code never imports a page's entry points and pages never import `server`,
   `connectors` or `build`; `bun lint` checks it for the examples.
 - **Public API.** What the entry points export is the SDK; the packages behind them are internal and change

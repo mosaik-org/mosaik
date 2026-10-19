@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs"
 import { join } from "node:path"
-import { WEB_BUNDLE_FILE } from "./shared"
+import { WEB_BUNDLE_FILE } from "./bundle"
 
 export interface AppDevOptions {
   /** Where `mosaikApp()` builds the browser bundle. Defaults to `dist/web`. */

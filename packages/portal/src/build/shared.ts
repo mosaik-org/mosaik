@@ -33,6 +33,3 @@ export type SharedModule = (typeof SHARED_MODULES)[number]
 
 /** File name of a shared module's wrapper in the shell (`src/shared/<slug>.ts`). */
 export const sharedSlug = (specifier: string) => specifier.replace(/^@/, "").replaceAll("/", "__")
-
-/** Written next to an app's web bundle; read by its backend to fill `web` in its manifest. */
-export const WEB_BUNDLE_FILE = "mosaik-web.json"

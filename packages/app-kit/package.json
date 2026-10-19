@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./bundle": "./src/bundle.ts",
     "./dev": "./src/dev.ts",
     "./manifest": "./src/manifest.ts",
     "./panda": "./src/panda.ts",
-    "./shared": "./src/shared.ts",
     "./vite": "./src/vite.ts"
   },
   "scripts": {

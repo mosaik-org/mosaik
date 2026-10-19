@@ -4,14 +4,14 @@ import { type WebBundle, WebBundle as WebBundleSchema } from "@mosaik/platform/c
 import { Config, Effect, Option, Schema } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
 
-/** Must match `WEB_BUNDLE_FILE` in `@mosaik/app-kit`. */
+/** Must match `WEB_BUNDLE_FILE` in `@mosaik/app-kit/bundle`. */
 const BUNDLE_FILE = "mosaik-web.json"
 
 const decodeBundle = Schema.decodeUnknownEffect(Schema.fromJsonString(WebBundleSchema))
 
 /**
  * The app's browser bundle (`MOSAIK_WEB_DIR`, default `dist/web`, built by `mosaikApp()` from
- * `@mosaik/app-kit/vite`), if there is one. Built-in apps have none: they are compiled into the shell.
+ * `@mosaik/sdk/build/vite`), if there is one. Built-in apps have none: they are compiled into the shell.
  */
 export const loadWebBundle = Effect.gen(function* () {
   const dir = resolve(yield* Config.String("MOSAIK_WEB_DIR").pipe(Config.withDefault("dist/web")))
