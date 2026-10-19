@@ -14,14 +14,28 @@ export default defineConfig({
             "examples/*/{api,server}/**/*.test.ts",
             "tooling/src/**/*.test.ts",
           ],
-          exclude: ["packages/web-kit/**", "packages/mosaik-ui/**", "**/node_modules/**"],
+          exclude: [
+            "packages/web-kit/**",
+            "packages/client/**",
+            "packages/auth/src/web/**",
+            "packages/mosaik-ui/**",
+            "**/node_modules/**",
+          ],
         },
       },
-      // Browser packages' logic (forms, queries): Solid's browser build, reactive, without a DOM.
+      // Browser packages' logic (forms, queries, live streams): Solid's browser build, reactive, without a DOM.
       {
         resolve: { conditions: ["browser", "development"] },
         ssr: { resolve: { conditions: ["browser", "development"], externalConditions: ["browser", "development"] } },
-        test: { name: "web", environment: "node", include: ["packages/web-kit/src/**/*.test.ts"] },
+        test: {
+          name: "web",
+          environment: "node",
+          include: [
+            "packages/web-kit/src/**/*.test.ts",
+            "packages/client/src/**/*.test.ts",
+            "packages/auth/src/web/**/*.test.ts",
+          ],
+        },
       },
       // The component library, with its own configs so they move with it: in a DOM, and on the server.
       "packages/mosaik-ui/vitest.config.ts",

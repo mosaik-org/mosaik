@@ -165,7 +165,9 @@ runApp({
 - **`Audit`** records an action in the central audit log, attributed to the user.
 - **`Notify`** and **`Messages`**: see [below](#notifications-and-messages).
 - **`Events`**: see [Platform events](#platform-events).
-- **`Live.eventStream`** serves Server-Sent Events, consumed in the browser with `createEventStream`.
+- **`Live.eventStream`** serves Server-Sent Events, consumed in the browser with `createEventStream`. Its
+  address can be an accessor (`` () => `/api/orders/live?region=${region()}` ``): the stream connects again
+  only when the address changes, and waits while it is `undefined` (until what it needs has loaded).
 
 ### Databases
 

@@ -56,7 +56,8 @@ const styles = {
 function ConsoleLayout() {
   const principal = usePrincipal()
   const queryClient = useQueryClient()
-  // What someone may see follows their access (a new role, a request answered).
+  // Every page of the console shows what its visitor's roles allow (administration, the apps they
+  // manage, requests to answer): when their access changes, which is rare, all of it reloads.
   useLiveAccess(() => void queryClient.invalidateQueries())
 
   const leave = async () => {

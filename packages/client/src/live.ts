@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { type Accessor, createEffect, createSignal, onCleanup } from "solid-js"
+import { type Accessor, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
 
 export type EventStreamStatus = "connecting" | "open" | "reconnecting"
 
@@ -23,13 +23,17 @@ const canShare = () =>
  * Subscribes to a Server-Sent Events endpoint (see `Live.eventStream` in `@mosaik/server`)
  * and decodes every event with `schema`. Reconnects automatically; closes on cleanup.
  *
+ * A `url` accessor reconnects when the address it returns changes, not whenever what it reads
+ * does: a server may open every connection with an event its listeners react to, and a new
+ * connection per reaction would never settle. `undefined` waits: no connection yet.
+ *
  * The tabs of a browser share one connection per URL: browsers allow only six
  * connections per site over HTTP/1.1, and every open stream holds one. One tab connects
  * (whichever holds the Web Lock for the URL) and passes events on to the others; when it
  * closes, another takes over.
  */
 export const createEventStream = <S extends Schema.Codec<any, any>>(
-  url: string | Accessor<string>,
+  url: string | Accessor<string | undefined>,
   schema: S,
 ): EventStream<S["Type"]> => {
   const decode = Schema.decodeUnknownSync(Schema.toCodecJson(schema))
@@ -60,8 +64,12 @@ export const createEventStream = <S extends Schema.Codec<any, any>>(
     return () => source.close()
   }
 
+  // Compared as a string: an accessor that runs again with the same result keeps the connection.
+  const address = createMemo(() => (typeof url === "function" ? url() : url))
+
   createEffect(() => {
-    const target = typeof url === "function" ? url() : url
+    const target = address()
+    if (target === undefined) return
     if (!canShare()) {
       onCleanup(connect(target, () => {}))
       return
