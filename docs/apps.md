@@ -69,7 +69,7 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API; no framework |
-| `@mosaik/sdk/solid` | Solid pages | `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `createDebounced` |
+| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient` |
 | `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
 | `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | the design system, `QueryBoundary`, `DataTable`, charts, the app's styling runtime |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
@@ -201,6 +201,34 @@ export default defineWebApp({
 `bun run dev` (`runAppDev` from `@mosaik/sdk/build/dev`) rebuilds the bundle on every change and restarts the
 backend, so it registers the new bundle: reload the page to see a change.
 
+- **Calling the API.** `createApi(Api)` (`@mosaik/sdk/solid`) turns the contract into what pages need:
+  - queries keyed by the contract, `useQuery(() => sales.orders.list.query({ query }))` (the key is
+    `["sales", "orders", "list", request]`, so nobody writes keys by hand);
+  - `sales.orders.key()`, `sales.key()`: everything under a group, or the whole API, to refetch;
+  - `useAction(sales.orders.refund, { success, failure, invalidates: [sales.orders] })` for calls that
+    change something. It shows the outcome as a toast, refetches what it affects and tracks
+    `pending()`. Use `run(request)` from buttons and menus (a failure becomes a toast; it resolves to
+    whether it worked), and `submit(request)` from forms (a failure is thrown for the form to show).
+- **Forms.** `createForm({ schema, initial, onSubmit })` checks a form with a Schema, usually the API's own
+  payload Schema, so the form refuses what the server would:
+  - `{...form.field("email")}` on a `TextField` binds the value and shows the field's problem once it was
+    left or a submit was tried; the Schema's check messages are what people read;
+  - `form.submit` validates, then calls `onSubmit` with the decoded value (for a `Schema.Class`, the instance
+    the API client sends);
+  - `form.error()` is why the last submit failed (the API's answer, such as a conflict), `form.submitting()`
+    and `form.reset()` the rest.
+
+  ```tsx
+  const refund = useAction(sales.orders.refund, { success: "Refunded", invalidates: [sales] })
+  const form = createForm({
+    schema: Refund,
+    initial: { reason: "" },
+    onSubmit: (payload) => refund.submit({ params: { id }, payload }),
+  })
+  <form noValidate onSubmit={form.submit}><TextField label="Reason" required {...form.field("reason")} /></form>
+  ```
+
+  `noValidate` leaves the checks to the Schema, so people read its messages instead of the browser's.
 - **Frame.** `AppLayout` shows the app's name and icon from the manifest, its sub-navigation (items with a
   `permission` are hidden from people without it) and the page.
 - **State in the URL.** Filters, sorting and pagination live in typed search params: the route validates
@@ -342,7 +370,8 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
     so `AccessControl` and `RequiredPermission` work as they do behind the gateway.
   - `/api/auth/identity/session` says who is signed in and what they may do (a `SessionInfo`, as in the
     shell). People who are not signed in get no token: the API answers 401.
-- **Calling the API.** `makeApiClient(Api)` as in the Portal; requests go to the app's own address.
+- **Calling the API.** `createApi(Api)` and `createForm` as in the Portal (or `makeApiClient(Api)` from
+  `@mosaik/sdk/client` without Solid); requests go to the app's own address.
 - **Links.** `standaloneLinks` from `@mosaik/sdk/client` builds them: `signIn(path)`, `requestAccess(path)`,
   `notificationSettings`, `signOut` (to post a form to).
 - **Managing it.** Its owners and the admins give its roles and answer its requests in Core's console

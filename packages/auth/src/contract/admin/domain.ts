@@ -14,7 +14,7 @@ export class AdminUser extends Schema.Class<AdminUser>("@mosaik/auth/admin/Admin
 
 export class CreateUser extends Schema.Class<CreateUser>("@mosaik/auth/admin/CreateUser")({
   email: Schema.String.check(Schema.isPattern(/^[^\s@]+@[^\s@]+$/, { message: "Invalid email address" })),
-  name: Schema.NonEmptyString,
+  name: Schema.String.check(Schema.isMinLength(1, { message: "Enter a name" })),
   password: Schema.String.check(Schema.isMinLength(8, { message: "At least 8 characters" })),
   roles: Schema.Array(RoleId),
 }) {}
@@ -35,12 +35,12 @@ export class Role extends Schema.Class<Role>("@mosaik/auth/admin/Role")({
 
 export class CreateRole extends Schema.Class<CreateRole>("@mosaik/auth/admin/CreateRole")({
   id: CustomRoleId,
-  name: Schema.NonEmptyString,
+  name: Schema.String.check(Schema.isMinLength(1, { message: "Enter a name" })),
   description: Schema.NullOr(Schema.String),
 }) {}
 
 export class UpdateRole extends Schema.Class<UpdateRole>("@mosaik/auth/admin/UpdateRole")({
-  name: Schema.NonEmptyString,
+  name: Schema.String.check(Schema.isMinLength(1, { message: "Enter a name" })),
   description: Schema.NullOr(Schema.String),
 }) {}
 

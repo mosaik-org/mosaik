@@ -1,28 +1,18 @@
-import { makeApiClient } from "@mosaik/sdk/client"
-import { keepPreviousData, queryOptions } from "@tanstack/solid-query"
+import { createApi } from "@mosaik/sdk/solid"
+import { keepPreviousData } from "@tanstack/solid-query"
 import { type OrderStatus, type OrdersSearch, SalesApi } from "../api"
 import { sales } from "../manifest"
 
-export const salesApi = makeApiClient(SalesApi)
+/** The API for the pages: queries keyed by the contract, and calls (see `useAction`). */
+export const salesApi = createApi(SalesApi)
 
-export const salesKeys = {
-  all: [sales.id] as const,
-  summary: (days: number) => [sales.id, "summary", days] as const,
-  orders: (search: OrdersSearch) => [sales.id, "orders", search] as const,
-}
+export const summaryQuery = (days: number) => salesApi.stats.summary.query({ query: { days } })
 
-export const summaryQuery = (days: number) =>
-  queryOptions({
-    queryKey: salesKeys.summary(days),
-    queryFn: () => salesApi((client) => client.stats.summary({ query: { days } })),
-  })
-
-export const ordersQuery = (search: OrdersSearch) =>
-  queryOptions({
-    queryKey: salesKeys.orders(search),
-    queryFn: () => salesApi((client) => client.orders.list({ query: search })),
-    placeholderData: keepPreviousData,
-  })
+// While the next page loads, the table keeps the current one.
+export const ordersQuery = (search: OrdersSearch) => ({
+  ...salesApi.orders.list.query({ query: search }),
+  placeholderData: keepPreviousData,
+})
 
 /** CSV downloads are plain links: the browser sends the session cookie, the gateway adds the token. */
 export const exportUrl = (filter: { status?: OrderStatus | undefined; search?: string | undefined }): string => {

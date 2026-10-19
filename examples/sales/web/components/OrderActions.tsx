@@ -1,51 +1,46 @@
-import { errorMessage, formatCurrency } from "@mosaik/sdk/client"
-import { useCan } from "@mosaik/sdk/solid"
-import { ConfirmDialog, IconButton, Menu, TextField, toast } from "@mosaik/sdk/ui"
-import { useMutation, useQueryClient } from "@tanstack/solid-query"
+import { formatCurrency } from "@mosaik/sdk/client"
+import { createForm, useAction, useCan } from "@mosaik/sdk/solid"
+import { ConfirmDialog, IconButton, Menu, TextField } from "@mosaik/sdk/ui"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import { createSignal, Show } from "solid-js"
-import { type Order, type OrderStatus, StatusTransitions } from "../../api"
+import { type Order, Refund, StatusTransitions } from "../../api"
 import { sales } from "../../manifest"
-import { salesApi, salesKeys } from "../queries"
+import { salesApi } from "../queries"
 import { statusLabel } from "./StatusBadge"
 
 /** Row actions for an order; only shows what the principal may do. */
 export const OrderActions = (props: { order: Order }) => {
   const can = useCan()
-  const queryClient = useQueryClient()
   const [refunding, setRefunding] = createSignal(false)
-  const [reason, setReason] = createSignal("")
+  const order = () => ({ params: { id: props.order.id } })
 
-  const onSuccess = (order: Order, message: string) => {
-    toast.success(message, order.number)
-    void queryClient.invalidateQueries({ queryKey: salesKeys.all })
-  }
-  const onError = (error: unknown) => toast.error("Action failed", errorMessage(error))
+  // Both change what the orders list and the summary show: refetch everything of the app.
+  const setStatus = useAction(salesApi.orders.setStatus, {
+    success: (order) => `${order.number} marked as ${statusLabel(order.status).toLowerCase()}`,
+    invalidates: [salesApi],
+  })
+  const refund = useAction(salesApi.orders.refund, {
+    success: (order) => `${order.number} was refunded`,
+    invalidates: [salesApi],
+  })
 
-  const setStatus = useMutation(() => ({
-    mutationFn: (status: OrderStatus) =>
-      salesApi((client) => client.orders.setStatus({ params: { id: props.order.id }, payload: { status } })),
-    onSuccess: (order) => onSuccess(order, `Order marked as ${statusLabel(order.status).toLowerCase()}`),
-    onError,
-  }))
-
-  const refund = useMutation(() => ({
-    mutationFn: (reason: string) =>
-      salesApi((client) => client.orders.refund({ params: { id: props.order.id }, payload: { reason } })),
-    onSuccess: (order) => {
+  // The same Schema as the API's payload: the dialog checks what the server will.
+  const form = createForm({
+    schema: Refund,
+    initial: { reason: "" },
+    onSubmit: async (payload) => {
+      await refund.submit({ ...order(), payload })
       setRefunding(false)
-      setReason("")
-      onSuccess(order, "Order refunded")
+      form.reset()
     },
-    onError,
-  }))
+  })
 
   const items = () => [
     ...(can(sales.perm("orders.edit"))
       ? StatusTransitions[props.order.status].map((status) => ({
           value: status,
           label: `Mark as ${statusLabel(status).toLowerCase()}`,
-          onSelect: () => setStatus.mutate(status),
+          onSelect: () => void setStatus.run({ ...order(), payload: { status } }),
         }))
       : []),
     ...(can(sales.perm("orders.refund")) && (props.order.status === "paid" || props.order.status === "shipped")
@@ -65,24 +60,19 @@ export const OrderActions = (props: { order: Order }) => {
       />
       <ConfirmDialog
         open={refunding()}
-        onOpenChange={setRefunding}
+        onOpenChange={(open) => {
+          setRefunding(open)
+          if (!open) form.reset()
+        }}
         title={`Refund ${props.order.number}?`}
         description={`${formatCurrency(props.order.amountCents)} will be returned to ${props.order.customer}. This cannot be undone.`}
         confirmLabel="Refund"
         tone="danger"
-        loading={refund.isPending}
-        onConfirm={() => {
-          if (reason().trim().length === 0) return toast.error("A reason is required")
-          refund.mutate(reason().trim())
-        }}
+        loading={form.submitting()}
+        onConfirm={() => void form.submit()}
       >
-        <TextField
-          label="Reason"
-          required
-          value={reason()}
-          onValueChange={setReason}
-          placeholder="e.g. Damaged on arrival"
-        />
+        <TextField label="Reason" required placeholder="e.g. Damaged on arrival" {...form.field("reason")} />
+        <Show when={form.error()}>{(error) => <p role="alert">{error()}</p>}</Show>
       </ConfirmDialog>
     </Show>
   )

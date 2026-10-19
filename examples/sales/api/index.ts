@@ -2,7 +2,7 @@ import { AccessControl, BadRequest, Conflict, Fresh, NotFound, RequiredPermissio
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { sales } from "../manifest"
-import { Order, OrderId, OrderStatus, OrdersPage, OrdersSearch, SalesSummary, SummarySearch } from "./domain"
+import { Order, OrderId, OrderStatus, OrdersPage, OrdersSearch, Refund, SalesSummary, SummarySearch } from "./domain"
 
 export * from "./domain"
 
@@ -28,7 +28,7 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
     }).annotate(RequiredPermission, sales.perm("orders.edit")),
     HttpApiEndpoint.post("refund", "/:id/refund", {
       params: { id: OrderId },
-      payload: Schema.Struct({ reason: Schema.NonEmptyString }),
+      payload: Refund,
       success: Order,
       error: [NotFound, Conflict],
     }).annotate(RequiredPermission, sales.perm("orders.refund")),

@@ -1,19 +1,19 @@
 import { type AdminUser, admin, CreateUser, type Role } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
-import { errorMessage, formatDate } from "@mosaik/client"
+import { formatDate } from "@mosaik/client"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { Avatar, Badge, Button, ConfirmDialog, Dialog, IconButton, Menu, TextField, toast } from "@mosaik/ui"
-import { QueryBoundary, useCommands } from "@mosaik/web-kit"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { Avatar, Badge, Button, ConfirmDialog, Dialog, IconButton, Menu, TextField } from "@mosaik/ui"
+import { createForm, QueryBoundary, useAction, useCommands } from "@mosaik/web-kit"
+import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import UserPlus from "lucide-solid/icons/user-plus"
 import { createSignal, For, Show } from "solid-js"
 import { RolePicker } from "../../admin/components/RolePicker"
-import { adminKeys, rolesQuery, usersQuery } from "../../admin/queries"
+import { rolesQuery, usersQuery } from "../../admin/queries"
 import { roleLabel } from "../../admin/roles"
-import { adminApi } from "../../api"
+import { administration } from "../../api"
 
 export const Route = createFileRoute("/_app/admin/users")({
   staticData: { title: "Users", keywords: ["accounts", "people"], permission: admin.perm("users.manage") },
@@ -24,32 +24,13 @@ const PROVIDERS: Record<string, string> = { credential: "Password", microsoft: "
 
 const column = createColumnHelper<AdminUser>()
 
-const useUserActions = () => {
-  const queryClient = useQueryClient()
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: adminKeys.all })
-  const onError = (error: unknown) => toast.error("Action failed", errorMessage(error))
-
-  const setRoles = useMutation(() => ({
-    mutationFn: (input: { user: AdminUser; roles: ReadonlyArray<string> }) =>
-      adminApi((client) => client.users.setRoles({ params: { id: input.user.id }, payload: { roles: input.roles } })),
-    onSuccess: (user) => {
-      toast.success("Roles updated", user.email)
-      void invalidate()
-    },
-    onError,
-  }))
-
-  const remove = useMutation(() => ({
-    mutationFn: (user: AdminUser) => adminApi((client) => client.users.delete({ params: { id: user.id } })),
-    onSuccess: () => {
-      toast.success("User deleted")
-      void invalidate()
-    },
-    onError,
-  }))
-
-  return { setRoles, remove }
-}
+const useUserActions = () => ({
+  setRoles: useAction(administration.users.setRoles, {
+    success: (user) => `Roles of ${user.email} updated`,
+    invalidates: [administration],
+  }),
+  remove: useAction(administration.users.delete, { success: "User deleted", invalidates: [administration] }),
+})
 
 const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) => {
   const principal = usePrincipal()
@@ -93,10 +74,12 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
               Cancel
             </Button>
             <Button
-              loading={actions.setRoles.isPending}
-              onClick={() =>
-                actions.setRoles.mutate({ user: props.user, roles: selected() }, { onSuccess: () => setEditing(false) })
-              }
+              loading={actions.setRoles.pending()}
+              onClick={async () => {
+                if (await actions.setRoles.run({ params: { id: props.user.id }, payload: { roles: selected() } })) {
+                  setEditing(false)
+                }
+              }}
             >
               Save
             </Button>
@@ -112,8 +95,10 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
         description="The user is signed out everywhere and loses all access. This cannot be undone."
         confirmLabel="Delete"
         tone="danger"
-        loading={actions.remove.isPending}
-        onConfirm={() => actions.remove.mutate(props.user, { onSuccess: () => setDeleting(false) })}
+        loading={actions.remove.pending()}
+        onConfirm={async () => {
+          if (await actions.remove.run({ params: { id: props.user.id } })) setDeleting(false)
+        }}
       />
     </>
   )
@@ -124,35 +109,28 @@ const CreateUserDialog = (props: {
   onOpenChange: (open: boolean) => void
   roles: ReadonlyArray<Role>
 }) => {
-  const queryClient = useQueryClient()
-  const [name, setName] = createSignal("")
-  const [email, setEmail] = createSignal("")
-  const [password, setPassword] = createSignal("")
-  const [roles, setRoles] = createSignal<ReadonlyArray<string>>([])
-
-  const create = useMutation(() => ({
-    mutationFn: () =>
-      adminApi((client) =>
-        client.users.create({
-          payload: new CreateUser({ name: name(), email: email(), password: password(), roles: roles() }),
-        }),
-      ),
-    onSuccess: (user) => {
-      toast.success("User created", user.email)
-      void queryClient.invalidateQueries({ queryKey: adminKeys.all })
-      setName("")
-      setEmail("")
-      setPassword("")
-      setRoles([])
+  const create = useAction(administration.users.create, {
+    success: (user) => `${user.email} was created`,
+    invalidates: [administration],
+  })
+  // The API's own payload Schema: the dialog checks what the server will (an e-mail, 8 characters...).
+  const form = createForm({
+    schema: CreateUser,
+    initial: { name: "", email: "", password: "", roles: [] },
+    onSubmit: async (payload) => {
+      await create.submit({ payload })
+      form.reset()
       props.onOpenChange(false)
     },
-    onError: (error: unknown) => toast.error("Could not create user", errorMessage(error)),
-  }))
+  })
 
   return (
     <Dialog
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(open) => {
+        if (!open) form.reset()
+        props.onOpenChange(open)
+      }}
       title="New user"
       description="For people without a Microsoft account. SSO users are created on their first login."
       footer={
@@ -160,7 +138,7 @@ const CreateUserDialog = (props: {
           <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" form="create-user" loading={create.isPending}>
+          <Button type="submit" form="create-user" loading={form.submitting()}>
             Create user
           </Button>
         </>
@@ -168,27 +146,31 @@ const CreateUserDialog = (props: {
     >
       <form
         id="create-user"
+        noValidate
         class={css({ display: "flex", flexDirection: "column", gap: "4" })}
-        onSubmit={(event) => {
-          event.preventDefault()
-          create.mutate()
-        }}
+        onSubmit={form.submit}
       >
-        <TextField label="Name" required value={name()} onValueChange={setName} />
-        <TextField label="Email" type="email" required value={email()} onValueChange={setEmail} />
+        <TextField label="Name" required {...form.field("name")} />
+        <TextField label="Email" type="email" required {...form.field("email")} />
         <TextField
           label="Initial password"
           type="password"
           autocomplete="new-password"
           required
           helperText="At least 8 characters. Share it securely."
-          value={password()}
-          onValueChange={setPassword}
+          {...form.field("password")}
         />
         <div>
           <div class={css({ fontSize: "sm", fontWeight: "medium", mb: "2" })}>Roles</div>
-          <RolePicker roles={props.roles} value={roles()} onChange={setRoles} />
+          <RolePicker roles={props.roles} value={form.values.roles} onChange={(roles) => form.set("roles", roles)} />
         </div>
+        <Show when={form.error()}>
+          {(error) => (
+            <p role="alert" class={css({ color: "danger.text", fontSize: "sm" })}>
+              {error()}
+            </p>
+          )}
+        </Show>
       </form>
     </Dialog>
   )

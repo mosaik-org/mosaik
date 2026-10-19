@@ -1,4 +1,4 @@
-/** `@mosaik/sdk/solid`: who is signed in and live data, in Solid pages (Core). */
+/** `@mosaik/sdk/solid`: who is signed in, the API (queries, actions), forms and live data, in Solid pages (Core). */
 export { Can, useCan, usePrincipal, useSession } from "@mosaik/auth/web"
 export {
   createEventStream,
@@ -7,4 +7,19 @@ export {
   type EventStreamStatus,
   type QueryClientOptions,
 } from "@mosaik/client/solid"
-export { createDebounced, useNow } from "@mosaik/web-kit"
+export {
+  type Action,
+  type ActionOptions,
+  type ContractApi,
+  createApi,
+  createDebounced,
+  createForm,
+  type EndpointApi,
+  type FieldBinding,
+  type Form,
+  type FormOptions,
+  type GroupApi,
+  type Keyed,
+  useAction,
+  useNow,
+} from "@mosaik/web-kit"

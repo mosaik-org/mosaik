@@ -1,8 +1,19 @@
 export { AccessDenied } from "./AccessDenied"
 export { AppLayout, type AppLayoutProps } from "./AppLayout"
+export {
+  type Action,
+  type ActionOptions,
+  type ContractApi,
+  createApi,
+  type EndpointApi,
+  type GroupApi,
+  type Keyed,
+  useAction,
+} from "./api"
 export { defineWebApp, type WebApp } from "./app"
 export * from "./commands"
 export { Freshness, type FreshnessProps, type FreshnessQuery, QueryFreshness } from "./Freshness"
+export { createForm, type FieldBinding, type Form, type FormOptions } from "./form"
 export { type FreshnessState, freshnessState } from "./freshness-state"
 export { bestScore, fuzzyScore } from "./fuzzy"
 export { isChunkLoadError, withTimeout } from "./loading"

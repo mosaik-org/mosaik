@@ -88,3 +88,12 @@ export class SalesSummary extends Schema.Class<SalesSummary>("@mosaik/sales/Sale
   daily: Schema.Array(DailyRevenue),
   byRegion: Schema.Array(RegionRevenue),
 }) {}
+
+/** Why an order is refunded; the refund dialog checks it with the same Schema as the API. */
+export class Refund extends Schema.Class<Refund>("@mosaik/sales/Refund")({
+  reason: Schema.String.check(
+    Schema.isTrimmed({ message: "No spaces around it" }),
+    Schema.isMinLength(1, { message: "Say why the order is refunded" }),
+    Schema.isMaxLength(500),
+  ),
+}) {}

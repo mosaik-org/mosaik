@@ -9,7 +9,7 @@ export default defineSearchProvider({
   group: "Orders",
   permission: sales.accessPermission,
   search: async (query) => {
-    const page = await salesApi((client) => client.orders.list({ query: { search: query, pageSize: 5 } }))
+    const page = await salesApi.orders.list.call({ query: { search: query, pageSize: 5 } })
     return page.rows.map((order) => ({
       id: String(order.id),
       title: `${order.number} · ${order.customer}`,

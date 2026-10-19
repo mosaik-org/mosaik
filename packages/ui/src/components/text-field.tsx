@@ -7,6 +7,8 @@ export interface TextFieldProps {
   label: string
   value: string
   onValueChange: (value: string) => void
+  /** When focus leaves the field (forms show its error from then on). */
+  onBlur?: () => void
   type?: string
   placeholder?: string
   helperText?: string
@@ -50,6 +52,7 @@ export function TextField(props: TextFieldProps) {
             maxLength={merged.maxLength}
             list={merged.suggestions === undefined ? undefined : listId}
             onInput={(event) => merged.onValueChange(event.currentTarget.value)}
+            onBlur={() => merged.onBlur?.()}
           />
         }
       >
@@ -60,6 +63,7 @@ export function TextField(props: TextFieldProps) {
           placeholder={merged.placeholder}
           maxLength={merged.maxLength}
           onInput={(event) => merged.onValueChange(event.currentTarget.value)}
+          onBlur={() => merged.onBlur?.()}
         />
       </Show>
       <Show when={merged.suggestions}>

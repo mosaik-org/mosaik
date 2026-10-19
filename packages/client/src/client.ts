@@ -14,7 +14,7 @@ export type ApiClient<Groups extends HttpApiGroup.Constraint> = <A, E>(
 ) => Promise<A>
 
 /** Browser APIs authenticate with the session cookie, so no client middleware may be required. */
-type BrowserApi<Id extends string, Groups extends HttpApiGroup.Constraint> = HttpApi.HttpApi<Id, Groups> &
+export type BrowserApi<Id extends string, Groups extends HttpApiGroup.Constraint> = HttpApi.HttpApi<Id, Groups> &
   ([HttpApiGroup.MiddlewareClient<Groups>] extends [never] ? unknown : "This API requires client middleware")
 
 /**

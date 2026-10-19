@@ -1,7 +1,7 @@
 import { admin } from "@mosaik/auth/contract"
 import type { DeliveryStatus } from "@mosaik/notifications/contract"
 import { infiniteQueryOptions, queryOptions } from "@tanstack/solid-query"
-import { adminApi, notificationsApi } from "../api"
+import { adminApi, administration, notificationsApi } from "../api"
 
 export const adminKeys = {
   all: [admin.id] as const,
@@ -16,11 +16,10 @@ export const adminKeys = {
     [admin.id, "notifications", "deliveries", status ?? "all"] as const,
 }
 
-export const usersQuery = () =>
-  queryOptions({ queryKey: adminKeys.users, queryFn: () => adminApi((client) => client.users.list()) })
+// Keyed by the contract (`["admin", "users", "list"]`): under `adminKeys.users`, so invalidating that refetches it.
+export const usersQuery = () => administration.users.list.query()
 
-export const rolesQuery = () =>
-  queryOptions({ queryKey: adminKeys.roles, queryFn: () => adminApi((client) => client.roles.list()) })
+export const rolesQuery = () => administration.roles.list.query()
 
 export const catalogQuery = () =>
   queryOptions({ queryKey: adminKeys.catalog, queryFn: () => adminApi((client) => client.catalog.list()) })

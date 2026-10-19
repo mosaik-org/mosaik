@@ -237,25 +237,22 @@ export default defineWebApp({
 })
 `,
 
-  "web/api.ts": `import { makeApiClient } from "@mosaik/sdk/client"
+  "web/api.ts": `import { createApi } from "@mosaik/sdk/solid"
 import { Api } from "../api"
 
-export const api = makeApiClient(Api)
+/** The API for the pages: queries keyed by the contract (\`api.hello.get.query()\`), and calls (\`useAction\`). */
+export const api = createApi(Api)
 `,
 
-  "web/pages/home.tsx": `import { errorMessage } from "@mosaik/sdk/client"
-import { css } from "@mosaik/sdk/css"
-import { Button, Card, QueryBoundary, ${t.database ? "Stat, " : ""}toast } from "@mosaik/sdk/ui"
-import { useMutation, useQuery } from "@tanstack/solid-query"
+  "web/pages/home.tsx": `import { css } from "@mosaik/sdk/css"
+import { useAction } from "@mosaik/sdk/solid"
+import { Button, Card, QueryBoundary${t.database ? ", Stat" : ""} } from "@mosaik/sdk/ui"
+import { useQuery } from "@tanstack/solid-query"
 import { api } from "../api"
 
 export default function Home() {
-  const hello = useQuery(() => ({ queryKey: ["${t.id}", "hello"], queryFn: () => api((client) => client.hello.get()) }))
-  const notify = useMutation(() => ({
-    mutationFn: () => api((client) => client.hello.notify()),
-    onSuccess: () => toast.success("Sent", "Check the bell"),
-    onError: (error: unknown) => toast.error("Could not notify you", errorMessage(error)),
-  }))
+  const hello = useQuery(() => api.hello.get.query())
+  const notify = useAction(api.hello.notify, { success: "Sent: check the bell", failure: "Could not notify you" })
 
   return (
     <QueryBoundary query={hello}>
@@ -265,7 +262,7 @@ export default function Home() {
             <p class={css({ fontSize: "2xl", fontWeight: "semibold" })}>{data().message}</p>
             <p class={css({ color: "fg.muted", fontSize: "sm" })}>${t.name} {data().version}</p>
             <div>
-              <Button loading={notify.isPending} onClick={() => notify.mutate()}>
+              <Button loading={notify.pending()} onClick={() => void notify.run()}>
                 Notify me
               </Button>
             </div>
