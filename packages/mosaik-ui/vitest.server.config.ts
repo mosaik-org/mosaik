@@ -15,7 +15,7 @@ export default defineConfig({
     name: "mosaik-ui-server",
     root: import.meta.dirname,
     environment: "node",
-    include: ["test/**/*.server.test.tsx"],
+    include: ["test/**/*.server.test.{ts,tsx}"],
     server: { deps: { inline: [/@ark-ui/, /solid-js/] } },
   },
 })

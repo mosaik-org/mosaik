@@ -45,6 +45,11 @@ export const menu = defineSlotRecipe({
       _disabled: {
         layerStyle: "disabled",
       },
+      // An item that destroys something (`data-danger`).
+      "&[data-danger]": {
+        color: "danger.plain.fg",
+        _highlighted: { bg: "danger.subtle.bg" },
+      },
     },
     trigger: {
       _focusVisible: {

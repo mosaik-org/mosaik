@@ -10,7 +10,7 @@ export type RootProps = ComponentProps<typeof Root>
 export const Root = withRootProvider(Dialog.Root, {
   defaultProps: () => ({ unmountOnExit: true, lazyMount: true }),
 })
-export const RootProvider = withRootProvider(Dialog.Root, {
+export const RootProvider = withRootProvider(Dialog.RootProvider, {
   defaultProps: () => ({ unmountOnExit: true, lazyMount: true }),
 })
 export const Backdrop = withContext(Dialog.Backdrop, "backdrop")

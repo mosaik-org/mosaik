@@ -2,13 +2,13 @@ import { Toaster as ArkToaster, createToaster, Toast, useToastContext } from "@a
 import { Show } from "solid-js"
 import { Portal } from "solid-js/web"
 import { createSlotRecipeContext, Stack, styled } from "../../styled-system/jsx"
-import { toast } from "../../styled-system/recipes"
+import { toast as toastRecipe } from "../../styled-system/recipes"
 import { CloseButton } from "./close-button"
 import { Icon, type IconProps } from "./icon"
 import { CheckCircleIcon, CircleAlertIcon, CircleXIcon } from "./icons"
 import { Spinner } from "./spinner"
 
-const { withProvider, withContext } = createSlotRecipeContext(toast)
+const { withProvider, withContext } = createSlotRecipeContext(toastRecipe)
 
 const Root = withProvider(Toast.Root, "root")
 const Title = withContext(Toast.Title, "title")
@@ -77,4 +77,15 @@ export const Toaster = () => {
       </StyledToaster>
     </Portal>
   )
+}
+
+/**
+ * Shows a toast in the `Toaster`: `toast.success("Saved")`, `toast.error("Could not save", reason)`.
+ * `toaster` takes everything else (actions, durations, promises).
+ */
+export const toast = {
+  success: (title: string, description?: string) => toaster.create({ type: "success", title, description }),
+  error: (title: string, description?: string) => toaster.create({ type: "error", title, description }),
+  warning: (title: string, description?: string) => toaster.create({ type: "warning", title, description }),
+  info: (title: string, description?: string) => toaster.create({ type: "info", title, description }),
 }

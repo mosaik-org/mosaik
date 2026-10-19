@@ -17,6 +17,7 @@ import { datePicker } from "./date-picker"
 import { dialog } from "./dialog"
 import { drawer } from "./drawer"
 import { editable } from "./editable"
+import { emptyState } from "./empty-state"
 import { field } from "./field"
 import { fieldset } from "./fieldset"
 import { fileUpload } from "./file-upload"
@@ -32,6 +33,7 @@ import { link } from "./link"
 import { listbox } from "./listbox"
 import { menu } from "./menu"
 import { numberInput } from "./number-input"
+import { pageHeader } from "./page-header"
 import { pagination } from "./pagination"
 import { passwordInput } from "./password-input"
 import { pinInput } from "./pin-input"
@@ -47,6 +49,7 @@ import { skeleton } from "./skeleton"
 import { slider } from "./slider"
 import { spinner } from "./spinner"
 import { splitter } from "./splitter"
+import { stat } from "./stat"
 import { steps } from "./steps"
 import { switchRecipe } from "./switch"
 import { table } from "./table"
@@ -77,6 +80,9 @@ export const recipes = {
 }
 
 export const slotRecipes = {
+  emptyState,
+  pageHeader,
+  stat,
   accordion,
   alert,
   avatar,

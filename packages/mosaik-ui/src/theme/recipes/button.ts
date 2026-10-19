@@ -43,6 +43,8 @@ export const button = defineRecipe({
         },
       },
       surface: {
+        // Secondary actions are neutral; `colorPalette` still picks another.
+        colorPalette: "gray",
         bg: "colorPalette.surface.bg",
         borderWidth: "1px",
         borderColor: "colorPalette.surface.border",
@@ -71,6 +73,7 @@ export const button = defineRecipe({
         },
       },
       outline: {
+        colorPalette: "gray",
         borderWidth: "1px",
         borderColor: "colorPalette.outline.border",
         color: "colorPalette.outline.fg",
@@ -85,6 +88,7 @@ export const button = defineRecipe({
         },
       },
       plain: {
+        colorPalette: "gray",
         color: "colorPalette.plain.fg",
         _hover: {
           bg: "colorPalette.plain.bg.hover",

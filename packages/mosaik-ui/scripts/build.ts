@@ -105,7 +105,7 @@ await Bun.write(
       exports: {
         ".": {
           types: "./dist/types/src/index.d.ts",
-          solid: "./dist/source/src/index.jsx",
+          solid: "./dist/source/src/index.js",
           node: "./dist/server/src/index.js",
           browser: "./dist/dom/src/index.js",
           default: "./dist/dom/src/index.js",
@@ -138,6 +138,16 @@ await Bun.write(
   )}\n`,
 )
 for (const file of ["README.md", "LICENSE"]) await cp(join(PACKAGE, file), join(STAGE, file))
+
+// Every file the exports name exists (a wrong one only shows in an app, as an unresolvable import).
+const published = await Bun.file(join(STAGE, "package.json")).json()
+const targets = (value: unknown): Array<string> =>
+  typeof value === "string" ? [value] : Object.values(value as Record<string, unknown>).flatMap(targets)
+for (const [entry, value] of Object.entries(published.exports as Record<string, unknown>)) {
+  for (const target of targets(value).filter((path) => !path.includes("*"))) {
+    if (!(await Bun.file(join(STAGE, target)).exists())) throw new Error(`exports["${entry}"]: ${target} is missing`)
+  }
+}
 
 await $`bun pm pack --quiet --destination ${DIST}`.cwd(STAGE)
 const tarball = (await readdir(DIST)).find((file) => file.endsWith(".tgz"))

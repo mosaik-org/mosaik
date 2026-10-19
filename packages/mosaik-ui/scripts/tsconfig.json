@@ -1,4 +1,10 @@
 {
   "extends": "../../../tsconfig.bun.json",
-  "include": [".", "../vitest.config.ts", "../vitest.server.config.ts", "../panda.config.ts"]
+  "include": [
+    ".",
+    "../vitest.config.ts",
+    "../vitest.server.config.ts",
+    "../panda.config.ts",
+    "../test/stylesheet.server.test.ts"
+  ]
 }

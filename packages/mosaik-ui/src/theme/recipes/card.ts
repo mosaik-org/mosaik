@@ -23,6 +23,8 @@ export const card = defineSlotRecipe({
       flexDirection: "column",
       pb: "6",
       px: "6",
+      // Without a header above it, the body pads its own top.
+      "&:first-child": { pt: "6" },
     },
     footer: {
       display: "flex",

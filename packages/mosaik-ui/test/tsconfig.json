@@ -7,5 +7,7 @@
       "styled-system/*": ["../styled-system/*"]
     }
   },
-  "include": [".", "../src", "../styled-system", "../catalog/examples", "../catalog/filler.ts"]
+  "include": [".", "../src", "../styled-system", "../catalog/examples", "../catalog/filler.ts"],
+  // Runs Panda on Node: typechecked with the scripts (scripts/tsconfig.json).
+  "exclude": ["stylesheet.server.test.ts"]
 }

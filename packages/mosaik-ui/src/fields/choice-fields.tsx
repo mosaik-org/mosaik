@@ -18,22 +18,24 @@ import * as Switch from "../components/switch"
 import { FIELD_PROPS, FIELD_PROPS_BESIDE, type FieldProps, FormField, isInvalid } from "./form-field"
 
 /** One choice: what people read and the value the field gives. A string is both. */
-export interface Option {
+export interface Option<T extends string = string> {
   readonly label: string
-  readonly value: string
+  readonly value: T
   readonly disabled?: boolean
 }
 
-export type Options = ReadonlyArray<Option | string>
+/** The choices; a union of strings (`"open" | "closed"`) types the value the field gives. */
+export type Options<T extends string = string> = ReadonlyArray<Option<T> | T>
 
-const toOption = (item: Option | string): Option => (typeof item === "string" ? { label: item, value: item } : item)
+const toOption = <T extends string>(item: Option<T> | T): Option<T> =>
+  typeof item === "string" ? { label: item, value: item } : item
 
 /** The value contract of a single choice: the chosen value, `null` for none. */
-interface ChoiceValue {
-  readonly items: Options
-  readonly value?: string | null
-  readonly defaultValue?: string | null
-  readonly onValueChange?: (value: string | null) => void
+interface ChoiceValue<T extends string> {
+  readonly items: Options<T>
+  readonly value?: T | null
+  readonly defaultValue?: T | null
+  readonly onValueChange?: (value: T | null) => void
   readonly onBlur?: (event: FocusEvent) => void
 }
 
@@ -55,16 +57,28 @@ const Layer = (props: { inline?: boolean; children: JSX.Element }) => (
   </Show>
 )
 
-export interface SelectFieldProps extends FieldProps, ChoiceValue, Popup, SelectVariantProps {
+export interface SelectFieldProps<T extends string = string>
+  extends FieldProps,
+    ChoiceValue<T>,
+    Popup,
+    SelectVariantProps {
   /** Shows a button that clears the choice. */
   readonly clearable?: boolean
+  /** The name of a select without a visible `label`, such as a filter in a toolbar. */
+  readonly "aria-label"?: string
 }
 
 /** A labeled dropdown of a few known choices: `<SelectField label="Status" items={["Open", "Closed"]} />`. */
-export const SelectField = (props: SelectFieldProps) => {
-  const [field, local, rest] = splitProps(props, FIELD_PROPS, [...CHOICE_VALUE, "placeholder", "inline", "clearable"])
+export const SelectField = <T extends string = string>(props: SelectFieldProps<T>) => {
+  const [field, local, rest] = splitProps(props, FIELD_PROPS, [
+    ...CHOICE_VALUE,
+    "placeholder",
+    "inline",
+    "clearable",
+    "aria-label",
+  ])
   const collection = createMemo(() =>
-    createListCollection<Option>({
+    createListCollection<Option<T>>({
       items: local.items.map(toOption),
       itemToString: (item) => item.label,
       itemToValue: (item) => item.value,
@@ -78,11 +92,11 @@ export const SelectField = (props: SelectFieldProps) => {
         name={local.name}
         value={asArray(local.value)}
         defaultValue={asArray(local.defaultValue)}
-        onValueChange={(details) => local.onValueChange?.(details.value[0] ?? null)}
+        onValueChange={(details) => local.onValueChange?.((details.value[0] as T | undefined) ?? null)}
         {...rest}
       >
         <Select.Control>
-          <Select.Trigger onBlur={(event) => local.onBlur?.(event)}>
+          <Select.Trigger aria-label={local["aria-label"]} onBlur={(event) => local.onBlur?.(event)}>
             <Select.ValueText placeholder={local.placeholder} />
             <Select.IndicatorGroup>
               <Select.Indicator />
@@ -112,7 +126,11 @@ export const SelectField = (props: SelectFieldProps) => {
   )
 }
 
-export interface ComboboxFieldProps extends FieldProps, ChoiceValue, Popup, ComboboxVariantProps {
+export interface ComboboxFieldProps<T extends string = string>
+  extends FieldProps,
+    ChoiceValue<T>,
+    Popup,
+    ComboboxVariantProps {
   /** Shown when nothing matches what was typed. */
   readonly emptyText?: JSX.Element
 }
@@ -121,10 +139,10 @@ export interface ComboboxFieldProps extends FieldProps, ChoiceValue, Popup, Comb
  * A labeled input that filters many choices as people type (by label, ignoring case and accents).
  * For choices fetched as people type, compose `Combobox` parts.
  */
-export const ComboboxField = (props: ComboboxFieldProps) => {
+export const ComboboxField = <T extends string = string>(props: ComboboxFieldProps<T>) => {
   const [field, local, rest] = splitProps(props, FIELD_PROPS, [...CHOICE_VALUE, "placeholder", "inline", "emptyText"])
   const filters = useFilter({ sensitivity: "base" })
-  const { collection, filter, set } = useListCollection<Option>({
+  const { collection, filter, set } = useListCollection<Option<T>>({
     initialItems: local.items.map(toOption),
     itemToString: (item) => item.label,
     itemToValue: (item) => item.value,
@@ -145,7 +163,7 @@ export const ComboboxField = (props: ComboboxFieldProps) => {
         name={local.name}
         value={asArray(local.value)}
         defaultValue={asArray(local.defaultValue)}
-        onValueChange={(details) => local.onValueChange?.(details.value[0] ?? null)}
+        onValueChange={(details) => local.onValueChange?.((details.value[0] as T | undefined) ?? null)}
         onInputValueChange={(details) => filter(details.inputValue)}
         {...rest}
       >
@@ -176,15 +194,15 @@ export const ComboboxField = (props: ComboboxFieldProps) => {
   )
 }
 
-export interface RadioGroupFieldProps
+export interface RadioGroupFieldProps<T extends string = string>
   extends Omit<FieldProps, "readOnly">,
-    Omit<ChoiceValue, "onBlur">,
+    Omit<ChoiceValue<T>, "onBlur">,
     RadioGroupVariantProps {
   readonly orientation?: "horizontal" | "vertical"
 }
 
 /** A labeled set of radio buttons, for a few choices people should see at once. */
-export const RadioGroupField = (props: RadioGroupFieldProps) => {
+export const RadioGroupField = <T extends string = string>(props: RadioGroupFieldProps<T>) => {
   const [local, rest] = splitProps(props, [
     ...CHOICE_VALUE.filter((key) => key !== "onBlur"),
     "label",
@@ -206,7 +224,7 @@ export const RadioGroupField = (props: RadioGroupFieldProps) => {
         name={local.name}
         value={local.value}
         defaultValue={local.defaultValue}
-        onValueChange={(details) => local.onValueChange?.(details.value)}
+        onValueChange={(details) => local.onValueChange?.(details.value as T | null)}
         disabled={local.disabled}
         {...rest}
       >

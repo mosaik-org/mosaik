@@ -8,6 +8,7 @@ import { globalCss } from "./global-css"
 import { keyframes } from "./keyframes"
 import { layerStyles } from "./layer-styles"
 import { recipes, slotRecipes } from "./recipes"
+import { staticCss } from "./static-css"
 import { textStyles } from "./text-styles"
 import { colors } from "./tokens/colors"
 import { durations } from "./tokens/durations"
@@ -16,6 +17,13 @@ import { zIndex } from "./tokens/z-index"
 
 export { alias, type PaletteName, palettes, type Roles, roleNames } from "./colors"
 
+/**
+ * The prefix of the library's class names and CSS variables (`mk-button`, `--mk-colors-...`). A
+ * Panda build that compiles the library's styles from `createPreset` sets it too, so its CSS
+ * matches the class names the components write.
+ */
+export const prefix = "mk"
+
 /** The corner radius of controls (`l2`); smaller (`l1`) and larger (`l3`) parts follow one step away. */
 export type Radius = "none" | "xs" | "sm" | "md" | "lg" | "xl"
 
@@ -23,6 +31,12 @@ const RADII: ReadonlyArray<Radius> = ["none", "xs", "sm", "md", "lg", "xl"]
 
 export interface ThemeOptions extends Partial<Roles> {
   readonly radius?: Radius
+  /**
+   * Compile every recipe, palette and the components' own styles, used or not (the default): a
+   * build that makes the library's stylesheet. `false` for a build that styles only its own code,
+   * on a page that loads the library's stylesheet already.
+   */
+  readonly staticCss?: boolean
 }
 
 /** Panda's default scales (spacing, sizes, fonts, ...) without its colors: the palettes replace them. */
@@ -35,7 +49,8 @@ const scales = { ...pandaPreset, theme: { ...pandaPreset.theme, tokens: pandaTok
  * `createPreset` is for building a themed copy of the library's stylesheet.
  */
 export const createPreset = (options: ThemeOptions = {}): Preset => {
-  const roles = { ...defaultRoles, ...options }
+  const { radius: _radius, staticCss: _static, ...chosen } = options
+  const roles = { ...defaultRoles, ...chosen }
   const radius = RADII.indexOf(options.radius ?? "sm")
   const radiusAt = (offset: number) => `{radii.${RADII[Math.max(0, Math.min(RADII.length - 1, radius + offset))]}}`
   return definePreset({
@@ -43,6 +58,7 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
     presets: [basePreset, scales],
     globalCss,
     conditions,
+    staticCss: options.staticCss === false ? {} : staticCss,
     theme: {
       extend: {
         animationStyles,

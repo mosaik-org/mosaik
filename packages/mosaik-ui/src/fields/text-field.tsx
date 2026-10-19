@@ -1,4 +1,4 @@
-import { type JSX, Show, splitProps } from "solid-js"
+import { createUniqueId, For, type JSX, Show, splitProps } from "solid-js"
 import type { InputVariantProps, TextareaVariantProps } from "../../styled-system/recipes"
 import { Input, type InputProps } from "../components/input"
 import { InputGroup } from "../components/input-group"
@@ -15,16 +15,32 @@ interface TextValue {
   readonly onBlur?: (event: FocusEvent) => void
   readonly placeholder?: string
   readonly autocomplete?: JSX.InputHTMLAttributes<HTMLInputElement>["autocomplete"]
+  /** The most characters people can type. */
+  readonly maxLength?: number
 }
 
-const TEXT_VALUE = ["value", "defaultValue", "onValueChange", "onBlur", "placeholder", "autocomplete", "name"] as const
+const TEXT_VALUE = [
+  "value",
+  "defaultValue",
+  "onValueChange",
+  "onBlur",
+  "placeholder",
+  "autocomplete",
+  "name",
+  "maxLength",
+] as const
 
 export interface TextFieldProps extends FieldProps, TextValue, InputVariantProps {
-  readonly type?: "text" | "email" | "url" | "tel" | "search"
+  /** `password` hides what is typed; `PasswordField` adds a button that shows it. */
+  readonly type?: "text" | "email" | "url" | "tel" | "search" | "password"
   /** Inside the input before the text, such as an icon. */
   readonly startElement?: JSX.Element
   /** Inside the input after the text, such as a unit. */
   readonly endElement?: JSX.Element
+  /** Values to offer as people type (the browser's own list); any other text is accepted too. */
+  readonly suggestions?: ReadonlyArray<string>
+  /** The name of an input without a visible `label`, such as a search box. */
+  readonly "aria-label"?: string
   /** Anything else for the `<input>` (`maxLength`, `inputMode`, `ref`, ...). */
   readonly inputProps?: InputProps
 }
@@ -37,14 +53,18 @@ export const TextField = (props: TextFieldProps) => {
     "startElement",
     "endElement",
     "inputProps",
+    "suggestions",
   ])
+  const listId = createUniqueId()
   const input = () => (
     <Input
       type={local.type ?? "text"}
       name={local.name}
       value={local.value ?? local.defaultValue ?? ""}
       placeholder={local.placeholder}
+      maxLength={local.maxLength}
       autocomplete={local.autocomplete}
+      list={local.suggestions ? listId : undefined}
       onInput={(event) => local.onValueChange?.(event.currentTarget.value)}
       onBlur={(event) => local.onBlur?.(event)}
       {...rest}
@@ -57,6 +77,13 @@ export const TextField = (props: TextFieldProps) => {
         <InputGroup startElement={local.startElement} endElement={local.endElement}>
           {input()}
         </InputGroup>
+      </Show>
+      <Show when={local.suggestions}>
+        {(suggestions) => (
+          <datalist id={listId}>
+            <For each={suggestions()}>{(suggestion) => <option value={suggestion} />}</For>
+          </datalist>
+        )}
       </Show>
     </FormField>
   )
@@ -83,6 +110,7 @@ export const TextareaField = (props: TextareaFieldProps) => {
         name={local.name}
         value={local.value ?? local.defaultValue ?? ""}
         placeholder={local.placeholder}
+        maxLength={local.maxLength}
         rows={local.rows}
         autoresize={local.autoresize}
         onInput={(event) => local.onValueChange?.(event.currentTarget.value)}
@@ -121,6 +149,7 @@ export const PasswordField = (props: PasswordFieldProps) => {
             name={local.name}
             value={local.value ?? local.defaultValue ?? ""}
             placeholder={local.placeholder}
+            maxLength={local.maxLength}
             onInput={(event) => local.onValueChange?.(event.currentTarget.value)}
             onBlur={(event) => local.onBlur?.(event)}
             {...rest}
