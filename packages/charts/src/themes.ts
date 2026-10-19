@@ -1,51 +1,68 @@
-export const chartPalette = ["#6366f1", "#22c55e", "#f59e0b", "#ef4444", "#06b6d4", "#a855f7"]
+import { token } from "@mosaik/styled-system/tokens"
 
-interface ThemeColors {
-  text: string
-  mutedText: string
-  axisLine: string
-  surface: string
-  shadow: string
-}
+/** A token of the theme, by path (`colors.fg.muted`). */
+type Token = Parameters<typeof token.var>[0]
 
-function createTheme(colors: ThemeColors) {
+/**
+ * The series' colors, in order: the theme's `chart.1`…`chart.6`. For what goes with a series outside
+ * the chart (a legend of the app's own, a stat), as `token.var(CHART_COLORS[i])` or `css({ color: "chart.1" })`.
+ */
+export const CHART_COLORS = [
+  "colors.chart.1",
+  "colors.chart.2",
+  "colors.chart.3",
+  "colors.chart.4",
+  "colors.chart.5",
+  "colors.chart.6",
+] as const satisfies ReadonlyArray<Token>
+
+/** A color or the font of the theme, as the page has it where the chart is drawn. */
+export type ReadToken = (path: Extract<Token, `colors.${string}` | "fonts.body">) => string
+
+/**
+ * The chart's ECharts theme, from the page's theme. Charts draw on a canvas, where CSS variables
+ * mean nothing, so every color is read as a value (`resolveTokens`); the tooltip is HTML in the
+ * page, so its shadow and corners are the variables themselves.
+ */
+export const chartTheme = (read: ReadToken) => {
+  const text = read("colors.fg.default")
+  const mutedText = read("colors.fg.muted")
+  const line = read("colors.border")
+  const surface = read("colors.gray.surface.bg")
   return {
-    color: chartPalette,
+    color: CHART_COLORS.map(read),
     backgroundColor: "transparent",
-    textStyle: {
-      color: colors.text,
-      fontFamily: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif",
-    },
+    textStyle: { color: text, fontFamily: read("fonts.body") },
     legend: {
-      textStyle: { color: colors.mutedText, fontSize: 12 },
-      pageTextStyle: { color: colors.mutedText },
-      pageIconColor: colors.mutedText,
-      inactiveColor: colors.axisLine,
+      textStyle: { color: mutedText, fontSize: 12 },
+      pageTextStyle: { color: mutedText },
+      pageIconColor: mutedText,
+      inactiveColor: line,
     },
     tooltip: {
-      backgroundColor: colors.surface,
-      borderColor: colors.axisLine,
+      backgroundColor: surface,
+      borderColor: line,
       borderWidth: 1,
       padding: [8, 12],
-      textStyle: { color: colors.text, fontSize: 12 },
-      extraCssText: `border-radius: 8px; box-shadow: ${colors.shadow};`,
+      textStyle: { color: text, fontSize: 12 },
+      extraCssText: `border-radius: ${token.var("radii.l2")}; box-shadow: ${token.var("shadows.lg")};`,
       axisPointer: {
-        lineStyle: { color: colors.mutedText, type: "dashed" },
-        crossStyle: { color: colors.mutedText },
-        shadowStyle: { color: "rgba(150, 150, 150, 0.08)" },
+        lineStyle: { color: mutedText, type: "dashed" },
+        crossStyle: { color: mutedText },
+        shadowStyle: { color: read("colors.gray.a3") },
       },
     },
     categoryAxis: {
-      axisLine: { show: true, lineStyle: { color: colors.axisLine } },
+      axisLine: { show: true, lineStyle: { color: line } },
       axisTick: { show: false },
-      axisLabel: { color: colors.mutedText, fontSize: 11 },
-      splitLine: { show: false, lineStyle: { color: colors.axisLine } },
+      axisLabel: { color: mutedText, fontSize: 11 },
+      splitLine: { show: false, lineStyle: { color: line } },
     },
     valueAxis: {
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: colors.mutedText, fontSize: 11 },
-      splitLine: { show: true, lineStyle: { color: colors.axisLine } },
+      axisLabel: { color: mutedText, fontSize: 11 },
+      splitLine: { show: true, lineStyle: { color: line } },
     },
     line: {
       symbol: "circle",
@@ -57,23 +74,27 @@ function createTheme(colors: ThemeColors) {
       itemStyle: { borderRadius: 4 },
     },
     pie: {
-      itemStyle: { borderColor: colors.surface, borderWidth: 2 },
+      itemStyle: { borderColor: surface, borderWidth: 2 },
     },
   }
 }
 
-export const lightTheme = createTheme({
-  text: "#171717",
-  mutedText: "#525252",
-  axisLine: "#e5e5e5",
-  surface: "#ffffff",
-  shadow: "0 10px 30px -10px rgba(0, 0, 0, 0.25)",
-})
-
-export const darkTheme = createTheme({
-  text: "#fafafa",
-  mutedText: "#a3a3a3",
-  axisLine: "#262626",
-  surface: "#171717",
-  shadow: "0 10px 30px -10px rgba(0, 0, 0, 0.8)",
-})
+/**
+ * Reads the theme's tokens as values where `element` is: its dark mode, a theme set at runtime,
+ * an override on a parent. A hidden probe lets the browser resolve each variable (`var()` chains
+ * included) to a color the canvas can draw with (`rgb(…)`).
+ */
+export const resolveTokens = <A>(element: HTMLElement, use: (read: ReadToken) => A): A => {
+  const probe = document.createElement("span")
+  probe.style.display = "none"
+  element.append(probe)
+  try {
+    return use((path) => {
+      const property = path.startsWith("fonts.") ? "font-family" : "color"
+      probe.style.setProperty(property, token.var(path))
+      return getComputedStyle(probe).getPropertyValue(property)
+    })
+  } finally {
+    probe.remove()
+  }
+}

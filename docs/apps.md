@@ -209,6 +209,12 @@ A theme set at runtime, dark mode included, reaches them too. In TypeScript, use
 (the variable) rather than `token(...)` (the value at build time) for anything that should follow the
 theme.
 
+Charts (`@mosaik/sdk/charts`) draw on a canvas, where CSS variables mean nothing, so `<Chart>` reads the
+theme's values from the page where it is drawn, and again when the theme changes. Series take the theme's
+`chart.1`…`chart.6` colors in order (the accent first); for something that goes with a series outside the
+chart, such as a legend of the app's own, use the same token: `css({ color: "chart.1" })`, or
+`token.var(CHART_COLORS[i])`.
+
 **The shell's contract.** Some things on a page belong to the shell, not to an app. Apps ask for them
 through `@mosaik/sdk/client`, which works whatever the page is built with:
 - **Toasts:** `toast.success("Saved")`, `toast.error("Could not save", reason)`. They show with the

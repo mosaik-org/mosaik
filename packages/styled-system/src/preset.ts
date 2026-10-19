@@ -13,7 +13,10 @@ export const mosaikUiPreset = createPreset(theme)
 /** The theme's tokens and recipes without compiling them: for a build that styles only its own code. */
 export const mosaikTokensPreset = createPreset({ ...theme, staticCss: false })
 
-/** What Mosaik adds to the library's theme: its fonts and base text size. */
+/**
+ * What Mosaik adds to the library's theme: its fonts, base text size, and the colors of charts'
+ * series (`chart.1`…`chart.6`, in order), on the theme's palettes so dark mode and a theme reach them.
+ */
 export const mosaikPreset = definePreset({
   name: "mosaik",
   globalCss: {
@@ -34,6 +37,17 @@ export const mosaikPreset = definePreset({
         fonts: {
           body: { value: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" },
           mono: { value: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace" },
+        },
+      },
+      semanticTokens: {
+        colors: {
+          // The accent first: a chart with one series is in the theme's color.
+          chart: Object.fromEntries(
+            ["accent", "green", "amber", "red", "teal", "violet"].map((palette, index) => [
+              index + 1,
+              { value: `{colors.${palette}.9}` },
+            ]),
+          ),
         },
       },
     },

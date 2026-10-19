@@ -148,7 +148,7 @@ packages/         The SDK and shared code
   client          Typed browser API client and formatters · solid (query defaults, event streams)
   mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README
   table           DataTable (TanStack Table, client or server-side)
-  charts          ECharts wrapper, themed option builders
+  charts          ECharts wrapper drawing with the theme's tokens (chart.1…6, text, lines), option builders
   web-kit         Mosaik's page pieces: AppLayout, NavTabs, QueryBoundary, AppIcon, the command palette, forms and actions, Toasts
   connectors      Server-side clients for external systems (Jira, SMTP, Slack, Teams)
   styled-system   Mosaik's theme for @mosaik/mosaik-ui, the generated runtime and the kit's stylesheet

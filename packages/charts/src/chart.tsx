@@ -2,8 +2,9 @@ import { onPageThemeChange, type PageTheme, pageTheme } from "@mosaik/client"
 import { Spinner } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import { type EChartsCoreOption, type EChartsType, init } from "echarts/core"
-import { createEffect, createSignal, mergeProps, onCleanup, onMount, Show } from "solid-js"
-import { DARK_THEME, LIGHT_THEME } from "./setup"
+import { createEffect, createSignal, mergeProps, on, onCleanup, onMount, Show } from "solid-js"
+import "./setup"
+import { chartTheme, resolveTokens } from "./themes"
 
 const styles = {
   root: css({ position: "relative", w: "full", minW: "0" }),
@@ -29,23 +30,34 @@ export interface ChartProps {
 
 export function Chart(props: ChartProps) {
   const merged = mergeProps({ height: "320px" }, props)
-  // The page's theme (the shell's, or a standalone page's): charts draw on a canvas, not with CSS.
+  // The page's theme (the shell's, or a standalone page's): charts draw on a canvas, not with CSS, so
+  // they read the theme's values again whenever it changes.
   const [theme, setTheme] = createSignal<PageTheme>(pageTheme())
   onCleanup(onPageThemeChange(setTheme))
   const [chart, setChart] = createSignal<EChartsType>()
   let container!: HTMLDivElement
 
-  onMount(() => {
-    createEffect(() => {
-      const instance = init(container, theme() === "dark" ? DARK_THEME : LIGHT_THEME)
-      setChart(instance)
-      onCleanup(() => {
-        setChart(undefined)
-        instance.dispose()
-      })
-    })
+  // Whether the container is in the page with a size. Solid may build it before attaching it (while
+  // a query loads): the theme cannot be read from a detached element, nor its size measured.
+  const [placed, setPlaced] = createSignal(false)
 
-    const observer = new ResizeObserver(() => chart()?.resize())
+  onMount(() => {
+    createEffect(
+      on([theme, placed], ([, placed]) => {
+        if (!placed) return
+        const instance = init(container, resolveTokens(container, chartTheme))
+        setChart(instance)
+        onCleanup(() => {
+          setChart(undefined)
+          instance.dispose()
+        })
+      }),
+    )
+
+    const observer = new ResizeObserver(() => {
+      if (container.isConnected && container.clientWidth > 0) setPlaced(true)
+      chart()?.resize()
+    })
     observer.observe(container)
     onCleanup(() => observer.disconnect())
   })

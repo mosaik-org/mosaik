@@ -166,6 +166,12 @@ colors.blue.surface.border.hover
 colors.blue.surface.fg
 colors.border
 colors.canvas
+colors.chart.1
+colors.chart.2
+colors.chart.3
+colors.chart.4
+colors.chart.5
+colors.chart.6
 colors.colorPalette
 colors.colorPalette.1
 colors.colorPalette.10
