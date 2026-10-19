@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
 import { css } from "@mosaik/styled-system/css"
@@ -223,9 +224,9 @@ const Visitor = () => {
             <div class={styles.name}>More apps are available after logging in</div>
             <div class={styles.hint}>Sign in with your company account or email.</div>
           </div>
-          <Link to="/login">
+          <a href={signInUrl("/")}>
             <Button>Log in</Button>
-          </Link>
+          </a>
         </div>
       </Card>
     </div>

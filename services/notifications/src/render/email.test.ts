@@ -59,6 +59,14 @@ describe("renderEmail", () => {
     const email = renderEmail({ title: "Report", link: "https://bi.example.com/r/1" }, options)
     expect(email.text).toContain("Open: https://bi.example.com/r/1")
   })
+
+  it("links notifications to the settings page, and messages not", () => {
+    const settingsUrl = "https://mosaik.example.com/api/notifications/preferences"
+    const notification = renderEmail({ title: "Order refunded" }, { ...options, settingsUrl })
+    expect(notification.text).toContain(`Change which notifications you get: ${settingsUrl}`)
+    expect(notification.html).toContain(`href="${settingsUrl}"`)
+    expect(renderEmail({ title: "Invoice" }, options).text).not.toContain("Change which notifications")
+  })
 })
 
 describe("resolveLink", () => {

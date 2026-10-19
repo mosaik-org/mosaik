@@ -1,8 +1,9 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { css } from "@mosaik/styled-system/css"
 import { Avatar, Button, Menu, toast } from "@mosaik/ui"
 import { useQueryClient } from "@tanstack/solid-query"
-import { Link, useNavigate } from "@tanstack/solid-router"
+import { useNavigate } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
 import LogOut from "lucide-solid/icons/log-out"
 import { Show } from "solid-js"
@@ -40,9 +41,9 @@ export const UserMenu = () => {
     <Show
       when={principal().user}
       fallback={
-        <Link to="/login">
+        <a href={signInUrl(`${location.pathname}${location.search}`)}>
           <Button size="sm">Log in</Button>
-        </Link>
+        </a>
       }
     >
       {(user) => (

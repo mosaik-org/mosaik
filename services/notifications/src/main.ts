@@ -1,7 +1,7 @@
 import { AccessControlUsers, InternalAuthLive, InternalClient, TokenVerifier } from "@mosaik/auth/server"
 import { Database } from "@mosaik/db"
 import { NOTIFICATIONS_API_PREFIX, NotificationsApi, NotificationsInternalApi } from "@mosaik/notifications/contract"
-import { runMain, serve } from "@mosaik/server"
+import { CorePages, runMain, serve } from "@mosaik/server"
 import { Layer } from "effect"
 import { FetchHttpClient } from "effect/http"
 import { HttpApiBuilder } from "effect/http-api"
@@ -11,6 +11,7 @@ import * as Worker from "./delivery/Worker"
 import { AdminHandlers } from "./http/Admin"
 import { InboxHandlers } from "./http/Inbox"
 import { MessagesHandlers, NotificationsHandlers } from "./http/Internal"
+import { PreferencesPage } from "./http/Pages"
 import { SettingsHandlers } from "./http/Settings"
 import { Fanout } from "./inbox/Fanout"
 import { Inbox } from "./inbox/Inbox"
@@ -54,13 +55,13 @@ const PublicHttp = HttpApiBuilder.layer(NotificationsApi, {
   openapiPath: `${NOTIFICATIONS_API_PREFIX}/openapi.json`,
 }).pipe(Layer.provide([InboxHandlers, SettingsHandlers, AdminHandlers]))
 
-const Middleware = Layer.mergeAll(InternalAuthLive, AccessControlUsers).pipe(
+const Middleware = Layer.mergeAll(InternalAuthLive, AccessControlUsers, CorePages.layer).pipe(
   Layer.provide(TokenVerifier.layerRemote("notifications")),
 )
 
-const Main = serve(Layer.mergeAll(InternalHttp, PublicHttp), { name: "mosaik-notifications", port: 4001 }).pipe(
-  Layer.provide(Middleware),
-  Layer.provide(Domain),
-)
+const Main = serve(Layer.mergeAll(InternalHttp, PublicHttp, PreferencesPage), {
+  name: "mosaik-notifications",
+  port: 4001,
+}).pipe(Layer.provide(Middleware), Layer.provide(Domain))
 
 runMain(Main)

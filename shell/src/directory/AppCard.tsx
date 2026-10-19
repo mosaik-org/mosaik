@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import type { AnyApp } from "@mosaik/core"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
@@ -112,9 +113,9 @@ export const AppCard = (props: AppCardProps) => {
             )}
           </Match>
           <Match when={true}>
-            <Link to="/login" search={{ redirect: "/directory" }} class={styles.open}>
+            <a href={signInUrl("/directory")} class={styles.open}>
               Log in to open
-            </Link>
+            </a>
           </Match>
         </Switch>
         <Show when={props.activeUsers !== undefined}>

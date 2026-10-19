@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
-import { isUnder } from "./OAuth"
+import { isUnder, localPath } from "./Pages"
 
 describe("isUnder", () => {
   it("accepts the app's address and paths below it", () => {
@@ -15,5 +15,14 @@ describe("isUnder", () => {
     expect(isUnder("https://example.com/notes-evil/cb", "https://example.com/notes")).toBe(false)
     expect(isUnder("https://evil@notes.example.com/cb", "https://notes.example.com")).toBe(false)
     expect(isUnder("not a url", "https://notes.example.com")).toBe(false)
+  })
+})
+
+describe("localPath", () => {
+  it("keeps paths on this origin and refuses anything else", () => {
+    expect(localPath("/admin/users?x=1")).toBe("/admin/users?x=1")
+    expect(localPath("//evil.example/x")).toBe("/")
+    expect(localPath("https://evil.example")).toBe("/")
+    expect(localPath(null, "/console")).toBe("/console")
   })
 })

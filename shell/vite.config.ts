@@ -94,7 +94,6 @@ export default defineConfig({
       routesDirectory: ROUTES,
       generatedRouteTree: resolve(import.meta.dirname, "src/routeTree.gen.ts"),
       virtualRouteConfig: rootRoute("__root.tsx", [
-        route("/login", "login.tsx"),
         layout("app.tsx", [
           index("index.tsx"),
           route("/directory", [index("directory/index.tsx"), route("/$app", "directory/app.tsx")]),

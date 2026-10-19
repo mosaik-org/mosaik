@@ -6,4 +6,14 @@ export * as Live from "./Live"
 export { MessageError, Messages, type SendMessage } from "./Messages"
 export { Notify, NotifyError, type SendNotification } from "./Notify"
 export * as Observability from "./Observability"
+export {
+  type Branding,
+  CorePages,
+  escapeHtml,
+  formOf,
+  isUnder,
+  localPath,
+  type PageOptions,
+  pathOf,
+} from "./Pages"
 export { runMain, type ServeOptions, serve } from "./Server"

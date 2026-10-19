@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, usePrincipal } from "@mosaik/auth/web"
 import { errorMessage } from "@mosaik/client"
 import type { PersonalChannel } from "@mosaik/core"
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_app/notifications/settings")({
   staticData: { title: "Notification settings", keywords: ["email", "slack", "preferences", "mute"] },
   beforeLoad: async ({ context, location }) => {
     const { principal } = await context.queryClient.ensureQueryData(sessionQueryOptions())
-    if (!principal.isAuthenticated) throw redirect({ to: "/login", search: { redirect: location.href } })
+    if (!principal.isAuthenticated) throw redirect({ href: signInUrl(location.href), reloadDocument: true })
   },
   component: SettingsPage,
 })

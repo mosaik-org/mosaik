@@ -1,6 +1,7 @@
 # Operating Mosaik
 
 - [Deployment](#deployment)
+- [Sign-in and Core's pages](#sign-in-and-cores-pages)
 - [Standalone apps](#standalone-apps)
 - [Installing apps](#installing-apps)
 - [Running app images](#running-app-images)
@@ -33,6 +34,17 @@ and it also serves the shell. For Entra ID, register the redirect URI
   `/.well-known/jwks.json`; apps verify tokens against the platform's copy (`/api/platform/v1/jwks.json`).
 - **Observability.** Set `OTEL_EXPORTER_OTLP_ENDPOINT` to export traces, logs and metrics over OTLP.
 
+## Sign-in and Core's pages
+
+- **One sign-in.** Everything signs in on Core's page, `/api/auth/sign-in`: the shell and standalone apps.
+  It offers e-mail and password, and *Sign in with Microsoft* when Entra ID is set up.
+- **Branding.** Core's pages (sign-in, requesting access, notification settings) show `BRAND_NAME`
+  (default `Mosaik`), `BRAND_LOGO_URL` (a square image; without it, the name's first letter) and
+  `BRAND_COLOR` (default `#2563eb`).
+- **For everyone:** *request access* (`/api/platform/request-access/<app>`, where standalone apps send
+  people) and *notification settings* (`/api/notifications/preferences`, linked from every notification
+  e-mail).
+
 ## Standalone apps
 
 A standalone app runs on its own address with its own page and uses Core without the Portal (see
@@ -44,8 +56,8 @@ A standalone app runs on its own address with its own page and uses Core without
    `MOSAIK_PUBLIC_URL` (the app's own public address). It registers that address with Core, and sign-in
    returns only to addresses under it.
 
-People sign in on Core's page (`/api/auth/oauth/sign-in`) with their e-mail and password. Admins manage
-the app's roles, owners and audit log as for any other app.
+People sign in on Core's page, and can ask for access to the app on Core's request page. Admins manage the
+app's roles, owners and audit log as for any other app.
 
 ## Installing apps
 
@@ -109,7 +121,7 @@ Installed apps are added at runtime, with no platform release, from **Administra
   Admins with `admin:users.manage` can do the same for every app. Usage and the category are the Portal's;
   the rest is Core's, and works for standalone apps too (through Core's API).
 - **Access requests.** Someone who can't open an app asks for one of its roles from All apps or the app's
-  page. Its owners are notified, or the admins when it has none; superadmins aren't notified about apps
+  page in the shell, or on Core's request page (standalone apps link to it). Its owners are notified, or the admins when it has none; superadmins aren't notified about apps
   that have owners. *Access requests* in the sidebar lists the requests waiting for the apps someone
   manages. The person is notified of the answer, and a request also closes by itself once they get access
   some other way.

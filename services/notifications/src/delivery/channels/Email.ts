@@ -1,4 +1,5 @@
 import { Smtp } from "@mosaik/connectors/smtp"
+import { NOTIFICATION_SETTINGS_PAGE } from "@mosaik/notifications/contract"
 import { Effect } from "effect"
 import type { SmtpConfig } from "../../NotificationsConfig"
 import { renderEmail } from "../../render/email"
@@ -22,7 +23,12 @@ export const make = Effect.fn("Email.make")(function* (config: SmtpConfig, publi
   const channel: Channel = {
     name: "email",
     send: (delivery) => {
-      const email = renderEmail(delivery.content, { publicUrl, source: delivery.source })
+      const email = renderEmail(delivery.content, {
+        publicUrl,
+        source: delivery.source,
+        settingsUrl:
+          delivery.category === "notification" ? new URL(NOTIFICATION_SETTINGS_PAGE, publicUrl).toString() : undefined,
+      })
       return smtp
         .send({
           to:

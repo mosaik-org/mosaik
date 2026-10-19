@@ -33,7 +33,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 
 | Concern | Core | Portal |
 |---|---|---|
-| Sign-in, sessions, users | auth: Better Auth, a sign-in page of its own, OAuth for standalone apps | the shell's login page |
+| Sign-in, sessions, users | auth: Better Auth, the one sign-in page (everything signs in there), OAuth for standalone apps | — |
 | Permissions, roles, owners, members | auth: the registry and its APIs | the owners' screens on app pages |
 | Access requests | platform: the workflow and its notifications | the request dialog and review screens |
 | Audit, notifications, messages | auth, notifications | the inbox and bell, the admin screens |
@@ -77,13 +77,21 @@ Which apps Core knows comes from two places: its configuration (`CONFIGURED_APPS
 from `INTERNAL_KEY`: built-in apps with a backend, the examples in development, standalone apps) and the
 Portal (apps it installs, with issued keys).
 
+## Core's pages
+
+Rendered by the services themselves and needing no build, so they work in every deployment, for everyone:
+*sign in* (`/api/auth/sign-in`, the only sign-in: e-mail and password, Microsoft through a server-side
+redirect), *request access to an app* (`/api/platform/request-access/<id>`) and *notification settings*
+(`/api/notifications/preferences`, linked from every notification e-mail). They show the company's name,
+logo and colour (`BRAND_NAME`, `BRAND_LOGO_URL`, `BRAND_COLOR`).
+
 ## Standalone apps (headless mode)
 
 A standalone app runs on its own address with its own page. Sign-in uses OAuth 2.0 authorization code (a
 deliberate subset of OpenID Connect, enough for Mosaik's SDKs):
 
 1. The app's backend sends the browser to Core's `/api/auth/oauth/authorize`. Core signs the user in on
-   its own sign-in page if needed, checks that the return address is under the app's registered address,
+   its sign-in page if needed, checks that the return address is under the app's registered address,
    and sends back a one-time code.
 2. The backend exchanges the code at `/api/auth/oauth/token`, authenticated by its app key, for a
    short-lived token (the same kind the gateway issues: the user and their grants in this app) and a
@@ -111,8 +119,9 @@ rewritten to relative paths, so an app sees one package and one version.
 
 - Standalone apps in the Portal's directory: they are registered with Core but the shell lists only apps
   it can mount.
-- A full OpenID Connect provider (discovery, ID tokens, PKCE) for clients other than Mosaik's SDKs, and
-  Microsoft sign-in on Core's own page (it offers e-mail and password; Entra ID works through the shell).
+- A full OpenID Connect provider (discovery, ID tokens, PKCE) for clients other than Mosaik's SDKs.
 - A key per platform service: the services still share `INTERNAL_KEY`.
+- A styled login page in the shell: it signs in on Core's page too, so sign-in is built once. It could get one
+  back if its look matters more than that.
 - Opening the Administration app needs an Administration role: someone with only the Portal's *App
   operator* role reaches the apps pages through one of them.

@@ -95,8 +95,8 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
     the platform streams to the gateway whenever it changes.
 - **Auth service.** Better Auth, roles and grants, the registry of apps with their permissions and roles,
   the audit log and the token signing keys (`/.well-known/jwks.json`). It serves the admin API, streams
-  access changes (Postgres `LISTEN/NOTIFY`) to the gateway and to browsers, and signs people in to
-  standalone apps (OAuth, with a sign-in page of its own).
+  access changes (Postgres `LISTEN/NOTIFY`) to the gateway and to browsers, and serves the one sign-in
+  page everything uses, with OAuth for standalone apps.
 - **Notifications service.** Delivers what apps send: in-app notifications, e-mail (SMTP), Slack and Teams.
   It keeps an outbox, retries failed deliveries, and serves users' inbox and channel settings.
 - **Platform service.** App identities and keys, and the platform API apps call with their key: registering
@@ -116,7 +116,7 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
 ## Repository
 
 ```
-shell/            The web shell: layout, sign-in, directory, app pages, inbox; mounts apps/*/web/routes at /<id>
+shell/            The web shell: layout, directory, app pages, inbox; mounts apps/*/web/routes at /<id>
 services/
   gateway/        Core: reverse proxy, session → token exchange, serves the built shell in production
   auth/           Core: Better Auth, roles and grants, app registry, audit log, admin API, OAuth for standalone apps

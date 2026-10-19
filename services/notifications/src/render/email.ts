@@ -37,13 +37,14 @@ export const renderEmail = (content: Content, options: RenderOptions): RenderedE
   const body = paragraphs(content.body)
   const fields = content.fields ?? []
   const footer = `${footerText(options.source)}. This is an automated message.`
+  const settings = options.settingsUrl
 
   const text = [
     content.title,
     ...body,
     ...(fields.length > 0 ? [fields.map((field) => `${field.label}: ${field.value}`).join("\n")] : []),
     ...(link ? [`${link.label}: ${link.url}`] : []),
-    `-- \n${footer}`,
+    `-- \n${footer}${settings === undefined ? "" : `\nChange which notifications you get: ${settings}`}`,
   ].join("\n\n")
 
   const accent = ACCENT[severity]
@@ -73,7 +74,11 @@ export const renderEmail = (content: Content, options: RenderOptions): RenderedE
 <h1 style="margin:0 0 16px;font-size:20px;line-height:1.3">${escapeHtml(content.title)}</h1>
 ${htmlParagraphs}${htmlFields}${htmlButton}
 </td></tr></table>
-<p style="max-width:600px;margin:16px auto 0;font-size:12px;color:#6b7280">${escapeHtml(footer)}</p>
+<p style="max-width:600px;margin:16px auto 0;font-size:12px;color:#6b7280">${escapeHtml(footer)}${
+    settings === undefined
+      ? ""
+      : ` <a href="${escapeHtml(settings)}" style="color:#6b7280">Change which notifications you get</a>.`
+  }</p>
 </td></tr></table>
 </body></html>`
 

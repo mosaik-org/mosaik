@@ -54,6 +54,7 @@ export interface DeliveryQuery {
 const DeliveryRow = Schema.Struct({
   id: Schema.Number,
   messageId: Schema.Number,
+  category: Schema.Literals(["message", "notification"]),
   source: Schema.String,
   kind: Schema.NullOr(Schema.String),
   channel: Schema.String,
@@ -151,7 +152,7 @@ export class Outbox extends Context.Service<
             FROM due WHERE d.id = due.id
             RETURNING d.id, d.message_id, d.channel, d.recipient, d.recipient_name, d.attempts
           )
-          SELECT c.*, m.source, m.kind, m.content
+          SELECT c.*, m.category, m.source, m.kind, m.content
           FROM claimed c JOIN messages m ON m.id = c.message_id
           ORDER BY c.id
         `,

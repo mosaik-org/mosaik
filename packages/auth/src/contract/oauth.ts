@@ -8,8 +8,6 @@ import { Schema } from "effect"
 export const OAUTH_AUTHORIZE_PATH = "/api/auth/oauth/authorize"
 export const OAUTH_TOKEN_PATH = "/api/auth/oauth/token"
 export const OAUTH_REVOKE_PATH = "/api/auth/oauth/revoke"
-/** Core's own sign-in page, where authorizing sends people who are not signed in. */
-export const OAUTH_SIGN_IN_PATH = "/api/auth/oauth/sign-in"
 
 /**
  * The token endpoint's answer (RFC 6749 §5.1). The access token is the kind the gateway

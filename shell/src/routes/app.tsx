@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
 import { Button } from "@mosaik/ui"
 import { AccessDenied, CommandProvider, type SearchSource } from "@mosaik/web-kit"
@@ -19,16 +20,16 @@ const ShellCommands = () => {
 }
 
 /**
- * Layout for every page except login. Enforces app access centrally, so an
- * app cannot forget it: visitors without access are sent to the login page,
- * logged-in users without the permission see an explanation.
+ * Layout for every page. Enforces app access centrally, so an app cannot forget it:
+ * visitors without access are sent to Core's sign-in page, logged-in users without the
+ * permission see an explanation.
  */
 export const Route = createFileRoute("/_app")({
   beforeLoad: async ({ context, location }) => {
     const { principal } = await context.queryClient.ensureQueryData(sessionQueryOptions())
     const app = appForPath(location.pathname)
     if (app !== undefined && !principal.can(app.accessPermission) && !principal.isAuthenticated) {
-      throw redirect({ to: "/login", search: { redirect: location.href } })
+      throw redirect({ href: signInUrl(location.href), reloadDocument: true })
     }
   },
   component: ShellLayout,

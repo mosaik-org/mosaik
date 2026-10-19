@@ -13,6 +13,7 @@ import { type AnyApp, Principal } from "@mosaik/core"
 import { appKey } from "@mosaik/platform/server"
 import { Config, Effect, Layer, Option, Redacted, Schema } from "effect"
 import { Cookies, Headers, HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
+import { localPath } from "./Pages"
 
 /** Where the app's backend serves sign-in (`/auth/*`) and the session the page reads. */
 export const SIGN_IN_PATH = "/auth/sign-in"
@@ -56,9 +57,6 @@ const makeSealer = (key: Redacted.Redacted<string>) => {
     },
   }
 }
-
-/** A path on this app to return to after signing in: never another site. */
-const localPath = (value: string | null) => (value?.startsWith("/") && !value.startsWith("//") ? value : "/")
 
 /**
  * Standalone mode: the app serves its own page on its own address (`MOSAIK_PUBLIC_URL`) and

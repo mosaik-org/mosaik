@@ -62,6 +62,8 @@ export interface ServicePlan {
 
 const common = (): Record<string, string> => ({
   NODE_ENV: "development",
+  // How Core's own pages (sign-in, requesting access, notification settings) look.
+  ...pick("BRAND_NAME", "BRAND_LOGO_URL", "BRAND_COLOR"),
   PLATFORM_URL,
   // Platform services authenticate each other with it; built-in apps derive their app key from it.
   INTERNAL_KEY: env("INTERNAL_KEY"),

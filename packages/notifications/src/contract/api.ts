@@ -73,6 +73,12 @@ export const inboxLiveUrl = `${NOTIFICATIONS_API_PREFIX}/inbox/live`
 
 // --- Settings ---------------------------------------------------------------------------
 
+/**
+ * Core's page for choosing which notifications someone gets, on which channel (rendered by the
+ * notifications service, so it works without the Portal). Every notification e-mail links to it.
+ */
+export const NOTIFICATION_SETTINGS_PAGE = `${NOTIFICATIONS_API_PREFIX}/preferences`
+
 export const ChannelSettings = Schema.Struct({ inApp: Schema.Boolean, email: Schema.Boolean, slack: Schema.Boolean })
 export type ChannelSettings = typeof ChannelSettings.Type
 

@@ -1,7 +1,7 @@
 import { AccessControlUsers, InternalAuthLive, InternalClient, TokenVerifier } from "@mosaik/auth/server"
 import { Database } from "@mosaik/db"
 import { PLATFORM_WEB_PREFIX, PlatformApi, PlatformInternalApi, PlatformWebApi } from "@mosaik/platform/contract"
-import { runMain, serve } from "@mosaik/server"
+import { CorePages, runMain, serve } from "@mosaik/server"
 import { Layer } from "effect"
 import { FetchHttpClient } from "effect/http"
 import { HttpApiBuilder } from "effect/http-api"
@@ -12,6 +12,7 @@ import { NotificationsClient } from "./clients"
 import { Events } from "./Events"
 import { AppHandlers, KeysHandlers } from "./http/App"
 import { ClientsHandlers, EventsHandlers, RegistryHandlers, RoutesHandlers } from "./http/Internal"
+import { RequestAccessRoutes } from "./http/Pages"
 import { AccessHandlers, AccessReviewHandlers, AppsHandlers } from "./http/Web"
 import { migrations } from "./migrations"
 import { Ownership } from "./Ownership"
@@ -42,15 +43,16 @@ const InternalHttp = HttpApiBuilder.layer(PlatformInternalApi).pipe(
   Layer.provide([RoutesHandlers, EventsHandlers, RegistryHandlers, ClientsHandlers]),
 )
 
-const Middleware = Layer.mergeAll(
-  AppAuthLive,
-  InternalAuthLive,
-  AccessControlUsers.pipe(Layer.provide(TokenVerifier.layerRemote("platform"))),
+/** Tokens the gateway issues for this service (`/api/platform`): the web API and Core's request-access page. */
+const Verifier = TokenVerifier.layerRemote("platform")
+
+const Middleware = Layer.mergeAll(AppAuthLive, InternalAuthLive, AccessControlUsers, CorePages.layer).pipe(
+  Layer.provide(Verifier),
 )
 
-const Main = serve(Layer.mergeAll(AppHttp, WebHttp, InternalHttp), { name: "mosaik-platform", port: 4002 }).pipe(
-  Layer.provide(Middleware),
-  Layer.provide(Domain),
-)
+const Main = serve(Layer.mergeAll(AppHttp, WebHttp, InternalHttp, RequestAccessRoutes), {
+  name: "mosaik-platform",
+  port: 4002,
+}).pipe(Layer.provide(Middleware), Layer.provide(Domain))
 
 runMain(Main)

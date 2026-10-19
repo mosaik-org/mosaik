@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions } from "@mosaik/auth/web"
 import { css } from "@mosaik/styled-system/css"
 import { Button, Card, EmptyState, PageHeader, Tabs } from "@mosaik/ui"
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_app/notifications/")({
   validateSearch: searchValidator(InboxSearch),
   beforeLoad: async ({ context, location }) => {
     const { principal } = await context.queryClient.ensureQueryData(sessionQueryOptions())
-    if (!principal.isAuthenticated) throw redirect({ to: "/login", search: { redirect: location.href } })
+    if (!principal.isAuthenticated) throw redirect({ href: signInUrl(location.href), reloadDocument: true })
   },
   component: NotificationsPage,
 })

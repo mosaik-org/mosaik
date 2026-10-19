@@ -1,3 +1,4 @@
+import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { formatRelativeTime } from "@mosaik/client"
 import type { AnyApp } from "@mosaik/core"
@@ -199,9 +200,9 @@ const Actions = (props: { app: AnyApp }) => {
           </Link>
         </Match>
         <Match when={user() === undefined}>
-          <Link to="/login" search={{ redirect: `/directory/${props.app.id}` }}>
+          <a href={signInUrl(`/directory/${props.app.id}`)}>
             <Button>Log in</Button>
-          </Link>
+          </a>
         </Match>
         <Match when={latest()?.status === "pending"}>
           <Badge tone="accent">Access requested</Badge>

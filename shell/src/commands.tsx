@@ -1,4 +1,4 @@
-import { signOut, usePrincipal } from "@mosaik/auth/web"
+import { signIn, signOut, usePrincipal } from "@mosaik/auth/web"
 import { AppIcon, useTheme } from "@mosaik/ui"
 import { type Command, useCommands } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
@@ -129,7 +129,7 @@ export const useShellCommands = () => {
           title: "Log in",
           group: "Actions",
           icon: <LogIn size={16} />,
-          perform: () => navigate({ to: "/login" }),
+          perform: () => signIn(),
         },
   ]
 

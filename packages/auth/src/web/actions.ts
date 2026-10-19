@@ -1,43 +1,14 @@
+import { signInUrl } from "../contract/sign-in"
+
 /**
- * Thin wrappers over Better Auth's REST endpoints (`/api/auth/*`, proxied by the gateway).
- * After any of these, call `queryClient.clear()` and refetch the session: grants change.
+ * Sends the browser to Core's sign-in page, which comes back to `returnTo` (a path on this
+ * origin) once signed in. The one way to sign in, for the shell and the console alike.
  */
-
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    readonly code: string | undefined,
-  ) {
-    super(message)
-    this.name = "AuthError"
-  }
+export const signIn = (returnTo: string = `${location.pathname}${location.search}`): void => {
+  location.assign(signInUrl(returnTo))
 }
 
-const post = async <A>(path: string, body: Record<string, unknown>): Promise<A> => {
-  const response = await fetch(`/api/auth${path}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  })
-  const payload: unknown = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    const { message, code } = (payload ?? {}) as { message?: string; code?: string }
-    throw new AuthError(message ?? "Authentication failed", code)
-  }
-  return payload as A
+/** Ends the Core session (Better Auth's endpoint, proxied by the gateway). Then reload the session: grants change. */
+export const signOut = async (): Promise<void> => {
+  await fetch("/api/auth/sign-out", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" })
 }
-
-export const signInWithPassword = (email: string, password: string): Promise<void> =>
-  post("/sign-in/email", { email, password, rememberMe: true }).then(() => undefined)
-
-/** Redirects to Microsoft Entra ID; the browser comes back to `callbackURL` after login. */
-export const signInWithMicrosoft = async (callbackURL: string): Promise<void> => {
-  const { url } = await post<{ url: string }>("/sign-in/social", {
-    provider: "microsoft",
-    callbackURL,
-    errorCallbackURL: "/login?error=sso",
-  })
-  window.location.assign(url)
-}
-
-export const signOut = (): Promise<void> => post("/sign-out", {}).then(() => undefined)

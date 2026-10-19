@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/app'
-import { Route as loginRouteImport } from './routes/login'
 import { Route as indexRouteImport } from './routes/index'
 import { Route as accessRequestsRouteImport } from './routes/access-requests'
 import { Route as AdminRouteRouteImport } from './../../apps/admin/web/routes/route'
@@ -31,11 +30,6 @@ import { Route as StatusIndexRouteImport } from './../../apps/status/web/routes/
 
 const appRoute = appRouteImport.update({
   id: '/_app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const loginRoute = loginRouteImport.update({
-  id: '/login',
-  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const indexRoute = indexRouteImport.update({
@@ -126,7 +120,6 @@ const StatusIndexRoute = StatusIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof indexRoute
-  '/login': typeof loginRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/status': typeof StatusRouteRouteWithChildren
   '/access-requests': typeof accessRequestsRoute
@@ -145,7 +138,6 @@ export interface FileRoutesByFullPath {
   '/status/': typeof StatusIndexRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof loginRoute
   '/': typeof indexRoute
   '/access-requests': typeof accessRequestsRoute
   '/admin/apps': typeof AdminAppsRoute
@@ -165,7 +157,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof appRouteWithChildren
-  '/login': typeof loginRoute
   '/_app/admin': typeof AdminRouteRouteWithChildren
   '/_app/status': typeof StatusRouteRouteWithChildren
   '/_app/': typeof indexRoute
@@ -188,7 +179,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
     | '/admin'
     | '/status'
     | '/access-requests'
@@ -207,7 +197,6 @@ export interface FileRouteTypes {
     | '/status/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
     | '/'
     | '/access-requests'
     | '/admin/apps'
@@ -226,7 +215,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
-    | '/login'
     | '/_app/admin'
     | '/_app/status'
     | '/_app/'
@@ -248,7 +236,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   appRoute: typeof appRouteWithChildren
-  loginRoute: typeof loginRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -258,13 +245,6 @@ declare module '@tanstack/solid-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof appRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof loginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/': {
@@ -453,7 +433,6 @@ const appRouteWithChildren = appRoute._addFileChildren(appRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   appRoute: appRouteWithChildren,
-  loginRoute: loginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -8,6 +8,8 @@ export type ChannelName = "email" | "slack-user" | "target"
 export interface OutgoingDelivery {
   readonly id: number
   readonly messageId: number
+  /** Notifications go to people who chose them (and can change that); messages are sent as asked. */
+  readonly category: "message" | "notification"
   readonly source: string
   readonly kind: string | null
   readonly channel: string

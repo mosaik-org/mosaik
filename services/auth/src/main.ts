@@ -1,7 +1,7 @@
 import { AdminApi, admin, IdentityApi, InternalApi } from "@mosaik/auth/contract"
 import { AccessControlLive, InternalAuthLive } from "@mosaik/auth/server"
 import { Database } from "@mosaik/db"
-import { runMain, serve } from "@mosaik/server"
+import { CorePages, runMain, serve } from "@mosaik/server"
 import { Layer } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessFeed } from "./AccessFeed"
@@ -14,6 +14,7 @@ import { IdentityHandlers } from "./http/Identity"
 import { InternalHandlers } from "./http/Internal"
 import { OAuthRoutes } from "./http/OAuth"
 import { RawRoutes } from "./http/Routes"
+import { SignInRoutes } from "./http/SignIn"
 import { migrations } from "./migrations"
 import { OAuth } from "./OAuth"
 import { PlatformClient } from "./PlatformClient"
@@ -49,6 +50,7 @@ const Domain = Layer.mergeAll(Members.layer, OAuth.layer).pipe(
 
 const Http = Layer.mergeAll(
   RawRoutes,
+  SignInRoutes,
   OAuthRoutes,
   HttpApiBuilder.layer(IdentityApi).pipe(Layer.provide(IdentityHandlers)),
   HttpApiBuilder.layer(InternalApi).pipe(Layer.provide(InternalHandlers)),
@@ -59,8 +61,11 @@ const Middleware = Layer.mergeAll(InternalAuthLive, AccessControlLive(admin)).pi
   Layer.provide(SigningKeys.verifierLayer(admin.id)),
 )
 
+/** Core's sign-in page (the gateway routes `/api/auth` here as the `auth` service). */
+const Pages = CorePages.layer.pipe(Layer.provide(SigningKeys.verifierLayer("auth")))
+
 const Main = serve(Layer.mergeAll(Http, Bootstrap, EventRelay), { name: "mosaik-auth", port: 4000 }).pipe(
-  Layer.provide(Middleware),
+  Layer.provide([Middleware, Pages]),
   Layer.provide(Domain),
   Layer.provide(AuthConfig.layer),
 )

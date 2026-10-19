@@ -5,6 +5,8 @@ export interface RenderOptions {
   readonly publicUrl: string
   /** Sending service, shown in the footer. */
   readonly source: string
+  /** Where the recipient changes which notifications they get (notifications only). */
+  readonly settingsUrl?: string | undefined
 }
 
 /** Absolute URL of a content link; app paths are resolved against the public URL. */
