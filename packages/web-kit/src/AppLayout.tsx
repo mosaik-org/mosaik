@@ -1,9 +1,10 @@
 import { useCan } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
+import { PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, PageHeader } from "@mosaik/ui"
 import { Outlet } from "@tanstack/solid-router"
 import { type JSX, Show } from "solid-js"
+import { AppIcon } from "./AppIcon"
 import { type NavTabItem, NavTabs } from "./NavTabs"
 
 export interface AppLayoutProps {

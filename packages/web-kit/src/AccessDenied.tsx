@@ -1,5 +1,5 @@
+import { Button, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Button, EmptyState } from "@mosaik/ui"
 import { Link } from "@tanstack/solid-router"
 import ShieldX from "lucide-solid/icons/shield-x"
 import { type JSX, Show } from "solid-js"

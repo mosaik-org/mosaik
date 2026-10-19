@@ -1,10 +1,11 @@
+import { Badge, Card, Input, SelectField, Stat } from "@mosaik/mosaik-ui"
 import { barChartOption, Chart } from "@mosaik/sdk/charts"
 import { formatRelativeTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
 import { useSearchParams } from "@mosaik/sdk/portal"
 import { createDebounced } from "@mosaik/sdk/solid"
 import { createColumnHelper, DataTable } from "@mosaik/sdk/table"
-import { Badge, Card, CardHeader, Input, QueryBoundary, QueryFreshness, Select, Stat } from "@mosaik/sdk/ui"
+import { QueryBoundary, QueryFreshness } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import ExternalLink from "lucide-solid/icons/external-link"
 import { createEffect, createMemo, createSignal, on, Show } from "solid-js"
@@ -37,7 +38,7 @@ const columns = column.columns([
           alignItems: "center",
           gap: "1",
           fontFamily: "mono",
-          color: "accent.text",
+          color: "accent.plain.fg",
         })}
       >
         {info.getValue()}
@@ -48,7 +49,7 @@ const columns = column.columns([
   column.accessor("summary", { header: "Summary" }),
   column.accessor("status", {
     header: "Status",
-    cell: (info) => <Badge tone={CATEGORY[info.row.original.statusCategory].tone}>{info.getValue()}</Badge>,
+    cell: (info) => <Badge colorPalette={CATEGORY[info.row.original.statusCategory].tone}>{info.getValue()}</Badge>,
   }),
   column.accessor("type", { header: "Type" }),
   column.accessor("priority", { header: "Priority", cell: (info) => info.getValue() ?? "—" }),
@@ -126,14 +127,16 @@ export default function IssuesPage() {
           onInput={(event) => setText(event.currentTarget.value)}
           class={css({ maxWidth: "xs" })}
         />
-        <Select
+        <SelectField
+          aria-label="Project"
           items={projectItems()}
           value={search().project ?? "all"}
-          onValueChange={(value) => update({ project: value === "all" ? undefined : value })}
+          onValueChange={(value) => update({ project: value === "all" ? undefined : (value ?? undefined) })}
           size="sm"
           class={css({ width: "56" })}
         />
-        <Select
+        <SelectField
+          aria-label="Status"
           items={CATEGORY_FILTERS}
           value={search().category ?? "open"}
           onValueChange={(value) => update({ category: value === "open" ? undefined : (value as StatusCategory) })}
@@ -159,27 +162,35 @@ export default function IssuesPage() {
             </div>
 
             <div class={styles.charts}>
-              <Card>
-                <CardHeader title="By project" />
-                <Chart
-                  height="240px"
-                  option={barChartOption({
-                    categories: byProject().map((entry) => entry.name),
-                    series: [{ name: "Issues", data: byProject().map((entry) => entry.count) }],
-                  })}
-                />
-              </Card>
-              <Card>
-                <CardHeader title="By assignee" />
-                <Chart
-                  height="240px"
-                  option={barChartOption({
-                    horizontal: true,
-                    categories: byAssignee().map((entry) => entry.name),
-                    series: [{ name: "Issues", data: byAssignee().map((entry) => entry.count) }],
-                  })}
-                />
-              </Card>
+              <Card.Root>
+                <Card.Header>
+                  <Card.Title>By project</Card.Title>
+                </Card.Header>
+                <Card.Body gap="4">
+                  <Chart
+                    height="240px"
+                    option={barChartOption({
+                      categories: byProject().map((entry) => entry.name),
+                      series: [{ name: "Issues", data: byProject().map((entry) => entry.count) }],
+                    })}
+                  />
+                </Card.Body>
+              </Card.Root>
+              <Card.Root>
+                <Card.Header>
+                  <Card.Title>By assignee</Card.Title>
+                </Card.Header>
+                <Card.Body gap="4">
+                  <Chart
+                    height="240px"
+                    option={barChartOption({
+                      horizontal: true,
+                      categories: byAssignee().map((entry) => entry.name),
+                      series: [{ name: "Issues", data: byAssignee().map((entry) => entry.count) }],
+                    })}
+                  />
+                </Card.Body>
+              </Card.Root>
             </div>
 
             <DataTable

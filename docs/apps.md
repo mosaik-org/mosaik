@@ -35,7 +35,7 @@ the same to users; they differ in where they live and how they ship:
 
 ```sh
 bun create:app inventory --builtin --db --icon package   # apps/inventory, picked up by `bun dev`
-bun create:app crm --dir ../crm --db                     # its own repository, with the SDK in vendor/mosaik/
+bun create:app crm --dir ../crm --db                     # its own repository, with the SDK and components in vendor/mosaik/
 ```
 
 An installed app's README covers developing it against a running platform and shipping its image. A
@@ -56,7 +56,7 @@ A typical workflow:
 2. Define endpoints in `api/` and annotate the ones that need a specific permission.
 3. Implement handlers in `server/`, using `Audit` for actions that change data and `Notify` / `Messages`
    to tell people about them.
-4. Build pages with `makeApiClient(Api)` + TanStack Query, `@mosaik/sdk/ui`, `/table` and `/charts`.
+4. Build pages with `createApi(Api)` (`@mosaik/sdk/solid`), the components of `@mosaik/mosaik-ui`, `@mosaik/sdk/table` and `/charts`.
 
 ## The SDK
 
@@ -68,14 +68,15 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Principal`, errors, `AccessControl`, `RequiredPermission`, `Fresh`, platform event types |
 | `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
-| `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API; no framework |
-| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient` |
+| `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`); no framework |
+| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `<Toasts />` |
 | `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
-| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | the design system, `QueryBoundary`, `DataTable`, charts, the app's styling runtime |
+| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
+| `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
 
 - **Core or Portal.** An app that imports nothing from `@mosaik/sdk/portal` runs without the Portal
-  (standalone); the rest of the SDK is Core, apart from the design system it may use either way.
+  (standalone); the rest of the SDK is Core, and the components work either way.
 - **Sides.** Server code never imports a page's entry points and pages never import `server`,
   `connectors` or `build`; `bun lint` checks it for the examples.
 - **Public API.** What the entry points export is the SDK; the packages behind them are internal and change
@@ -178,6 +179,34 @@ An app with `database: true` gets its own Postgres role and database, `mosaik_<i
   databases. Set `DATABASE_URL` (in development, `DATABASE_URL_<ID>`) to use an external one.
 
 ## Pages
+
+**Components.** Pages import them from [`@mosaik/mosaik-ui`](../packages/mosaik-ui/README.md) (Ark
+UI and Panda CSS, accessible, with dark mode); its README has the whole set:
+
+- **Parts**, named after Ark's: `<Dialog.Root>`, `<Tabs.List>`, `<Menu.Item>`. Each takes all of Ark's props.
+- **Fields** for forms, taking plain values (`TextField`, `SelectField`, `DatePickerField`, ...). Each puts a label,
+  the control, help and the error together.
+- **Ready-made components:**
+  - dialogs: `Modal`, `ConfirmDialog`, `ActionMenu`;
+  - states: `EmptyState`, `ErrorState`;
+  - page parts: `PageHeader`, `Stat`;
+  - the theme: `ThemeProvider`, `ThemeToggle` (for a standalone page; in the shell, the shell's).
+- **The look of the catalog:** `bun run catalog` in `packages/mosaik-ui` shows every example
+  at http://localhost:6006.
+
+Styles name the theme's tokens:
+- surfaces and text: `canvas`, `fg.default`, `fg.muted`, `fg.subtle`, `border`;
+- grays: the `gray` palette, e.g. `gray.surface.bg`, `gray.subtle.bg`;
+- roles: `accent`, `danger`, `success`, `warning` (e.g. `accent.solid.bg`, `danger.plain.fg`, `success.subtle.bg`).
+
+`colorPalette` picks a role for a component, as in `<Badge colorPalette="success">`.
+
+**The shell's contract.** Some things on a page belong to the shell, not to an app. Apps ask for them
+through `@mosaik/sdk/client`, which works whatever the page is built with:
+- **Toasts:** `toast.success("Saved")`, `toast.error("Could not save", reason)`. They show with the
+  shell's toasts. `useAction` uses them too.
+- **The theme:** `pageTheme()` and `onPageThemeChange(listener)`, or `usePageTheme()` in Solid, for
+  what CSS does not style (charts). People choose the theme in the shell, and every app follows it.
 
 An installed app's `web/index.tsx` default-exports `defineWebApp`, built into its own bundle by
 `mosaikApp()` (`@mosaik/sdk/build/vite`) and served by its backend at `/apps/<id>/`. A built-in app's pages are
@@ -372,6 +401,14 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
     shell). People who are not signed in get no token: the API answers 401.
 - **Calling the API.** `createApi(Api)` and `createForm` as in the Portal (or `makeApiClient(Api)` from
   `@mosaik/sdk/client` without Solid); requests go to the app's own address.
+- **Components.** The kit works there too.
+  - Import its stylesheet once: `import "@mosaik/sdk/ui/styles.css"`, which carries the reset, the tokens
+    and every component.
+  - Wrap the page in `ThemeProvider` (and offer `ThemeToggle`) for dark mode, and render `<Toasts />`
+    from `@mosaik/sdk/solid` once: there is no shell to show `toast`'s toasts.
+  - Its tokens are CSS variables a page's own CSS can use without Panda: `var(--mk-colors-fg-muted)`,
+    `var(--mk-spacing-4)`.
+  - `examples/notes` puts it together.
 - **Links.** `standaloneLinks` from `@mosaik/sdk/client` builds them: `signIn(path)`, `requestAccess(path)`,
   `notificationSettings`, `signOut` (to post a form to).
 - **Managing it.** Its owners and the admins give its roles and answer its requests in Core's console
@@ -381,16 +418,19 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
 
 ## Shipping an app
 
-- **SDK.** Until it is published, apps install the SDK from a tarball: `bun sdk:pack` builds
-  `dist/sdk/mosaik-sdk-<version>.tgz` (TypeScript sources, which Bun and Vite read as they are), and
-  `bun create:app <id> --dir <path> --sdk-only` refreshes an app's copy in `vendor/mosaik/`.
+- **SDK.** Until they are published, apps install the SDK and the components from tarballs:
+  - `bun sdk:pack` builds `dist/sdk/mosaik-sdk-<version>.tgz` (TypeScript sources, which Bun and Vite
+    read as they are), next to the components' (`mosaik-mosaik-ui-<version>.tgz`, built by the library);
+  - `bun create:app <id> --dir <path> --sdk-only` refreshes an app's copies in `vendor/mosaik/`.
 - **Image.** `bun run image` builds the app's Docker image, which carries `mosaik-app.json` (the manifest
   with its built browser bundle). Operators install it on the Portal's Apps page (`/portal/apps`); see
   [Operating Mosaik](operations.md#installing-apps).
 - **Compatibility.** Apps declare the platform major version they were built for; others are refused. A
   platform major release means rebuilding every app. Bump `version` in the manifest for every release.
-- **Shared modules.** Solid, the router, Query, Effect and the SDK's page entry points (`@mosaik/sdk`,
-  `/client`, `/solid`, `/portal`, `/ui`, `/table`, `/charts`) come from the shell through an import map,
-  so mounted apps leave them out of their bundles. A standalone page bundles what it uses.
+- **Shared modules.** Solid, the router, Query, Effect, the SDK's page entry points (`@mosaik/sdk`,
+  `/client`, `/solid`, `/portal`, `/ui`, `/table`, `/charts`) and `@mosaik/mosaik-ui` come from the shell
+  through an import map, so mounted apps leave them out of their bundles. A standalone page bundles what
+  it uses.
 - **Styles.** Each app generates its own Panda runtime with its id as class prefix (`crm-…`), so its atomic
-  classes never collide with the shell's.
+  classes never collide with the shell's. It has the theme's tokens but compiles none of the kit's
+  recipes: the page has those already (the shell's stylesheet, or `@mosaik/sdk/ui/styles.css`).

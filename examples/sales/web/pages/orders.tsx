@@ -1,9 +1,10 @@
+import { Button, Input, SelectField } from "@mosaik/mosaik-ui"
 import { formatCurrency, formatDateTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
 import { useCommands, useSearchParams, useTableSearch } from "@mosaik/sdk/portal"
 import { Can, createDebounced, useCan } from "@mosaik/sdk/solid"
 import { createColumnHelper, DataTable } from "@mosaik/sdk/table"
-import { Button, Input, QueryFreshness, Select } from "@mosaik/sdk/ui"
+import { QueryFreshness } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Download from "lucide-solid/icons/download"
 import { createEffect, createSignal, on } from "solid-js"
@@ -109,7 +110,7 @@ export default function Orders() {
           onInput={(event) => setText(event.currentTarget.value)}
           class={css({ maxWidth: "xs" })}
         />
-        <Select
+        <SelectField
           items={STATUS_FILTERS}
           value={table.params().status ?? "all"}
           onValueChange={(value) => table.setFilters({ status: value === "all" ? undefined : (value as OrderStatus) })}
@@ -120,7 +121,7 @@ export default function Orders() {
         <QueryFreshness query={orders} source="orders database" />
         <Can permission={sales.perm("orders.export")}>
           <a href={exportUrl(table.params())} download="orders.csv">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="xs">
               <Download size={16} />
               Export CSV
             </Button>

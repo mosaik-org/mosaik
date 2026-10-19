@@ -1,5 +1,4 @@
-import { type ApiClient, type BrowserApi, errorMessage, makeApiClient } from "@mosaik/client"
-import { toast } from "@mosaik/ui"
+import { type ApiClient, type BrowserApi, errorMessage, makeApiClient, toast } from "@mosaik/client"
 import { type QueryKey, queryOptions, useQueryClient } from "@tanstack/solid-query"
 import type { Types } from "effect"
 import type { HttpApiClient, HttpApiEndpoint, HttpApiGroup } from "effect/http-api"

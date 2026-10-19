@@ -1,8 +1,8 @@
 import { type AuditRecord, admin } from "@mosaik/auth/contract"
 import { formatDateTime } from "@mosaik/client"
+import { Badge, Button, SelectField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { Badge, Button, Select } from "@mosaik/ui"
 import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -64,10 +64,13 @@ function Audit() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
-      <Select
+      <SelectField
+        aria-label="App"
         items={filters()}
         value={search().app ?? "all"}
-        onValueChange={(value) => void navigate({ search: { app: value === "all" ? undefined : value } })}
+        onValueChange={(value) =>
+          void navigate({ search: { app: value === "all" ? undefined : (value ?? undefined) } })
+        }
         size="sm"
         class={css({ width: "56" })}
       />

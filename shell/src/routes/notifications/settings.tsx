@@ -1,10 +1,10 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, usePrincipal } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
 import type { PersonalChannel } from "@mosaik/core"
+import { Card, EmptyState, PageHeader, SwitchField } from "@mosaik/mosaik-ui"
 import type { NotificationSettings, NotificationTypeSettings } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
-import { Card, CardHeader, EmptyState, PageHeader, Switch, toast } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, redirect } from "@tanstack/solid-router"
@@ -37,7 +37,7 @@ const styles = {
     gap: { base: "3", sm: "6" },
     py: "3",
     borderTopWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
   }),
   switches: css({ display: "flex", gap: "5", flexWrap: "wrap" }),
 }
@@ -75,7 +75,7 @@ const TypeRow = (props: { type: NotificationTypeSettings; available: ReadonlyArr
       <div class={styles.switches}>
         <For each={CHANNELS.filter((channel) => props.available.includes(channel.value))}>
           {(channel) => (
-            <Switch
+            <SwitchField
               label={channel.label}
               checked={props.type.channels[channel.value]}
               onCheckedChange={(enabled) => update.mutate({ channel: channel.value, enabled })}
@@ -115,18 +115,24 @@ function SettingsPage() {
             <For
               each={bySource(data().types)}
               fallback={
-                <Card>
-                  <EmptyState icon={<BellOff size={24} />} title="No app sends notifications yet" />
-                </Card>
+                <Card.Root>
+                  <Card.Body gap="4">
+                    <EmptyState icon={<BellOff size={24} />} title="No app sends notifications yet" />
+                  </Card.Body>
+                </Card.Root>
               }
             >
               {(group) => (
-                <Card>
-                  <CardHeader title={sourceName(group.source)} />
-                  <div>
-                    <For each={group.types}>{(type) => <TypeRow type={type} available={data().available} />}</For>
-                  </div>
-                </Card>
+                <Card.Root>
+                  <Card.Header>
+                    <Card.Title>{sourceName(group.source)}</Card.Title>
+                  </Card.Header>
+                  <Card.Body gap="4">
+                    <div>
+                      <For each={group.types}>{(type) => <TypeRow type={type} available={data().available} />}</For>
+                    </div>
+                  </Card.Body>
+                </Card.Root>
               )}
             </For>
           </>

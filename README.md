@@ -146,13 +146,12 @@ packages/         The SDK and shared code
   app-kit         Building apps: shared-module list, Vite plugin (bundle for the shell, or a standalone page), Panda config
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (query defaults, event streams)
-  ui              Ark UI + Panda design system, dark mode
-  mosaik-ui       @mosaik/mosaik-ui: a standalone Solid component library (Ark UI + Panda), not yet used by Mosaik; see its README
+  mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README
   table           DataTable (TanStack Table, client or server-side)
   charts          ECharts wrapper, themed option builders
-  web-kit         Router-aware pieces: AppLayout, NavTabs, QueryBoundary, command palette
+  web-kit         Mosaik's page pieces: AppLayout, NavTabs, QueryBoundary, AppIcon, the command palette, forms and actions, Toasts
   connectors      Server-side clients for external systems (Jira, SMTP, Slack, Teams)
-  styled-system   Panda preset + generated runtime
+  styled-system   Mosaik's theme for @mosaik/mosaik-ui, the generated runtime and the kit's stylesheet
 tooling/          Dev runner, provisioning, scaffolding, boundary checks
 infra/            compose.dev.yml (local infra), compose.yml + Dockerfile (deployment)
 docs/             Architecture, building apps, operating Mosaik

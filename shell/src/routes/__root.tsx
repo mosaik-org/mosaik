@@ -1,6 +1,6 @@
 import { errorMessage } from "@mosaik/client"
+import { ErrorState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { ErrorState } from "@mosaik/ui"
 import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
 

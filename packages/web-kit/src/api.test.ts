@@ -1,4 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
+import { provideToaster, type Toast } from "@mosaik/client"
 import { NotFound } from "@mosaik/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
 import { Schema } from "effect"
@@ -7,8 +8,9 @@ import { createComponent, createRoot } from "solid-js"
 import { vi } from "vitest"
 import { type Action, type ActionOptions, createApi, useAction } from "./api"
 
-const toast = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }))
-vi.mock("@mosaik/ui", () => ({ toast }))
+// The toasts the actions show, through the shell's contract.
+const shown: Array<Toast> = []
+provideToaster({ show: (toast) => shown.push(toast) })
 
 class Order extends Schema.Class<Order>("Order")({ id: Schema.Number, number: Schema.String }) {}
 
@@ -70,26 +72,26 @@ const withAction = (call: () => Promise<Order>, options: ActionOptions<Order, Pa
 
 describe("useAction", () => {
   it("toasts the outcome and refetches what it affects", async () => {
-    toast.success.mockClear()
+    shown.length = 0
     const order = new Order({ id: 7, number: "SO-7" })
     const { action, invalidated } = withAction(() => Promise.resolve(order), {
       success: (value) => `${value.number} was refunded`,
       invalidates: [{ key: () => ["sales", "orders"] }],
     })
     expect(await action.run({ params: { id: 7 } })).toBe(true)
-    expect(toast.success).toHaveBeenCalledWith("SO-7 was refunded")
+    expect(shown).toEqual([{ type: "success", title: "SO-7 was refunded" }])
     expect(invalidated).toEqual([["sales", "orders"]])
     expect(action.pending()).toBe(false)
   })
 
   it("run shows a failure as a toast; submit throws it for a form", async () => {
-    toast.error.mockClear()
+    shown.length = 0
     const { action } = withAction(() => Promise.reject(new NotFound({ resource: "order", id: "7" })), {
       failure: "Could not refund",
     })
     expect(await action.run({ params: { id: 7 } })).toBe(false)
-    expect(toast.error).toHaveBeenCalledWith("Could not refund", expect.any(String))
+    expect(shown).toEqual([{ type: "error", title: "Could not refund", description: expect.any(String) }])
     await expect(action.submit({ params: { id: 7 } })).rejects.toBeInstanceOf(NotFound)
-    expect(toast.error).toHaveBeenCalledTimes(1)
+    expect(shown).toHaveLength(1)
   })
 })

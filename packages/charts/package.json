@@ -10,8 +10,9 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@mosaik/client": "workspace:*",
+    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
-    "@mosaik/ui": "workspace:*",
     "echarts": "^6.1.0",
     "solid-js": "^1.9.17"
   }

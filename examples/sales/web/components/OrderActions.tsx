@@ -1,6 +1,6 @@
+import { ActionMenu, ConfirmDialog, IconButton, TextField } from "@mosaik/mosaik-ui"
 import { formatCurrency } from "@mosaik/sdk/client"
 import { createForm, useAction, useCan } from "@mosaik/sdk/solid"
-import { ConfirmDialog, IconButton, Menu, TextField } from "@mosaik/sdk/ui"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import { createSignal, Show } from "solid-js"
 import { type Order, Refund, StatusTransitions } from "../../api"
@@ -50,9 +50,9 @@ export const OrderActions = (props: { order: Order }) => {
 
   return (
     <Show when={items().length > 0}>
-      <Menu
+      <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton label={`Actions for ${props.order.number}`} size="sm" {...triggerProps}>
+          <IconButton variant="plain" aria-label={`Actions for ${props.order.number}`} size="2xs" {...triggerProps()}>
             <Ellipsis size={16} />
           </IconButton>
         )}

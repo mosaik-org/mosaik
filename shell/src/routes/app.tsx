@@ -1,7 +1,7 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
 import { type ConsoleExtensions, ConsoleExtensionsProvider } from "@mosaik/console"
-import { Button } from "@mosaik/ui"
+import { Button } from "@mosaik/mosaik-ui"
 import { AccessDenied, CommandProvider, type SearchSource } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, Link, Outlet, redirect, useLocation } from "@tanstack/solid-router"

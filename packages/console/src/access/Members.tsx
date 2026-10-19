@@ -1,11 +1,11 @@
 import type { AppMember, AppRole } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
 import type { PrincipalUser } from "@mosaik/core"
+import { Avatar, Badge, Button, CheckboxField, EmptyState, Input, Modal } from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { Avatar, Badge, Button, Checkbox, Dialog, EmptyState, Input, toast } from "@mosaik/ui"
 import { createDebounced, QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import UserPlus from "lucide-solid/icons/user-plus"
@@ -32,15 +32,18 @@ const styles = {
     borderRadius: "md",
     textAlign: "left",
     cursor: "pointer",
-    _hover: { bg: "bg.muted" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default" },
+    _hover: { bg: "gray.subtle.bg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
   }),
   roles: css({ display: "flex", flexDirection: "column", gap: "3" }),
 }
 
 const Person = (props: { user: PrincipalUser }) => (
   <div class={styles.person}>
-    <Avatar name={props.user.name} src={props.user.image} size="sm" />
+    <Avatar.Root size="sm">
+      <Avatar.Fallback name={props.user.name} />
+      <Avatar.Image src={props.user.image ?? undefined} />
+    </Avatar.Root>
     <div class={css({ minW: "0" })}>
       <div class={styles.name}>{props.user.name}</div>
       <div class={styles.muted}>{props.user.email}</div>
@@ -90,7 +93,7 @@ const RolesDialog = (props: {
     setSelected((current) => (checked ? [...current, role.id] : current.filter((id) => id !== role.id)))
 
   return (
-    <Dialog
+    <Modal
       open
       onOpenChange={(open) => !open && props.onClose()}
       title={`${props.user.name} in ${props.about.app.name}`}
@@ -109,11 +112,11 @@ const RolesDialog = (props: {
       <div class={styles.roles}>
         <For each={roles()}>
           {(role) => (
-            <Checkbox
+            <CheckboxField
               checked={selected().includes(role.id)}
               onCheckedChange={(checked) => toggle(role, checked)}
               label={role.name}
-              description={role.description ?? undefined}
+              helperText={role.description ?? undefined}
             />
           )}
         </For>
@@ -121,7 +124,7 @@ const RolesDialog = (props: {
           <p class={styles.note}>You will no longer decide who can use {props.about.app.name}.</p>
         </Show>
       </div>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -138,7 +141,7 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
   }))
 
   return (
-    <Dialog
+    <Modal
       open
       onOpenChange={(open) => !open && props.onClose()}
       title={`Add someone to ${props.about.app.name}`}
@@ -169,7 +172,7 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
           </QueryBoundary>
         </Show>
       </div>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -199,7 +202,7 @@ export const Members = (props: { about: AppAbout }) => {
         <div class={styles.badges}>
           <For each={info.getValue()}>
             {(role) => (
-              <Badge tone={role === props.about.app.roles.find((r) => r.isOwner)?.id ? "accent" : "neutral"}>
+              <Badge colorPalette={role === props.about.app.roles.find((r) => r.isOwner)?.id ? "accent" : "neutral"}>
                 {roleName(role)}
               </Badge>
             )}
@@ -220,7 +223,7 @@ export const Members = (props: { about: AppAbout }) => {
       meta: { align: "right" },
       cell: (info) => (
         <Button
-          size="sm"
+          size="xs"
           variant="outline"
           onClick={() => setEditing({ user: info.row.original.user, current: info.row.original.roles })}
         >

@@ -16,14 +16,14 @@ export const cellRecipe = cva({
     kind: {
       header: {
         h: "10",
-        bg: "bg.subtle",
+        bg: "gray.2",
         color: "fg.muted",
         fontSize: "xs",
         fontWeight: "medium",
         textTransform: "uppercase",
         letterSpacing: "wider",
         borderBottomWidth: "1px",
-        borderColor: "border.default",
+        borderColor: "border",
       },
       body: { py: "2.5", color: "fg.default" },
     },
@@ -53,7 +53,7 @@ const sortButton = cva({
     cursor: "pointer",
     outline: "none",
     _hover: { color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
     "& svg": { boxSize: "3.5", flexShrink: "0" },
   },
   variants: {

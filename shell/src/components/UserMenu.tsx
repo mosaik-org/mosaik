@@ -1,7 +1,8 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
+import { toast } from "@mosaik/client"
+import { ActionMenu, Avatar, Button } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Avatar, Button, Menu, toast } from "@mosaik/ui"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -16,8 +17,8 @@ const trigger = css({
   pr: "2",
   borderRadius: "full",
   cursor: "pointer",
-  _hover: { bg: "bg.muted" },
-  _focusVisible: { outline: "2px solid", outlineColor: "accent.default" },
+  _hover: { bg: "gray.subtle.bg" },
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
 })
 
 export const UserMenu = () => {
@@ -42,15 +43,18 @@ export const UserMenu = () => {
       when={principal().user}
       fallback={
         <a href={signInUrl(`${location.pathname}${location.search}`)}>
-          <Button size="sm">Log in</Button>
+          <Button size="xs">Log in</Button>
         </a>
       }
     >
       {(user) => (
-        <Menu
+        <ActionMenu
           trigger={(props) => (
-            <button type="button" class={trigger} {...props} aria-label="Account menu">
-              <Avatar name={user().name} src={user().image} size="sm" />
+            <button type="button" {...props()} class={trigger} aria-label="Account menu">
+              <Avatar.Root size="sm">
+                <Avatar.Fallback name={user().name} />
+                <Avatar.Image src={user().image ?? undefined} />
+              </Avatar.Root>
               <span class={css({ fontSize: "sm", fontWeight: "medium", hideBelow: "sm" })}>{user().name}</span>
             </button>
           )}

@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
+import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { IconButton, Kbd, ThemeToggle } from "@mosaik/ui"
 import { useCommandPalette } from "@mosaik/web-kit"
 import { Link } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
@@ -24,7 +24,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     borderRightWidth: "1px",
-    bg: "bg.subtle",
+    bg: "gray.2",
   }),
   drawer: css({
     position: "fixed",
@@ -37,11 +37,11 @@ const styles = {
     width: "260px",
     display: "flex",
     flexDirection: "column",
-    bg: "bg.surface",
+    bg: "gray.surface.bg",
     borderRightWidth: "1px",
-    animation: "slideIn 0.15s ease-out",
+    animation: "slide-from-bottom 0.15s ease-out",
   }),
-  backdrop: css({ flex: "1", bg: "bg.overlay" }),
+  backdrop: css({ flex: "1", bg: "black.a7" }),
   brand: css({
     display: "flex",
     alignItems: "center",
@@ -58,8 +58,8 @@ const styles = {
     width: "7",
     height: "7",
     borderRadius: "md",
-    bg: "accent.default",
-    color: "accent.fg",
+    bg: "accent.solid.bg",
+    color: "accent.solid.fg",
     fontSize: "sm",
   }),
   header: css({
@@ -72,7 +72,7 @@ const styles = {
     height: "14",
     px: { base: "4", md: "8" },
     borderBottomWidth: "1px",
-    bg: "bg.canvas/85",
+    bg: "canvas/85",
     backdropFilter: "blur(8px)",
   }),
   search: css({
@@ -84,14 +84,14 @@ const styles = {
     pr: "2",
     minW: { base: "auto", md: "64" },
     borderWidth: "1px",
-    borderRadius: "control",
-    bg: "bg.subtle",
+    borderRadius: "l2",
+    bg: "gray.2",
     color: "fg.subtle",
     fontSize: "sm",
     cursor: "pointer",
     transition: "border-color 0.15s",
-    _hover: { borderColor: "border.emphasized" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default" },
+    _hover: { borderColor: "gray.outline.border" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
   }),
   main: css({ px: { base: "4", md: "8" }, py: "6", maxWidth: "7xl", width: "full", mx: "auto" }),
 }
@@ -143,7 +143,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
       <div class={css({ display: "flex", flexDirection: "column", minWidth: "0" })}>
         <header class={styles.header}>
           <div class={css({ hideFrom: "md" })}>
-            <IconButton label="Open navigation" onClick={() => setDrawerOpen(true)}>
+            <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
               <Menu size={18} />
             </IconButton>
           </div>

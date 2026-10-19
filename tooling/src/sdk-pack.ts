@@ -7,6 +7,10 @@
  * builds on under `internal/<name>/`, their `@mosaik/*` imports rewritten to relative paths. Apps get
  * one package and one version, and nothing the facade does not export is reachable by name. It ships
  * TypeScript: Bun, Vite (`bun --bun`) and `tsc` read it as it is.
+ *
+ * The component library, `@mosaik/mosaik-ui`, is not inside: apps import it themselves, so it is its
+ * own tarball next to the SDK's (built by the library), which the SDK names as a peer dependency at
+ * that exact version.
  */
 import { cp, mkdir, readdir, rm } from "node:fs/promises"
 import { dirname, join, relative } from "node:path"
@@ -21,7 +25,12 @@ export interface SdkIndex {
   readonly version: string
   /** The tarball's file name in the SDK directory. */
   readonly tarball: string
+  /** The component library's tarball, next to it. */
+  readonly components: { readonly version: string; readonly tarball: string }
 }
+
+/** The component library: a package of its own, which apps install next to the SDK. */
+const COMPONENTS = "@mosaik/mosaik-ui"
 
 type Exports = Record<string, string | { readonly types?: string; readonly default?: string }>
 
@@ -36,7 +45,7 @@ interface PackageJson {
 
 const readPackage = (dir: string) => Bun.file(join(dir, "package.json")).json() as Promise<PackageJson>
 const dirOf = (name: string) => join(ROOT, "packages", name.replace("@mosaik/", ""))
-const isInternal = (name: string) => name.startsWith("@mosaik/")
+const isInternal = (name: string) => name.startsWith("@mosaik/") && name !== COMPONENTS
 
 /** The internal packages the facade builds on, transitively. */
 const closure = async (): Promise<ReadonlyMap<string, PackageJson>> => {
@@ -69,17 +78,23 @@ const specifiers = (packages: ReadonlyMap<string, PackageJson>) => {
 
 /** Only import and export statements: Schema identifiers such as "@mosaik/core/Principal" stay. */
 const IMPORT = /((?:\bfrom|\bimport)\s*\(?\s*)(["'])(@mosaik\/[^"']+)\2/g
+/** A stylesheet's `@import` of another package's (`@mosaik/sdk/ui/styles.css` imports the kit's). */
+const CSS_IMPORT = /(@import\s+)(["'])(@mosaik\/[^"']+)\2/g
 
 /** Rewrites internal specifiers to relative, extensionless paths (Bun, Vite and `tsc` resolve those). */
 const rewrite = (source: string, file: string, targets: ReadonlyMap<string, string>) =>
-  source.replace(IMPORT, (whole, prefix: string, quote: string, specifier: string) => {
-    const target = targets.get(specifier)
-    if (target === undefined) return whole
-    const path = relative(dirname(file), target.replace(/\.(ts|tsx|mjs|js)$/, ""))
-      .split("\\")
-      .join("/")
-    return `${prefix}${quote}${path.startsWith(".") ? path : `./${path}`}${quote}`
-  })
+  source.replace(
+    file.endsWith(".css") ? CSS_IMPORT : IMPORT,
+    (whole, prefix: string, quote: string, specifier: string) => {
+      const target = targets.get(specifier)
+      if (target === undefined) return whole
+      // Scripts without their extension (Bun, Vite and `tsc` resolve those); stylesheets with it.
+      const path = relative(dirname(file), file.endsWith(".css") ? target : target.replace(/\.(ts|tsx|mjs|js)$/, ""))
+        .split("\\")
+        .join("/")
+      return `${prefix}${quote}${path.startsWith(".") ? path : `./${path}`}${quote}`
+    },
+  )
 
 const SKIPPED = new Set(["node_modules", "dist", "package.json", "tsconfig.json"])
 
@@ -116,14 +131,23 @@ const sourceFiles = async function* (dir: string): AsyncGenerator<string> {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name)
     if (entry.isDirectory()) yield* sourceFiles(path)
-    else if (/\.(ts|tsx|mjs|js)$/.test(entry.name)) yield path
+    else if (/\.(ts|tsx|mjs|js|css)$/.test(entry.name)) yield path
   }
 }
 
 export const packSdk = async (): Promise<SdkIndex> => {
-  if (!(await Bun.file(join(ROOT, "packages/styled-system/generated/css/index.mjs")).exists())) {
-    throw new Error("Run `panda codegen` in packages/styled-system first (bun install does it)")
+  // Generated, so possibly older than the sources: the Panda runtimes the tarball ships, and the
+  // kit's stylesheet (`@mosaik/sdk/ui/styles.css`), are generated afresh.
+  // The component library is built (and packed) by its own build.
+  for (const [dir, command] of [
+    ["packages/mosaik-ui", ["bun", "run", "build"]],
+    ["packages/styled-system", ["bun", "run", "prepare"]],
+  ] as const) {
+    const run = Bun.spawnSync([...command], { cwd: join(ROOT, dir), stderr: "pipe" })
+    if (run.exitCode !== 0) throw new Error(`Building ${dir} failed:\n${run.stderr.toString()}`)
   }
+  const library = await readPackage(dirOf(COMPONENTS))
+  const libraryTarball = `mosaik-mosaik-ui-${library.version}.tgz`
   const packages = await closure()
   for (const manifest of packages.values()) {
     if (manifest.version !== PLATFORM_VERSION) {
@@ -135,6 +159,7 @@ export const packSdk = async (): Promise<SdkIndex> => {
 
   await rm(SDK_DIR, { recursive: true, force: true })
   await mkdir(STAGE, { recursive: true })
+  await cp(join(dirOf(COMPONENTS), "dist", libraryTarball), join(SDK_DIR, libraryTarball))
   for (const [name, manifest] of packages) await copyPackage(name, manifest)
 
   const targets = specifiers(packages)
@@ -145,7 +170,8 @@ export const packSdk = async (): Promise<SdkIndex> => {
   }
   // Anything internal left by name would not resolve in an app: fail here, not there.
   for await (const file of sourceFiles(STAGE)) {
-    for (const match of (await Bun.file(file).text()).matchAll(IMPORT)) {
+    for (const match of (await Bun.file(file).text()).matchAll(file.endsWith(".css") ? CSS_IMPORT : IMPORT)) {
+      if (match[3] === COMPONENTS || match[3]?.startsWith(`${COMPONENTS}/`)) continue
       throw new Error(`${relative(STAGE, file)} imports ${match[3]}, which is not in the SDK`)
     }
   }
@@ -161,8 +187,14 @@ export const packSdk = async (): Promise<SdkIndex> => {
         type: "module",
         description: "The Mosaik SDK: everything an app builds on.",
         exports: facade.exports,
-        dependencies: thirdParty(packages, "dependencies"),
-        peerDependencies: thirdParty(packages, "peerDependencies"),
+        // The components are the app's own dependency, at the version the SDK was built with.
+        dependencies: Object.fromEntries(
+          Object.entries(thirdParty(packages, "dependencies")).filter(([name]) => name !== COMPONENTS),
+        ),
+        peerDependencies: { ...thirdParty(packages, "peerDependencies"), [COMPONENTS]: library.version },
+        // Installed by the app itself (from its tarball until the library is on a registry): the
+        // package manager must not look for it.
+        peerDependenciesMeta: { [COMPONENTS]: { optional: true } },
       },
       null,
       2,
@@ -178,12 +210,16 @@ export const packSdk = async (): Promise<SdkIndex> => {
   if (!(await Bun.file(join(SDK_DIR, tarball)).exists())) throw new Error(`Expected ${tarball} in ${SDK_DIR}`)
   await rm(STAGE, { recursive: true, force: true })
 
-  const index: SdkIndex = { version: PLATFORM_VERSION, tarball }
+  const index: SdkIndex = {
+    version: PLATFORM_VERSION,
+    tarball,
+    components: { version: library.version, tarball: libraryTarball },
+  }
   await Bun.write(join(SDK_DIR, "sdk.json"), `${JSON.stringify(index, null, 2)}\n`)
   return index
 }
 
 if (import.meta.main) {
   const index = await packSdk()
-  console.log(`Packed SDK ${index.version} into dist/sdk/${index.tarball}`)
+  console.log(`Packed SDK ${index.version} into dist/sdk/${index.tarball}, next to ${index.components.tarball}`)
 }

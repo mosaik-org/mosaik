@@ -23,6 +23,8 @@ export const SHARED_MODULES = [
   "@mosaik/sdk/ui",
   "@mosaik/sdk/table",
   "@mosaik/sdk/charts",
+  // The component library apps import directly: one copy, styled by the shell's stylesheet.
+  "@mosaik/mosaik-ui",
   // Not `@mosaik/sdk/css` and its siblings: each app generates its own (see `appPandaConfig`), so its
   // atomic classes never collide with the shell's (they would override each other's media queries).
 ] as const

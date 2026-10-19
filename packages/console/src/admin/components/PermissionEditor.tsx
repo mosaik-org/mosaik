@@ -1,7 +1,7 @@
 import type { CatalogApp } from "@mosaik/auth/contract"
 import { grantCovers } from "@mosaik/core"
+import { Badge, Card, CheckboxField, SwitchField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Badge, Card, Checkbox, Switch } from "@mosaik/ui"
 import { For, Show } from "solid-js"
 
 export interface PermissionEditorProps {
@@ -46,61 +46,67 @@ export const PermissionEditor = (props: PermissionEditorProps) => {
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
       <Show when={others().length > 0}>
-        <Card>
-          <div class={styles.section}>
-            <div class={styles.title}>Other grants</div>
-            <div class={css({ display: "flex", gap: "2", flexWrap: "wrap" })}>
-              <For each={others()}>
-                {(grant) => <Badge tone="accent">{grant === "*" ? "Everything (*)" : grant}</Badge>}
-              </For>
-            </div>
-          </div>
-        </Card>
-      </Show>
-      <For each={props.catalog}>
-        {(app) => (
-          <Card>
+        <Card.Root>
+          <Card.Body gap="4">
             <div class={styles.section}>
-              <div class={styles.head}>
-                <div>
-                  <div class={styles.title}>{app.name}</div>
-                  <div class={styles.key}>{app.id}</div>
-                </div>
-                <Switch
-                  label="All permissions"
-                  checked={has(wildcardOf(app)) || implied(wildcardOf(app))}
-                  disabled={props.readOnly || implied(wildcardOf(app))}
-                  onCheckedChange={(checked) => setWildcard(app, checked)}
-                />
-              </div>
-              <div class={styles.list}>
-                <For each={app.permissions}>
-                  {(permission) => (
-                    <Checkbox
-                      checked={has(permission.key) || implied(permission.key)}
-                      disabled={props.readOnly || implied(permission.key)}
-                      onCheckedChange={(checked) => set(permission.key, checked)}
-                      label={
-                        <span class={css({ display: "inline-flex", gap: "2", alignItems: "center", flexWrap: "wrap" })}>
-                          {permission.description}
-                          <Show when={permission.key === app.access}>
-                            <Badge>access</Badge>
-                          </Show>
-                          <Show when={permission.dangerous}>
-                            <Badge tone="danger">sensitive</Badge>
-                          </Show>
-                          <Show when={permission.stale}>
-                            <Badge tone="warning">no longer declared</Badge>
-                          </Show>
-                        </span>
-                      }
-                      description={<span class={styles.key}>{permission.key}</span>}
-                    />
-                  )}
+              <div class={styles.title}>Other grants</div>
+              <div class={css({ display: "flex", gap: "2", flexWrap: "wrap" })}>
+                <For each={others()}>
+                  {(grant) => <Badge colorPalette="accent">{grant === "*" ? "Everything (*)" : grant}</Badge>}
                 </For>
               </div>
             </div>
-          </Card>
+          </Card.Body>
+        </Card.Root>
+      </Show>
+      <For each={props.catalog}>
+        {(app) => (
+          <Card.Root>
+            <Card.Body gap="4">
+              <div class={styles.section}>
+                <div class={styles.head}>
+                  <div>
+                    <div class={styles.title}>{app.name}</div>
+                    <div class={styles.key}>{app.id}</div>
+                  </div>
+                  <SwitchField
+                    label="All permissions"
+                    checked={has(wildcardOf(app)) || implied(wildcardOf(app))}
+                    disabled={props.readOnly || implied(wildcardOf(app))}
+                    onCheckedChange={(checked) => setWildcard(app, checked)}
+                  />
+                </div>
+                <div class={styles.list}>
+                  <For each={app.permissions}>
+                    {(permission) => (
+                      <CheckboxField
+                        checked={has(permission.key) || implied(permission.key)}
+                        disabled={props.readOnly || implied(permission.key)}
+                        onCheckedChange={(checked) => set(permission.key, checked)}
+                        label={
+                          <span
+                            class={css({ display: "inline-flex", gap: "2", alignItems: "center", flexWrap: "wrap" })}
+                          >
+                            {permission.description}
+                            <Show when={permission.key === app.access}>
+                              <Badge>access</Badge>
+                            </Show>
+                            <Show when={permission.dangerous}>
+                              <Badge colorPalette="danger">sensitive</Badge>
+                            </Show>
+                            <Show when={permission.stale}>
+                              <Badge colorPalette="warning">no longer declared</Badge>
+                            </Show>
+                          </span>
+                        }
+                        helperText={<span class={styles.key}>{permission.key}</span>}
+                      />
+                    )}
+                  </For>
+                </div>
+              </div>
+            </Card.Body>
+          </Card.Root>
         )}
       </For>
     </div>

@@ -1,4 +1,5 @@
 export { AccessDenied } from "./AccessDenied"
+export { AppIcon, type AppIconName, type AppIconProps, appIconNames } from "./AppIcon"
 export { AppLayout, type AppLayoutProps } from "./AppLayout"
 export {
   type Action,
@@ -22,6 +23,7 @@ export { createDebounced, useNow } from "./primitives"
 export { QueryBoundary, type QueryBoundaryProps, type QueryState } from "./QueryBoundary"
 export { type SearchValidator, searchValidator } from "./search"
 export { useSearchParams } from "./search-params"
+export { Toasts, usePageTheme } from "./shell"
 export {
   type SortDirection,
   type TableSearch,

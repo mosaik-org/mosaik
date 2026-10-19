@@ -1,8 +1,12 @@
-import { errorMessage, IdentityApi, makeApiClient, standaloneLinks } from "@mosaik/sdk/client"
-import { createResource, createSignal, For, Show } from "solid-js"
+import { Button, Card, EmptyState, TextareaField, ThemeProvider, ThemeToggle } from "@mosaik/mosaik-ui"
+import { errorMessage, IdentityApi, makeApiClient, standaloneLinks, toast } from "@mosaik/sdk/client"
+import { createForm, Toasts } from "@mosaik/sdk/solid"
+import { createResource, For, Show } from "solid-js"
 import { render } from "solid-js/web"
 import { NewNote, type Note, NotesApi } from "../api"
 import { notes as app } from "../manifest"
+// The UI kit's stylesheet: a standalone page has no shell to provide it.
+import "@mosaik/sdk/ui/styles.css"
 import "./styles.css"
 
 const notesApi = makeApiClient(NotesApi)
@@ -18,41 +22,51 @@ const here = () => location.pathname
 const Header = () => (
   <header class="header">
     <strong>Notes</strong>
-    <Show when={principal()?.user} fallback={<a href={standaloneLinks.signIn(here())}>Sign in with Mosaik</a>}>
-      {(user) => (
-        <form method="post" action={standaloneLinks.signOut} class="who">
-          <span>{user().name}</span>
-          <a href={standaloneLinks.notificationSettings}>Notifications</a>
-          <button type="submit" class="link">
-            Sign out
-          </button>
-        </form>
-      )}
-    </Show>
+    <div class="who">
+      <Show
+        when={principal()?.user}
+        fallback={
+          <a class="link" href={standaloneLinks.signIn(here())}>
+            Sign in with Mosaik
+          </a>
+        }
+      >
+        {(user) => (
+          <form method="post" action={standaloneLinks.signOut} class="who">
+            <span>{user().name}</span>
+            <a class="link" href={standaloneLinks.notificationSettings}>
+              Notifications
+            </a>
+            <Button type="submit" variant="plain" size="xs">
+              Sign out
+            </Button>
+          </form>
+        )}
+      </Show>
+      <ThemeToggle />
+    </div>
   </header>
 )
 
 const NoteList = () => {
   const [list, { refetch }] = createResource(() => notesApi((client) => client.notes.list()))
-  const [text, setText] = createSignal("")
-  const [error, setError] = createSignal<string>()
   const can = (permission: string) => principal()?.can(permission) ?? false
 
-  const post = async (event: SubmitEvent) => {
-    event.preventDefault()
-    try {
-      await notesApi((client) => client.notes.create({ payload: new NewNote({ text: text().trim() }) }))
-      setText("")
-      setError(undefined)
+  // The API's own payload Schema checks the form, with its messages.
+  const form = createForm({
+    schema: NewNote,
+    initial: { text: "" },
+    onSubmit: async (payload) => {
+      await notesApi((client) => client.notes.create({ payload }))
+      form.reset()
       await refetch()
-    } catch (cause) {
-      setError(errorMessage(cause))
-    }
-  }
+    },
+  })
 
   const remove = async (note: Note) => {
-    await notesApi((client) => client.notes.delete({ params: { id: note.id } })).catch((cause: unknown) =>
-      setError(errorMessage(cause)),
+    await notesApi((client) => client.notes.delete({ params: { id: note.id } })).then(
+      () => toast.success("Note deleted"),
+      (cause: unknown) => toast.error("Could not delete the note", errorMessage(cause)),
     )
     await refetch()
   }
@@ -60,63 +74,85 @@ const NoteList = () => {
   return (
     <>
       <Show when={can(app.perm("notes.write"))}>
-        <form class="compose" onSubmit={post}>
-          <textarea
-            value={text()}
-            onInput={(event) => setText(event.currentTarget.value)}
+        <form class="compose" noValidate onSubmit={form.submit}>
+          <TextareaField
+            label="New note"
             placeholder="Write a note for the team"
+            autoresize
             maxLength={500}
-            rows={3}
+            {...form.field("text")}
           />
-          <button type="submit" disabled={text().trim() === ""}>
+          <Show when={form.error()}>
+            {(error) => (
+              <p role="alert" class="error">
+                {error()}
+              </p>
+            )}
+          </Show>
+          <Button type="submit" loading={form.submitting()}>
             Post
-          </button>
+          </Button>
         </form>
       </Show>
-      <Show when={error()}>{(message) => <p class="error">{message()}</p>}</Show>
-      <ul class="notes">
-        <For each={list() ?? []} fallback={<li class="empty">No notes yet.</li>}>
-          {(note) => (
-            <li>
-              <p>{note.text}</p>
-              <footer>
+      <For
+        each={list() ?? []}
+        fallback={<EmptyState title="No notes yet" description="Notes the team posts show here." />}
+      >
+        {(note) => (
+          <Card.Root>
+            <Card.Body gap="2">
+              <p class="text">{note.text}</p>
+              <footer class="meta">
                 <span>
                   {note.author.name} · {new Date(note.createdAt.epochMilliseconds).toLocaleString()}
                 </span>
                 <Show when={note.author.id === principal()?.user?.id || can(app.perm("notes.delete"))}>
-                  <button type="button" class="link" onClick={() => void remove(note)}>
+                  <Button variant="plain" size="xs" onClick={() => void remove(note)}>
                     Delete
-                  </button>
+                  </Button>
                 </Show>
               </footer>
-            </li>
-          )}
-        </For>
-      </ul>
+            </Card.Body>
+          </Card.Root>
+        )}
+      </For>
     </>
   )
 }
 
 const App = () => (
-  <>
+  <ThemeProvider>
     <Header />
     <main class="main">
       <Show when={!session.loading}>
         <Show
           when={principal()?.can(app.accessPermission)}
           fallback={
-            <p class="empty">
-              <Show when={principal()?.user} fallback={<a href={standaloneLinks.signIn(here())}>Sign in</a>}>
-                You cannot read notes yet. <a href={standaloneLinks.requestAccess(here())}>Request access</a>
-              </Show>
-            </p>
+            <EmptyState
+              title={principal()?.user ? "You cannot read notes yet" : "Sign in to read the team's notes"}
+              action={
+                <Show
+                  when={principal()?.user}
+                  fallback={
+                    <a class="link" href={standaloneLinks.signIn(here())}>
+                      Sign in
+                    </a>
+                  }
+                >
+                  <a class="link" href={standaloneLinks.requestAccess(here())}>
+                    Request access
+                  </a>
+                </Show>
+              }
+            />
           }
         >
           <NoteList />
         </Show>
       </Show>
     </main>
-  </>
+    <Toasts />
+  </ThemeProvider>
 )
 
 const root = document.getElementById("root")

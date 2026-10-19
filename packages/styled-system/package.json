@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./preset": "./src/preset.ts",
     "./css": {
       "types": "./generated/css/index.d.ts",
       "default": "./generated/css/index.mjs"
@@ -17,6 +16,12 @@
       "types": "./generated/patterns/index.d.ts",
       "default": "./generated/patterns/index.mjs"
     },
+    "./preset": "./src/preset.ts",
+    "./recipes": {
+      "types": "./generated/recipes/index.d.ts",
+      "default": "./generated/recipes/index.mjs"
+    },
+    "./styles.css": "./generated/styles.css",
     "./tokens": {
       "types": "./generated/tokens/index.d.ts",
       "default": "./generated/tokens/index.mjs"
@@ -27,8 +32,8 @@
     "./panda": "./panda.config.ts"
   },
   "scripts": {
-    "prepare": "panda codegen",
-    "codegen": "panda codegen",
+    "prepare": "panda codegen --silent && panda cssgen --silent --outfile generated/styles.css",
+    "codegen": "panda codegen && panda cssgen --outfile generated/styles.css",
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
@@ -40,5 +45,8 @@
     "generated",
     "src",
     "panda.config.ts"
-  ]
+  ],
+  "dependencies": {
+    "@mosaik/mosaik-ui": "workspace:*"
+  }
 }

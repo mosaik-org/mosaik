@@ -1,14 +1,14 @@
 import { usePrincipal } from "@mosaik/auth/web"
-import { errorMessage, formatDateTime, formatRelativeTime } from "@mosaik/client"
+import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik/client"
+import { Badge, Button, EmptyState, Modal, SelectField, Tabs, TextareaField } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { Badge, Button, Dialog, EmptyState, Select, Tabs, TextField, toast } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Inbox from "lucide-solid/icons/inbox"
-import { createSignal, Match, Show, Switch } from "solid-js"
+import { createSignal, For, Match, Show, Switch } from "solid-js"
 import { platformApi } from "../api"
 import { aboutQuery, accessKeys, reviewsQuery } from "./queries"
 import { RoleDetails } from "./RoleDetails"
@@ -19,7 +19,7 @@ const styles = {
   muted: css({ fontSize: "xs", color: "fg.muted" }),
   message: css({ fontSize: "sm", color: "fg.muted", whiteSpace: "pre-wrap", maxW: "md" }),
   actions: css({ display: "flex", gap: "2", justifyContent: "flex-end" }),
-  link: css({ color: "accent.text", _hover: { textDecoration: "underline" } }),
+  link: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
 }
 
 /** After an answer: the lists, and the app's members (the approved user has a role now). */
@@ -59,7 +59,7 @@ const ApproveDialog = (props: { request: AccessRequest; onClose: () => void }) =
   }))
 
   return (
-    <Dialog
+    <Modal
       open
       onOpenChange={(open) => !open && props.onClose()}
       title={`Give ${props.request.userName} access to ${props.request.appName}`}
@@ -85,7 +85,7 @@ const ApproveDialog = (props: { request: AccessRequest; onClose: () => void }) =
       <QueryBoundary query={about}>
         {(about) => (
           <div class={styles.stack}>
-            <Select
+            <SelectField
               label="Role"
               items={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
               value={role()}
@@ -97,7 +97,7 @@ const ApproveDialog = (props: { request: AccessRequest; onClose: () => void }) =
           </div>
         )}
       </QueryBoundary>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -119,7 +119,7 @@ const DeclineDialog = (props: { request: AccessRequest; onClose: () => void }) =
   }))
 
   return (
-    <Dialog
+    <Modal
       open
       onOpenChange={(open) => !open && props.onClose()}
       title={`Decline ${props.request.userName}'s request`}
@@ -129,14 +129,14 @@ const DeclineDialog = (props: { request: AccessRequest; onClose: () => void }) =
           <Button variant="outline" onClick={() => props.onClose()}>
             Cancel
           </Button>
-          <Button variant="danger" loading={decline.isPending} onClick={() => decline.mutate()}>
+          <Button colorPalette="danger" loading={decline.isPending} onClick={() => decline.mutate()}>
             Decline
           </Button>
         </>
       }
     >
-      <TextField label="Reason (optional)" value={reason()} onValueChange={setReason} multiline maxLength={500} />
-    </Dialog>
+      <TextareaField label="Reason (optional)" value={reason()} onValueChange={setReason} maxLength={500} />
+    </Modal>
   )
 }
 
@@ -144,10 +144,10 @@ const Decision = (props: { request: AccessRequest }) => (
   <div class={styles.person}>
     <Switch>
       <Match when={props.request.status === "approved"}>
-        <Badge tone="success">{props.request.grantedRole?.name ?? "Approved"}</Badge>
+        <Badge colorPalette="success">{props.request.grantedRole?.name ?? "Approved"}</Badge>
       </Match>
       <Match when={props.request.status === "declined"}>
-        <Badge tone="danger">Declined</Badge>
+        <Badge colorPalette="danger">Declined</Badge>
       </Match>
     </Switch>
     <span class={styles.muted}>
@@ -227,10 +227,10 @@ export const AccessRequests = (props: {
         cell: (info) => (
           <Show when={info.row.original.status === "pending"} fallback={<Decision request={info.row.original} />}>
             <div class={styles.actions}>
-              <Button size="sm" variant="outline" onClick={() => setDeclining(info.row.original)}>
+              <Button size="xs" variant="outline" onClick={() => setDeclining(info.row.original)}>
                 Decline…
               </Button>
-              <Button size="sm" onClick={() => setApproving(info.row.original)}>
+              <Button size="xs" onClick={() => setApproving(info.row.original)}>
                 Approve…
               </Button>
             </div>
@@ -241,14 +241,22 @@ export const AccessRequests = (props: {
 
   return (
     <div class={styles.stack}>
-      <Tabs
+      <Tabs.Root
         value={props.answered ? "answered" : "pending"}
-        onValueChange={(value) => props.onAnsweredChange(value === "answered")}
-        items={[
-          { value: "pending", label: "Waiting" },
-          { value: "answered", label: "Answered" },
-        ]}
-      />
+        onValueChange={({ value }) => props.onAnsweredChange(value === "answered")}
+      >
+        <Tabs.List>
+          <For
+            each={[
+              { value: "pending", label: "Waiting" },
+              { value: "answered", label: "Answered" },
+            ]}
+          >
+            {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
+          </For>
+          <Tabs.Indicator />
+        </Tabs.List>
+      </Tabs.Root>
       <QueryBoundary query={requests}>
         {() => (
           <Show

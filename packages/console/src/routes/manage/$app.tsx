@@ -1,15 +1,15 @@
 import { admin } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
+import { Button, EmptyState, PageHeader, Tabs } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { Button, EmptyState, PageHeader, Tabs } from "@mosaik/ui"
 import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import { Schema } from "effect"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import Lock from "lucide-solid/icons/lock"
-import { Match, Show, Switch } from "solid-js"
+import { For, Match, Show, Switch } from "solid-js"
 import { AppOwners, AppRoles } from "../../access/About"
 import { Members } from "../../access/Members"
 import { aboutQuery, reviewsQuery } from "../../access/queries"
@@ -96,16 +96,27 @@ function ManagedApp() {
                   </Show>
                 }
               />
-              <Tabs
+              <Tabs.Root
                 value={tab()}
-                onValueChange={(value) => void navigate({ search: { tab: value === "roles" ? undefined : value } })}
-                items={[
-                  { value: "roles", label: "Roles" },
-                  { value: "people", label: "People" },
-                  { value: "requests", label: waitingCount() > 0 ? `Requests (${waitingCount()})` : "Requests" },
-                  ...(extensions.appTabs ?? []).map((extension) => ({ value: extension.id, label: extension.label })),
-                ]}
-              />
+                onValueChange={({ value }) => void navigate({ search: { tab: value === "roles" ? undefined : value } })}
+              >
+                <Tabs.List>
+                  <For
+                    each={[
+                      { value: "roles", label: "Roles" },
+                      { value: "people", label: "People" },
+                      { value: "requests", label: waitingCount() > 0 ? `Requests (${waitingCount()})` : "Requests" },
+                      ...(extensions.appTabs ?? []).map((extension) => ({
+                        value: extension.id,
+                        label: extension.label,
+                      })),
+                    ]}
+                  >
+                    {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
+                  </For>
+                  <Tabs.Indicator />
+                </Tabs.List>
+              </Tabs.Root>
               <Switch>
                 <Match when={tab() === "people"}>
                   <Members about={about()} />

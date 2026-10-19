@@ -1,7 +1,7 @@
 import type { Role } from "@mosaik/auth/contract"
 import { BuiltInRoles } from "@mosaik/core"
+import { CheckboxField, Input } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Checkbox, Input } from "@mosaik/ui"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { type AppRoles, groupAppRoles } from "../roles"
 
@@ -47,11 +47,11 @@ export const RolePicker = (props: {
   })
 
   const checkbox = (role: Role) => (
-    <Checkbox
+    <CheckboxField
       checked={has(role.id)}
       onCheckedChange={(checked) => toggle(role.id, checked)}
       label={role.name}
-      description={role.description ?? undefined}
+      helperText={role.description ?? undefined}
     />
   )
 

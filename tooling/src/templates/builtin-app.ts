@@ -32,7 +32,7 @@ export const files = (t: BuiltinAppTemplate): Record<string, string> => {
         "@mosaik/server": ws,
         "@mosaik/styled-system": ws,
         "@mosaik/table": ws,
-        "@mosaik/ui": ws,
+        "@mosaik/mosaik-ui": ws,
         "@mosaik/web-kit": ws,
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
@@ -209,9 +209,9 @@ export const Route = createFileRoute("/_app/${t.id}")({
 `,
 
     "web/routes/index.tsx": `import { Can } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
 import { css } from "@mosaik/styled-system/css"
-import { Button, Card, CardHeader, Input, toast } from "@mosaik/ui"
+import { errorMessage, toast } from "@mosaik/client"
+import { Button, Card, TextField } from "@mosaik/mosaik-ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -236,8 +236,12 @@ function Overview() {
   }))
 
   return (
-    <Card>
-      <CardHeader title="Items" description="Replace this page with your app." />
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Items</Card.Title>
+        <Card.Description>Replace this page with your app.</Card.Description>
+      </Card.Header>
+      <Card.Body>
       <QueryBoundary query={items}>
         {(data) => (
           <ul class={css({ display: "flex", flexDirection: "column", gap: "1", mb: "4" })}>
@@ -253,13 +257,14 @@ function Overview() {
             create.mutate()
           }}
         >
-          <Input value={name()} onInput={(e) => setName(e.currentTarget.value)} placeholder="New item" />
+          <TextField aria-label="New item" placeholder="New item" value={name()} onValueChange={setName} />
           <Button type="submit" loading={create.isPending}>
             Add
           </Button>
         </form>
       </Can>
-    </Card>
+      </Card.Body>
+    </Card.Root>
   )
 }
 `,

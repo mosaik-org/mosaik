@@ -6,8 +6,9 @@
  * 3. Shared contracts (`manifest.ts`, `api/`) stay isomorphic: no server-only or UI imports.
  * 4. App servers never import browser code.
  * 5. Shared packages never depend on apps (built-in or examples).
- * 6. Examples see only the SDK (`@mosaik/sdk` and its entry points) and their own files, like a
- *    team's app in its own repository; rules 2–4 hold for the SDK's entry points too.
+ * 6. Examples see only the SDK (`@mosaik/sdk` and its entry points), the component library
+ *    (`@mosaik/mosaik-ui`) and their own files, like a team's app in its own repository; rules
+ *    2–4 hold for the SDK's entry points too.
  * 7. Core (its services and the shared packages) never depends on the Portal.
  * 8. The Portal (its service, the shell, built-in apps) uses Core only through its contracts and
  *    the SDK, never the code of Core's services.
@@ -50,7 +51,7 @@ const SERVER_ONLY = [
 ]
 const BROWSER_ONLY = [
   /^solid-js/,
-  /^@mosaik\/(ui|table|charts|web-kit|styled-system)(\/|$)/,
+  /^@mosaik\/(table|charts|web-kit|styled-system)(\/|$)/,
   /^@mosaik\/auth\/web$/,
   // The component library, except its Panda preset (build time).
   /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
@@ -90,7 +91,7 @@ const exampleOf = (path: string) => /^examples\/([^/]+)\//.exec(path)?.[1]
 
 const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
-  /^packages\/(ui|table|charts|web-kit|client|console)\//.test(path) ||
+  /^packages\/(table|charts|web-kit|client|console)\//.test(path) ||
   path.startsWith("packages/mosaik-ui/src/") ||
   path.startsWith("packages/auth/src/web/") ||
   path.startsWith("shell/src/") ||
@@ -145,11 +146,11 @@ const rules: ReadonlyArray<Rule> = [
       /^@mosaik\/(builtin|example)-/.test(specifier) || /^(apps|examples)\//.test(target(specifier, file) ?? ""),
   },
   {
-    // An example shows what a team's app can do: it sees the SDK and its own files, nothing else.
-    name: "examples use only the SDK",
+    // An example shows what a team's app can do: it sees the SDK, the components and its own files.
+    name: "examples use only the SDK and the component library",
     files: (path) => path.startsWith("examples/"),
     forbidden: (specifier, file) => {
-      if (specifier.startsWith("@mosaik/")) return !SDK_ENTRY_POINTS.has(specifier)
+      if (specifier.startsWith("@mosaik/")) return !SDK_ENTRY_POINTS.has(specifier) && specifier !== "@mosaik/mosaik-ui"
       const resolved = target(specifier, file)
       return resolved !== null && exampleOf(`${resolved}/`) !== exampleOf(file)
     },

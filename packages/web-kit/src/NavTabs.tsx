@@ -26,7 +26,7 @@ const tab = css({
   whiteSpace: "nowrap",
   transition: "color 0.15s",
   _hover: { color: "fg.default" },
-  _focusVisible: { outline: "2px solid", outlineColor: "accent.default", outlineOffset: "-2px", borderRadius: "sm" },
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px", borderRadius: "sm" },
   "&[data-status=active]": {
     color: "fg.default",
     _after: {
@@ -36,7 +36,7 @@ const tab = css({
       bottom: "-1px",
       height: "2px",
       borderRadius: "full",
-      bg: "accent.default",
+      bg: "accent.solid.bg",
     },
   },
 })

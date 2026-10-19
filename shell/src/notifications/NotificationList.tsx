@@ -1,7 +1,6 @@
-import { errorMessage, formatRelativeTime } from "@mosaik/client"
+import { errorMessage, formatRelativeTime, toast } from "@mosaik/client"
 import type { InboxItem, Severity } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
-import { toast } from "@mosaik/ui"
 import { useMutation, useQueryClient } from "@tanstack/solid-query"
 import { useRouter } from "@tanstack/solid-router"
 import { For, type JSX, Show } from "solid-js"
@@ -12,10 +11,10 @@ const dot = cva({
   base: { flexShrink: "0", boxSize: "2", mt: "1.5", borderRadius: "full" },
   variants: {
     severity: {
-      info: { bg: "accent.default" },
-      success: { bg: "success.default" },
-      warning: { bg: "warning.default" },
-      critical: { bg: "danger.default" },
+      info: { bg: "accent.solid.bg" },
+      success: { bg: "success.solid.bg" },
+      warning: { bg: "warning.solid.bg" },
+      critical: { bg: "danger.solid.bg" },
     },
     read: { true: { opacity: "0.25" } },
   },
@@ -31,10 +30,10 @@ const styles = {
     textAlign: "start",
     cursor: "pointer",
     borderBottomWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
     _last: { borderBottomWidth: "0" },
-    _hover: { bg: "bg.muted" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default", outlineOffset: "-2px" },
+    _hover: { bg: "gray.subtle.bg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
   }),
   text: css({ display: "flex", flexDirection: "column", gap: "0.5", minW: "0", flex: "1" }),
   title: css({ fontSize: "sm", lineHeight: "snug", "&[data-read=false]": { fontWeight: "semibold" } }),

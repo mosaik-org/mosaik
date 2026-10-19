@@ -1,5 +1,20 @@
-import { errorMessage, formatDateTime, formatRelativeTime } from "@mosaik/client"
+import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik/client"
 import { PLATFORM_EVENT_DESCRIPTIONS } from "@mosaik/core"
+import {
+  ActionMenu,
+  type ActionMenuItem,
+  Badge,
+  Button,
+  Card,
+  CheckboxField,
+  ConfirmDialog,
+  IconButton,
+  Modal,
+  PasswordField,
+  SelectField,
+  Tabs,
+  TextField,
+} from "@mosaik/mosaik-ui"
 import {
   type AdminApp,
   type AppKind,
@@ -12,23 +27,6 @@ import {
 } from "@mosaik/portal/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import {
-  Badge,
-  type BadgeTone,
-  Button,
-  Card,
-  CardHeader,
-  Checkbox,
-  ConfirmDialog,
-  Dialog,
-  IconButton,
-  Menu,
-  type MenuItem,
-  Select,
-  Tabs,
-  TextField,
-  toast,
-} from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -36,6 +34,9 @@ import Ellipsis from "lucide-solid/icons/ellipsis"
 import Plus from "lucide-solid/icons/plus"
 import { createSignal, For, onCleanup, Show } from "solid-js"
 import { appsQuery, portalApi, portalKeys, registriesQuery } from "../queries"
+
+/** The color palette a badge shows a state in. */
+type Tone = "gray" | "accent" | "success" | "warning" | "danger"
 
 export const Route = createFileRoute("/_app/portal/apps")({
   staticData: {
@@ -46,18 +47,18 @@ export const Route = createFileRoute("/_app/portal/apps")({
   component: Apps,
 })
 
-const KIND: Record<AppKind, { label: string; tone: BadgeTone }> = {
-  configured: { label: "Configured", tone: "neutral" },
+const KIND: Record<AppKind, { label: string; tone: Tone }> = {
+  configured: { label: "Configured", tone: "gray" },
   remote: { label: "Hosted elsewhere", tone: "accent" },
   image: { label: "Docker image", tone: "accent" },
 }
 
-const STATUS: Record<InstallStatus, { label: string; tone: BadgeTone }> = {
+const STATUS: Record<InstallStatus, { label: string; tone: Tone }> = {
   pending: { label: "Waiting to register", tone: "warning" },
   deploying: { label: "Deploying…", tone: "accent" },
   active: { label: "Running", tone: "success" },
   failed: { label: "Failed", tone: "danger" },
-  disabled: { label: "Disabled", tone: "neutral" },
+  disabled: { label: "Disabled", tone: "gray" },
 }
 
 const useInvalidate = () => {
@@ -76,9 +77,9 @@ const styles = {
     flexDirection: "column",
     gap: "1",
     p: "3",
-    borderRadius: "control",
-    bg: "danger.subtle",
-    color: "danger.text",
+    borderRadius: "l2",
+    bg: "danger.subtle.bg",
+    color: "danger.plain.fg",
     fontSize: "sm",
   }),
   list: css({ display: "flex", flexWrap: "wrap", gap: "1" }),
@@ -86,8 +87,8 @@ const styles = {
     maxH: "60vh",
     overflow: "auto",
     p: "3",
-    borderRadius: "control",
-    bg: "bg.subtle",
+    borderRadius: "l2",
+    bg: "gray.2",
     fontFamily: "mono",
     fontSize: "xs",
     whiteSpace: "pre-wrap",
@@ -111,7 +112,9 @@ const ManifestSummary = (props: { inspection: Inspection }) => (
           <div class={styles.label}>Permissions</div>
           <div class={styles.list}>
             <For each={manifest().permissions}>
-              {(permission) => <Badge tone={permission.dangerous ? "danger" : "neutral"}>{permission.key}</Badge>}
+              {(permission) => (
+                <Badge colorPalette={permission.dangerous ? "danger" : "neutral"}>{permission.key}</Badge>
+              )}
             </For>
           </div>
         </div>
@@ -184,7 +187,7 @@ const useInspect = () => {
 }
 
 const KeyDialog = (props: { appKey: string | undefined; appId: string; onClose: () => void }) => (
-  <Dialog
+  <Modal
     open={props.appKey !== undefined}
     onOpenChange={(open) => !open && props.onClose()}
     title="The app's key"
@@ -207,7 +210,7 @@ const KeyDialog = (props: { appKey: string | undefined; appId: string; onClose: 
         The app must be reachable from the platform at its URL, and it must allow requests from the gateway.
       </p>
     </div>
-  </Dialog>
+  </Modal>
 )
 
 const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => void }) => {
@@ -253,14 +256,14 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
 
   return (
     <>
-      <Dialog
+      <Modal
         open={props.open}
         onOpenChange={(open) => (open ? props.onOpenChange(true) : close())}
         title="Install an app"
         size="lg"
         footer={
           <>
-            <Button variant="ghost" onClick={close}>
+            <Button variant="plain" onClick={close}>
               Cancel
             </Button>
             <Show
@@ -283,17 +286,25 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
         }
       >
         <div class={styles.stack}>
-          <Tabs
+          <Tabs.Root
             value={kind()}
-            onValueChange={(value) => {
+            onValueChange={({ value }) => {
               setKind(value as "Image" | "Url")
               inspect.reset()
             }}
-            items={[
-              { value: "Image", label: "Docker image" },
-              { value: "Url", label: "Hosted elsewhere" },
-            ]}
-          />
+          >
+            <Tabs.List>
+              <For
+                each={[
+                  { value: "Image", label: "Docker image" },
+                  { value: "Url", label: "Hosted elsewhere" },
+                ]}
+              >
+                {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
+              </For>
+              <Tabs.Indicator />
+            </Tabs.List>
+          </Tabs.Root>
           <TextField
             label={kind() === "Image" ? "Image" : "Base URL"}
             placeholder={kind() === "Image" ? "registry.example.com/team/crm:1.4.2" : "https://crm.team.example.com"}
@@ -317,7 +328,7 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
             {(manifest) => (
               <div class={styles.stack}>
                 <Show when={manifest().database}>
-                  <Select
+                  <SelectField
                     label="Database"
                     items={[
                       { value: "platform", label: "Provided by the platform" },
@@ -327,9 +338,8 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
                     onValueChange={(value) => setDatabase(value as DatabaseMode)}
                   />
                   <Show when={database() === "app"}>
-                    <TextField
+                    <PasswordField
                       label="DATABASE_URL"
-                      type="password"
                       required
                       placeholder="postgres://user:password@host:5432/db"
                       value={config().DATABASE_URL ?? ""}
@@ -353,7 +363,7 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
             )}
           </Show>
         </div>
-      </Dialog>
+      </Modal>
       <KeyDialog appKey={key()?.key} appId={key()?.appId ?? ""} onClose={() => setKey(undefined)} />
     </>
   )
@@ -376,7 +386,7 @@ const UpgradeDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (ope
   const ready = () => inspect.inspection()?.state === "ready" && inspect.inspection()?.problems.length === 0
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Update ${props.app.name}`}
@@ -384,7 +394,7 @@ const UpgradeDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (ope
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Show
@@ -414,7 +424,7 @@ const UpgradeDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (ope
         <Show when={inspect.inspection()?.error}>{(error) => <div class={styles.problems}>{error()}</div>}</Show>
         <Show when={inspect.inspection()}>{(result) => <ManifestSummary inspection={result()} />}</Show>
       </div>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -436,14 +446,14 @@ const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open
     onError: onError("Could not save the settings"),
   }))
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Settings of ${props.app.name}`}
       description="Passed to the app as environment variables. Saving restarts it."
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button loading={save.isPending} onClick={() => save.mutate()}>
@@ -467,7 +477,7 @@ const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open
           )}
         </For>
       </div>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -479,11 +489,11 @@ const LogsDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open: 
     refetchInterval: 3000,
   }))
   return (
-    <Dialog open={props.open} onOpenChange={props.onOpenChange} title={`Logs of ${props.app.name}`} size="lg">
+    <Modal open={props.open} onOpenChange={props.onOpenChange} title={`Logs of ${props.app.name}`} size="lg">
       <QueryBoundary query={logs}>
         {(data) => <pre class={styles.logs}>{data().lines || "No output yet."}</pre>}
       </QueryBoundary>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -506,31 +516,31 @@ const UninstallDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (o
     onError: onError("Could not uninstall the app"),
   }))
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Uninstall ${props.app.name}?`}
       description="Its pages, permissions and grants are removed. Users see it disappear on their next page load."
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="danger" loading={uninstall.isPending} onClick={() => uninstall.mutate()}>
+          <Button colorPalette="danger" loading={uninstall.isPending} onClick={() => uninstall.mutate()}>
             Uninstall
           </Button>
         </>
       }
     >
       <Show when={props.app.database === "platform"}>
-        <Checkbox
+        <CheckboxField
           checked={deleteData()}
           onCheckedChange={setDeleteData}
           label="Also delete its database"
-          description="Cannot be undone. Leave unchecked to keep the data for a reinstall."
+          helperText="Cannot be undone. Leave unchecked to keep the data for a reinstall."
         />
       </Show>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -557,9 +567,9 @@ const AppActions = (props: { app: AdminApp }) => {
     onError: onError("Could not issue a new key"),
   }))
 
-  const items = (): ReadonlyArray<MenuItem> => {
+  const items = (): ReadonlyArray<ActionMenuItem> => {
     const app = props.app
-    const toggle: MenuItem =
+    const toggle: ActionMenuItem =
       app.status === "disabled"
         ? {
             value: "enable",
@@ -573,7 +583,7 @@ const AppActions = (props: { app: AdminApp }) => {
           }
     // Its key and address come from Core's configuration.
     if (app.kind === "configured") return [toggle]
-    const common: ReadonlyArray<MenuItem> = [
+    const common: ReadonlyArray<ActionMenuItem> = [
       { value: "rotate", label: "Issue a new key…", onSelect: () => setDialog("rotate") },
       toggle,
       { value: "uninstall", label: "Uninstall…", danger: true, onSelect: () => setDialog("uninstall") },
@@ -612,9 +622,9 @@ const AppActions = (props: { app: AdminApp }) => {
 
   return (
     <>
-      <Menu
+      <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton label={`Actions for ${props.app.name}`} size="sm" {...triggerProps}>
+          <IconButton variant="plain" aria-label={`Actions for ${props.app.name}`} size="2xs" {...triggerProps()}>
             <Ellipsis size={16} />
           </IconButton>
         )}
@@ -675,24 +685,24 @@ const EventsStatus = (props: { app: AdminApp }) => {
       {(events) => (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
           <Show when={events().pending > 0}>
-            <Badge tone={events().lastError ? "danger" : "warning"}>
+            <Badge colorPalette={events().lastError ? "danger" : "warning"}>
               {events().pending} {events().pending === 1 ? "event" : "events"} waiting
             </Badge>
           </Show>
           <Show when={events().lastError}>
             {(error) => (
-              <span class={css({ fontSize: "xs", color: "danger.text", wordBreak: "break-word" })}>{error()}</span>
+              <span class={css({ fontSize: "xs", color: "danger.plain.fg", wordBreak: "break-word" })}>{error()}</span>
             )}
           </Show>
           <Show when={props.app.status === "active" && silent(events().polledAt)}>
-            <span class={css({ fontSize: "xs", color: "warning.text" })}>
+            <span class={css({ fontSize: "xs", color: "warning.plain.fg" })}>
               <Show when={events().polledAt} fallback="Has not asked for events yet">
                 {(at) => `Last asked for events ${formatRelativeTime(at())}`}
               </Show>
             </span>
           </Show>
           <Show when={events().lastError}>
-            <Button size="sm" variant="outline" onClick={() => setConfirm(true)}>
+            <Button size="xs" variant="outline" onClick={() => setConfirm(true)}>
               Skip this event…
             </Button>
           </Show>
@@ -728,7 +738,7 @@ const columns = column.columns([
     header: "Runs",
     cell: (info) => (
       <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
-        <Badge tone={KIND[info.getValue()].tone}>{KIND[info.getValue()].label}</Badge>
+        <Badge colorPalette={KIND[info.getValue()].tone}>{KIND[info.getValue()].label}</Badge>
         <span class={styles.mono}>{info.row.original.image ?? info.row.original.url ?? ""}</span>
       </div>
     ),
@@ -742,9 +752,11 @@ const columns = column.columns([
       return (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start", maxW: "sm" })}>
           <div class={css({ display: "flex", gap: "1", alignItems: "center" })}>
-            <Badge tone={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
+            <Badge colorPalette={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
             <Show when={app.status === "active" || app.status === "pending"}>
-              <Badge tone={app.health === "healthy" ? "success" : app.health === "unhealthy" ? "danger" : "neutral"}>
+              <Badge
+                colorPalette={app.health === "healthy" ? "success" : app.health === "unhealthy" ? "danger" : "neutral"}
+              >
                 {app.health}
               </Badge>
             </Show>
@@ -799,57 +811,61 @@ const RegistriesCard = () => {
     onError: onError("Could not remove the registry"),
   }))
   return (
-    <Card>
-      <CardHeader
-        title="Registry credentials"
-        description="Used to pull private images. Passwords are stored encrypted and never shown again."
-      />
-      <QueryBoundary query={registries}>
-        {(data) => (
-          <div class={css({ display: "flex", flexDirection: "column", gap: "2" })}>
-            <For each={data()} fallback={<p class={styles.muted}>None: only public images can be pulled.</p>}>
-              {(registry) => (
-                <div class={css({ display: "flex", alignItems: "center", gap: "3" })}>
-                  <span class={css({ fontFamily: "mono", fontSize: "sm" })}>{registry.server}</span>
-                  <span class={styles.muted}>
-                    {registry.username} · added {formatDateTime(registry.createdAt)}
-                  </span>
-                  <div class={css({ flex: "1" })} />
-                  <Button size="sm" variant="ghost" onClick={() => remove.mutate(registry.server)}>
-                    Remove
-                  </Button>
-                </div>
-              )}
-            </For>
-          </div>
-        )}
-      </QueryBoundary>
-      <form
-        class={css({
-          display: "grid",
-          gridTemplateColumns: { base: "1fr", md: "1fr 1fr 1fr auto" },
-          gap: "3",
-          alignItems: "end",
-        })}
-        onSubmit={(event) => {
-          event.preventDefault()
-          save.mutate()
-        }}
-      >
-        <TextField
-          label="Registry"
-          placeholder="registry.example.com"
-          required
-          value={server()}
-          onValueChange={setServer}
-        />
-        <TextField label="Username" required value={username()} onValueChange={setUsername} />
-        <TextField label="Password or token" type="password" required value={password()} onValueChange={setPassword} />
-        <Button type="submit" loading={save.isPending}>
-          Save
-        </Button>
-      </form>
-    </Card>
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Registry credentials</Card.Title>
+        <Card.Description>
+          Used to pull private images. Passwords are stored encrypted and never shown again.
+        </Card.Description>
+      </Card.Header>
+      <Card.Body gap="4">
+        <QueryBoundary query={registries}>
+          {(data) => (
+            <div class={css({ display: "flex", flexDirection: "column", gap: "2" })}>
+              <For each={data()} fallback={<p class={styles.muted}>None: only public images can be pulled.</p>}>
+                {(registry) => (
+                  <div class={css({ display: "flex", alignItems: "center", gap: "3" })}>
+                    <span class={css({ fontFamily: "mono", fontSize: "sm" })}>{registry.server}</span>
+                    <span class={styles.muted}>
+                      {registry.username} · added {formatDateTime(registry.createdAt)}
+                    </span>
+                    <div class={css({ flex: "1" })} />
+                    <Button size="xs" variant="plain" onClick={() => remove.mutate(registry.server)}>
+                      Remove
+                    </Button>
+                  </div>
+                )}
+              </For>
+            </div>
+          )}
+        </QueryBoundary>
+        <form
+          class={css({
+            display: "grid",
+            gridTemplateColumns: { base: "1fr", md: "1fr 1fr 1fr auto" },
+            gap: "3",
+            alignItems: "end",
+          })}
+          onSubmit={(event) => {
+            event.preventDefault()
+            save.mutate()
+          }}
+        >
+          <TextField
+            label="Registry"
+            placeholder="registry.example.com"
+            required
+            value={server()}
+            onValueChange={setServer}
+          />
+          <TextField label="Username" required value={username()} onValueChange={setUsername} />
+          <PasswordField label="Password or token" required value={password()} onValueChange={setPassword} />
+          <Button type="submit" loading={save.isPending}>
+            Save
+          </Button>
+        </form>
+      </Card.Body>
+    </Card.Root>
   )
 }
 
@@ -858,21 +874,26 @@ function Apps() {
   const [installing, setInstalling] = createSignal(false)
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
-      <Card>
-        <CardHeader
-          title="Apps"
-          description="Built-in apps ship with the platform. Install your team's apps from a Docker image or a URL; they appear without a platform release."
-          actions={
-            <Button size="sm" onClick={() => setInstalling(true)}>
-              <Plus size={16} />
-              Install app
-            </Button>
-          }
-        />
-        <QueryBoundary query={apps}>
-          {(data) => <DataTable columns={columns} data={data()} getRowId={(app) => app.id} emptyMessage="No apps." />}
-        </QueryBoundary>
-      </Card>
+      <Card.Root>
+        <Card.Header flexDirection="row" alignItems="flex-start" justifyContent="space-between" gap="4">
+          <div>
+            <Card.Title>Apps</Card.Title>
+            <Card.Description>
+              Built-in apps ship with the platform. Install your team's apps from a Docker image or a URL; they appear
+              without a platform release.
+            </Card.Description>
+          </div>
+          <Button size="xs" onClick={() => setInstalling(true)}>
+            <Plus size={16} />
+            Install app
+          </Button>
+        </Card.Header>
+        <Card.Body gap="4">
+          <QueryBoundary query={apps}>
+            {(data) => <DataTable columns={columns} data={data()} getRowId={(app) => app.id} emptyMessage="No apps." />}
+          </QueryBoundary>
+        </Card.Body>
+      </Card.Root>
       <RegistriesCard />
       <InstallDialog open={installing()} onOpenChange={setInstalling} />
     </div>

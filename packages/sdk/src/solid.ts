@@ -1,4 +1,7 @@
-/** `@mosaik/sdk/solid`: who is signed in, the API (queries, actions), forms and live data, in Solid pages (Core). */
+/**
+ * `@mosaik/sdk/solid`: who is signed in, the API (queries, actions), forms and live data, in Solid pages
+ * (Core); `<Toasts />` and `usePageTheme` for the shell's contract (`toast`, `pageTheme` in `/client`).
+ */
 export { Can, useCan, usePrincipal, useSession } from "@mosaik/auth/web"
 export {
   createEventStream,
@@ -20,6 +23,8 @@ export {
   type FormOptions,
   type GroupApi,
   type Keyed,
+  Toasts,
   useAction,
   useNow,
+  usePageTheme,
 } from "@mosaik/web-kit"

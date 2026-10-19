@@ -1,6 +1,6 @@
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
 import type { AnyApp } from "@mosaik/core"
-import { Button, Dialog, TextField, toast } from "@mosaik/ui"
+import { Button, Modal, TextField } from "@mosaik/mosaik-ui"
 import { useMutation } from "@tanstack/solid-query"
 import { createEffect, createSignal, on, Show } from "solid-js"
 import { categoryOf, setCategoryOverride } from "../apps"
@@ -43,7 +43,7 @@ export const CategoryDialog = (props: {
   }
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Category of ${props.app.name}`}
@@ -51,7 +51,7 @@ export const CategoryDialog = (props: {
       footer={
         <>
           <Show when={categoryOf(props.app) !== own()}>
-            <Button variant="ghost" disabled={save.isPending} onClick={() => save.mutate(null)}>
+            <Button variant="plain" disabled={save.isPending} onClick={() => save.mutate(null)}>
               Use the app's own ({own()})
             </Button>
           </Show>
@@ -71,6 +71,6 @@ export const CategoryDialog = (props: {
         suggestions={props.categories}
         maxLength={40}
       />
-    </Dialog>
+    </Modal>
   )
 }

@@ -1,7 +1,7 @@
 import { type DateInput, formatDateTime, formatRelativeTime } from "@mosaik/client"
 import { isFresh } from "@mosaik/core"
+import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
-import { IconButton, Tooltip } from "@mosaik/ui"
 import { DateTime, type Duration } from "effect"
 import RefreshCw from "lucide-solid/icons/refresh-cw"
 import { createMemo, type JSX, Show } from "solid-js"
@@ -28,12 +28,12 @@ const dot = cva({
   base: { width: "2", height: "2", borderRadius: "full", flexShrink: "0" },
   variants: {
     state: {
-      fresh: { bg: "success.default" },
-      aging: { bg: "warning.default" },
-      stale: { bg: "danger.default" },
+      fresh: { bg: "success.solid.bg" },
+      aging: { bg: "warning.solid.bg" },
+      stale: { bg: "danger.solid.bg" },
       unknown: { bg: "fg.subtle" },
     },
-    live: { true: { animation: "fadeIn 1s ease-in-out infinite alternate" } },
+    live: { true: { animation: "fade-in 1s ease-in-out infinite alternate" } },
   },
 })
 
@@ -87,7 +87,13 @@ export const Freshness = (props: FreshnessProps) => {
       </Tooltip>
       <Show when={props.onRefresh}>
         {(refresh) => (
-          <IconButton label="Refresh" size="sm" disabled={props.fetching} onClick={() => refresh()()}>
+          <IconButton
+            variant="plain"
+            aria-label="Refresh"
+            size="xs"
+            disabled={props.fetching}
+            onClick={() => refresh()()}
+          >
             <RefreshCw size={14} class={props.fetching ? styles.spinning : undefined} />
           </IconButton>
         )}

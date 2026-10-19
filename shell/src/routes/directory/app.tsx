@@ -2,10 +2,10 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { AppOwners, AppRoles, aboutQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
+import { Badge, Button, IconButton, PageHeader } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, Badge, Button, IconButton, PageHeader } from "@mosaik/ui"
-import { QueryBoundary } from "@mosaik/web-kit"
+import { AppIcon, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
@@ -41,7 +41,7 @@ const styles = {
     alignItems: "start",
   }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  pinned: css({ color: "accent.text", fill: "currentColor" }),
+  pinned: css({ color: "accent.plain.fg", fill: "currentColor" }),
 }
 
 /** Open it, ask for it, or log in for it; and pin it. */
@@ -63,7 +63,7 @@ const Actions = (props: { app: AnyApp }) => {
       </Show>
       <Show when={available() && apps.canPin()}>
         <IconButton
-          label={apps.isPinned(props.app.id) ? `Unpin ${props.app.name}` : `Pin ${props.app.name}`}
+          aria-label={apps.isPinned(props.app.id) ? `Unpin ${props.app.name}` : `Pin ${props.app.name}`}
           variant="outline"
           aria-pressed={apps.isPinned(props.app.id)}
           onClick={() => (apps.isPinned(props.app.id) ? apps.unpin(props.app.id) : apps.pin(props.app.id))}
@@ -83,7 +83,7 @@ const Actions = (props: { app: AnyApp }) => {
           </a>
         </Match>
         <Match when={latest()?.status === "pending"}>
-          <Badge tone="accent">Access requested</Badge>
+          <Badge colorPalette="accent">Access requested</Badge>
         </Match>
         <Match when={true}>
           <Button variant="outline" onClick={() => setRequesting(true)}>

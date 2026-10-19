@@ -1,9 +1,9 @@
 import { admin, type CatalogApp, CreateRole, type Role } from "@mosaik/auth/contract"
 import { useCan } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
 import { BuiltInRoles } from "@mosaik/core"
+import { Badge, Button, Card, ConfirmDialog, Input, Modal, TextField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Badge, Button, Card, ConfirmDialog, Dialog, Input, TextField, toast } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -37,8 +37,8 @@ const styles = {
     borderRadius: "md",
     textAlign: "left",
     cursor: "pointer",
-    _hover: { bg: "bg.muted" },
-    "&[aria-current=true]": { bg: "accent.subtle", color: "accent.text" },
+    _hover: { bg: "gray.subtle.bg" },
+    "&[aria-current=true]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
   }),
   meta: css({ fontSize: "xs", color: "fg.muted" }),
   heading: css({ px: "3", pt: "3", pb: "1", fontSize: "xs", fontWeight: "semibold", color: "fg.muted" }),
@@ -101,13 +101,13 @@ const CreateRoleDialog = (props: {
   }))
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title="New role"
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="create-role" loading={create.isPending}>
@@ -133,7 +133,7 @@ const CreateRoleDialog = (props: {
         />
         <TextField label="Description" value={description()} onValueChange={setDescription} />
       </form>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -231,7 +231,7 @@ function Roles() {
     <QueryBoundary query={roles}>
       {() => (
         <div class={styles.layout}>
-          <Card padding="none">
+          <Card.Root>
             <div class={css({ p: "2" })}>
               <div class={styles.list}>
                 <For each={customRoles()}>{(role) => roleItem(role)}</For>
@@ -260,14 +260,14 @@ function Roles() {
               </Show>
               <Show when={canManage()}>
                 <div class={css({ p: "2", borderTopWidth: "1px", mt: "2" })}>
-                  <Button variant="ghost" size="sm" onClick={() => setCreating(true)}>
+                  <Button variant="plain" size="xs" onClick={() => setCreating(true)}>
                     <Plus size={16} />
                     New role
                   </Button>
                 </div>
               </Show>
             </div>
-          </Card>
+          </Card.Root>
 
           <Show when={selected()}>
             {(role) => (
@@ -278,7 +278,7 @@ function Roles() {
                     <div class={styles.meta}>{role().description}</div>
                   </div>
                   <Show when={canManage() && !role().builtIn && (role().app === null || role().stale)}>
-                    <Button variant="ghost" onClick={() => setDeleting(true)}>
+                    <Button variant="plain" onClick={() => setDeleting(true)}>
                       Delete role
                     </Button>
                   </Show>

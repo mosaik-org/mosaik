@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
+import { EmptyState, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { EmptyState, PageHeader } from "@mosaik/ui"
 import { searchValidator } from "@mosaik/web-kit"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"

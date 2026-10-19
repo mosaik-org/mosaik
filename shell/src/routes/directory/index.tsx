@@ -1,8 +1,8 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
+import { EmptyState, Input, PageHeader, SelectField, SwitchField } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { EmptyState, Input, PageHeader, Select, Switch } from "@mosaik/ui"
 import { searchValidator } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -63,13 +63,13 @@ const styles = {
     py: "1",
     borderRadius: "full",
     borderWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
     fontSize: "sm",
     color: "fg.muted",
     cursor: "pointer",
-    _hover: { bg: "bg.muted", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default", outlineOffset: "1px" },
-    "&[aria-pressed=true]": { bg: "accent.subtle", color: "accent.text", borderColor: "accent.default" },
+    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "1px" },
+    "&[aria-pressed=true]": { bg: "accent.subtle.bg", color: "accent.plain.fg", borderColor: "accent.solid.bg" },
   }),
   count: css({ fontSize: "xs", color: "fg.subtle" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
@@ -179,14 +179,15 @@ function Directory() {
             onInput={(event) => update({ q: event.currentTarget.value || undefined })}
           />
         </div>
-        <Select
+        <SelectField
+          aria-label="Sort"
           items={SORTS}
           value={sort()}
-          onValueChange={(value) => update({ sort: value === "name" ? undefined : value })}
+          onValueChange={(value) => update({ sort: value === "name" ? undefined : (value ?? undefined) })}
           size="sm"
           class={css({ width: "40" })}
         />
-        <Switch
+        <SwitchField
           label="Only apps I can open"
           checked={search().available === true}
           onCheckedChange={(checked) => update({ available: checked || undefined })}

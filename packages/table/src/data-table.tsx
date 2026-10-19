@@ -1,5 +1,5 @@
+import { Skeleton } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
-import { Skeleton } from "@mosaik/ui"
 import {
   createTable,
   functionalUpdate,
@@ -22,11 +22,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minW: "0",
-    bg: "bg.surface",
+    bg: "gray.surface.bg",
     borderWidth: "1px",
-    borderColor: "border.default",
-    borderRadius: "card",
-    boxShadow: "card",
+    borderColor: "border",
+    borderRadius: "l3",
+    boxShadow: "xs",
     overflow: "hidden",
   }),
   scroller: css({ overflowX: "auto" }),
@@ -41,17 +41,17 @@ const styles = {
 const rowRecipe = cva({
   base: {
     borderBottomWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
     _last: { borderBottomWidth: "0" },
-    _even: { bg: "bg.muted/40", _hover: { bg: "bg.muted" } },
-    _hover: { bg: "bg.muted" },
+    _even: { bg: "gray.a2", _hover: { bg: "gray.subtle.bg" } },
+    _hover: { bg: "gray.subtle.bg" },
   },
   variants: {
     clickable: {
       true: {
         cursor: "pointer",
         outline: "none",
-        _focusVisible: { bg: "bg.muted", boxShadow: "inset 2px 0 0 {colors.accent.default}" },
+        _focusVisible: { bg: "gray.subtle.bg", boxShadow: "inset 2px 0 0 {colors.accent.solid.bg}" },
       },
     },
   },

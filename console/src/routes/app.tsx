@@ -1,8 +1,8 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, signOut, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
 import { canUseConsole, consoleNav } from "@mosaik/console"
+import { Button, EmptyState, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Button, EmptyState, ThemeToggle } from "@mosaik/ui"
 import { CommandProvider } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/solid-router"
@@ -29,8 +29,8 @@ const styles = {
     px: { base: "4", md: "6" },
     py: "3",
     borderBottomWidth: "1px",
-    borderColor: "border.default",
-    bg: "bg.default",
+    borderColor: "border",
+    bg: "canvas",
   }),
   brand: css({ display: "flex", alignItems: "center", gap: "2", fontWeight: "semibold" }),
   mark: css({
@@ -39,8 +39,8 @@ const styles = {
     width: "7",
     height: "7",
     borderRadius: "md",
-    bg: "accent.default",
-    color: "accent.fg",
+    bg: "accent.solid.bg",
+    color: "accent.solid.fg",
     fontSize: "sm",
   }),
   nav: css({ display: "flex", gap: "4", flex: "1", fontSize: "sm" }),
@@ -68,7 +68,7 @@ function ConsoleLayout() {
   // The console's pages register commands (Ctrl+K), as they do in the shell.
   return (
     <CommandProvider>
-      <div class={css({ minHeight: "100dvh", bg: "bg.subtle" })}>
+      <div class={css({ minHeight: "100dvh", bg: "gray.2" })}>
         <header class={styles.header}>
           <span class={styles.brand}>
             <span class={styles.mark}>M</span> Console

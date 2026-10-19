@@ -14,6 +14,7 @@
     "./solid": "./src/solid.ts",
     "./portal": "./src/portal.ts",
     "./ui": "./src/ui.ts",
+    "./ui/styles.css": "./src/ui.css",
     "./table": "./src/table.ts",
     "./charts": "./src/charts.ts",
     "./css": "./src/css.ts",
@@ -39,7 +40,6 @@
     "@mosaik/server": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
     "@mosaik/table": "workspace:*",
-    "@mosaik/ui": "workspace:*",
     "@mosaik/web-kit": "workspace:*"
   },
   "devDependencies": {

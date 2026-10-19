@@ -82,16 +82,21 @@ const versions = async () => {
   return { pick }
 }
 
-/** Copies the SDK tarball into the app; returns the dependency specifier for it. */
+/** Copies the SDK's and the components' tarballs into the app; returns the dependencies on them. */
 const vendor = async (sdk: SdkIndex) => {
   await rm(join(dir, VENDOR), { recursive: true, force: true })
   await mkdir(join(dir, VENDOR), { recursive: true })
-  await copyFile(join(SDK_DIR, sdk.tarball), join(dir, VENDOR, sdk.tarball))
-  return `file:./${VENDOR}/${sdk.tarball}`
+  for (const tarball of [sdk.tarball, sdk.components.tarball]) {
+    await copyFile(join(SDK_DIR, tarball), join(dir, VENDOR, tarball))
+  }
+  return {
+    "@mosaik/sdk": `file:./${VENDOR}/${sdk.tarball}`,
+    "@mosaik/mosaik-ui": `file:./${VENDOR}/${sdk.components.tarball}`,
+  }
 }
 
 const sdk = await packSdk()
-const sdkSpec = await vendor(sdk)
+const mosaik = await vendor(sdk)
 
 if (values["sdk-only"]) {
   const path = join(dir, "package.json")
@@ -103,7 +108,7 @@ if (values["sdk-only"]) {
     for (const name of Object.keys(entries)) if (name.startsWith("@mosaik/")) delete entries[name]
     if (Object.keys(entries).length === 0) delete manifest[section]
   }
-  manifest.dependencies = { ...manifest.dependencies, "@mosaik/sdk": sdkSpec }
+  manifest.dependencies = { ...manifest.dependencies, ...mosaik }
   await Bun.write(path, `${JSON.stringify(manifest, null, 2)}\n`)
   console.log(`Updated the SDK in ${dir} to ${sdk.version}. Then:
 
@@ -128,7 +133,7 @@ const files = appFiles({
   database: values.db ?? false,
   platformVersion: sdk.version,
   dependencies: {
-    "@mosaik/sdk": sdkSpec,
+    ...mosaik,
     "@tanstack/solid-query": pick("@tanstack/solid-query"),
     "@tanstack/solid-router": pick("@tanstack/solid-router"),
     effect: pick("effect"),

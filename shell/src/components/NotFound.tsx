@@ -1,5 +1,5 @@
+import { Button, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Button, EmptyState } from "@mosaik/ui"
 import { Link, useLocation } from "@tanstack/solid-router"
 import FileQuestion from "lucide-solid/icons/file-question-mark"
 import { appForPath, appHref } from "../apps"

@@ -1,10 +1,9 @@
 import { Dialog as ArkDialog } from "@ark-ui/solid/dialog"
+import { Kbd, Spinner } from "@mosaik/mosaik-ui"
 import { css, sva } from "@mosaik/styled-system/css"
 import Search from "lucide-solid/icons/search"
 import { createEffect, createMemo, createSignal, For, type JSX, on, Show } from "solid-js"
 import { Portal } from "solid-js/web"
-import { Kbd } from "./kbd"
-import { Spinner } from "./spinner"
 
 export interface CommandMenuItem {
   readonly id: string
@@ -65,10 +64,10 @@ const menu = sva({
       position: "fixed",
       inset: "0",
       zIndex: "100",
-      bg: "bg.overlay",
+      bg: "black.a7",
       backdropFilter: "blur(2px)",
-      _open: { animation: "fadeIn 120ms ease-out" },
-      _closed: { animation: "fadeOut 100ms ease-in" },
+      _open: { animation: "fade-in 120ms ease-out" },
+      _closed: { animation: "fade-out 100ms ease-in" },
     },
     positioner: {
       position: "fixed",
@@ -86,13 +85,13 @@ const menu = sva({
       w: "full",
       maxW: "xl",
       maxH: { base: "calc(100dvh - 2rem)", sm: "60vh" },
-      bg: "bg.surface",
-      borderRadius: "card",
-      boxShadow: "popover",
+      bg: "gray.surface.bg",
+      borderRadius: "l3",
+      boxShadow: "lg",
       overflow: "hidden",
       outline: "none",
-      _open: { animation: "scaleIn 120ms ease-out" },
-      _closed: { animation: "scaleOut 100ms ease-in" },
+      _open: { animation: "scale-in 120ms ease-out" },
+      _closed: { animation: "scale-out 100ms ease-in" },
     },
     search: { display: "flex", alignItems: "center", gap: "3", px: "4", borderBottomWidth: "1px", color: "fg.subtle" },
     scope: {
@@ -100,8 +99,8 @@ const menu = sva({
       px: "2",
       py: "0.5",
       borderRadius: "md",
-      bg: "accent.subtle",
-      color: "accent.text",
+      bg: "accent.subtle.bg",
+      color: "accent.plain.fg",
       fontSize: "sm",
       fontWeight: "medium",
       maxW: "40",
@@ -130,7 +129,7 @@ const menu = sva({
       textAlign: "start",
       cursor: "pointer",
       color: "fg.default",
-      "&[data-active]": { bg: "bg.muted" },
+      "&[data-active]": { bg: "gray.subtle.bg" },
     },
     icon: { display: "grid", placeItems: "center", w: "5", color: "fg.muted", flexShrink: "0" },
     text: { display: "flex", flexDirection: "column", flex: "1", minW: "0" },
@@ -144,7 +143,7 @@ const menu = sva({
       px: "4",
       py: "2",
       borderTopWidth: "1px",
-      bg: "bg.subtle",
+      bg: "gray.2",
       fontSize: "xs",
       color: "fg.muted",
     },

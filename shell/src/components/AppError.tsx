@@ -1,6 +1,6 @@
 import { errorMessage } from "@mosaik/client"
+import { ErrorState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { ErrorState } from "@mosaik/ui"
 import { isChunkLoadError } from "@mosaik/web-kit"
 import { type ErrorComponentProps, useLocation, useRouter } from "@tanstack/solid-router"
 import { Match, Switch } from "solid-js"

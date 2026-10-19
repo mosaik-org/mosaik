@@ -1,9 +1,9 @@
 import { usePrincipal } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
 import { aboutQuery, RoleDetails } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
+import { Button, Modal, SelectField, TextareaField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Button, Dialog, Select, TextField, toast } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createSignal, Show } from "solid-js"
@@ -45,7 +45,7 @@ export const RequestAccessDialog = (props: { app: AnyApp; open: boolean; onOpenC
   }))
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Request access to ${props.app.name}`}
@@ -71,7 +71,7 @@ export const RequestAccessDialog = (props: { app: AnyApp; open: boolean; onOpenC
         <QueryBoundary query={about}>
           {(about) => (
             <Show when={roles().length > 1}>
-              <Select
+              <SelectField
                 label="Role"
                 items={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
                 value={role()}
@@ -83,14 +83,13 @@ export const RequestAccessDialog = (props: { app: AnyApp; open: boolean; onOpenC
             </Show>
           )}
         </QueryBoundary>
-        <TextField
+        <TextareaField
           label="What do you need it for? (optional)"
           value={message()}
           onValueChange={setMessage}
-          multiline
           maxLength={500}
         />
       </div>
-    </Dialog>
+    </Modal>
   )
 }

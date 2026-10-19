@@ -10,12 +10,13 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@ark-ui/solid": "^5.39.3",
     "@mosaik/auth": "workspace:*",
-    "@mosaik/core": "workspace:*",
     "@mosaik/client": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
     "@mosaik/table": "workspace:*",
-    "@mosaik/ui": "workspace:*",
     "@tanstack/solid-query": "^5.104.3",
     "@tanstack/solid-router": "^1.170.41",
     "effect": "^4.0.5",

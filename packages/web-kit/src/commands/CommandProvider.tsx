@@ -1,5 +1,4 @@
 import { useCan } from "@mosaik/auth/web"
-import { CommandMenu, type CommandMenuGroup, type CommandMenuItem } from "@mosaik/ui"
 import { useRouter } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 import History from "lucide-solid/icons/clock"
@@ -19,6 +18,7 @@ import {
 import { bestScore } from "../fuzzy"
 import { withTimeout } from "../loading"
 import { createDebounced } from "../primitives"
+import { CommandMenu, type CommandMenuGroup, type CommandMenuItem } from "./CommandMenu"
 import { sourcesToSearch } from "./scope"
 import type { Command, CommandApp, SearchProvider, SearchProviderLoader, SearchResult, SearchSource } from "./types"
 

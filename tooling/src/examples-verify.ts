@@ -1,7 +1,7 @@
 /**
  * `bun examples:verify [id...]` — typechecks and builds every example the way a team's app gets
- * the SDK: copied out of the repository, with `@mosaik/sdk` installed from the packed tarball
- * instead of linked from the workspace. That catches what the workspace hides: a file missing
+ * the SDK: copied out of the repository, with `@mosaik/sdk` and `@mosaik/mosaik-ui` installed from the packed
+ * tarballs instead of linked from the workspace. That catches what the workspace hides: a file missing
  * from the tarball, an import the SDK does not export, a dependency only the monorepo has.
  * A failed example's copy is kept for a look.
  */
@@ -28,7 +28,8 @@ const only = new Set(process.argv.slice(2))
 const examples = (await discoverExamples()).filter((example) => only.size === 0 || only.has(example.manifest.id))
 const sdk = await packSdk()
 const tarball = join(SDK_DIR, sdk.tarball)
-console.log(`SDK ${sdk.version}: ${tarball}\n`)
+const components = join(SDK_DIR, sdk.components.tarball)
+console.log(`SDK ${sdk.version}: ${tarball}, components ${sdk.components.version}\n`)
 
 let failed = 0
 for (const example of examples) {
@@ -38,9 +39,15 @@ for (const example of examples) {
   const manifestPath = join(dir, "package.json")
   const manifest = (await Bun.file(manifestPath).json()) as { dependencies?: Record<string, string> }
   for (const name of Object.keys(manifest.dependencies ?? {})) {
-    if (name.startsWith("@mosaik/") && name !== "@mosaik/sdk") throw new Error(`${id} depends on ${name}`)
+    if (name.startsWith("@mosaik/") && name !== "@mosaik/sdk" && name !== "@mosaik/mosaik-ui") {
+      throw new Error(`${id} depends on ${name}`)
+    }
   }
-  manifest.dependencies = { ...manifest.dependencies, "@mosaik/sdk": `file:${tarball}` }
+  manifest.dependencies = {
+    ...manifest.dependencies,
+    "@mosaik/sdk": `file:${tarball}`,
+    "@mosaik/mosaik-ui": `file:${components}`,
+  }
   await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 
   const steps: ReadonlyArray<readonly [string, ReadonlyArray<string>]> = [
@@ -58,7 +65,7 @@ for (const example of examples) {
     }
   }
   if (ok) {
-    console.log(`✓ ${id}: installs from the tarball, typechecks and builds`)
+    console.log(`✓ ${id}: installs from the tarballs, typechecks and builds`)
     await rm(dir, { recursive: true, force: true })
   } else failed++
 }

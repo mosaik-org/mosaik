@@ -11,7 +11,11 @@ export class Note extends Schema.Class<Note>("@mosaik/notes/Note")({
 }) {}
 
 export class NewNote extends Schema.Class<NewNote>("@mosaik/notes/NewNote")({
-  text: Schema.String.check(Schema.isTrimmed(), Schema.isMinLength(1), Schema.isMaxLength(500)),
+  text: Schema.String.check(
+    Schema.isTrimmed({ message: "No spaces around it" }),
+    Schema.isMinLength(1, { message: "Write something first" }),
+    Schema.isMaxLength(500, { message: "At most 500 characters" }),
+  ),
 }) {}
 
 export class NotesGroup extends HttpApiGroup.make("notes").add(

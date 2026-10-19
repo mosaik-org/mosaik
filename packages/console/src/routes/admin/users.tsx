@@ -1,9 +1,19 @@
 import { type AdminUser, admin, CreateUser, type Role } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { formatDate } from "@mosaik/client"
+import {
+  ActionMenu,
+  Avatar,
+  Badge,
+  Button,
+  ConfirmDialog,
+  IconButton,
+  Modal,
+  PasswordField,
+  TextField,
+} from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { Avatar, Badge, Button, ConfirmDialog, Dialog, IconButton, Menu, TextField } from "@mosaik/ui"
 import { createForm, QueryBoundary, useAction, useCommands } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -46,9 +56,9 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
 
   return (
     <>
-      <Menu
+      <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton label={`Actions for ${props.user.email}`} size="sm" {...triggerProps}>
+          <IconButton variant="plain" aria-label={`Actions for ${props.user.email}`} size="2xs" {...triggerProps()}>
             <Ellipsis size={16} />
           </IconButton>
         )}
@@ -63,14 +73,14 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
           },
         ]}
       />
-      <Dialog
+      <Modal
         open={editing()}
         onOpenChange={setEditing}
         title={`Roles of ${props.user.name}`}
         description="Every logged-in user also has the Authenticated role."
         footer={
           <>
-            <Button variant="ghost" onClick={() => setEditing(false)}>
+            <Button variant="plain" onClick={() => setEditing(false)}>
               Cancel
             </Button>
             <Button
@@ -87,7 +97,7 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
         }
       >
         <RolePicker roles={props.roles} value={selected()} onChange={setSelected} />
-      </Dialog>
+      </Modal>
       <ConfirmDialog
         open={deleting()}
         onOpenChange={setDeleting}
@@ -125,7 +135,7 @@ const CreateUserDialog = (props: {
   })
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={(open) => {
         if (!open) form.reset()
@@ -135,7 +145,7 @@ const CreateUserDialog = (props: {
       description="For people without a Microsoft account. SSO users are created on their first login."
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="create-user" loading={form.submitting()}>
@@ -152,9 +162,8 @@ const CreateUserDialog = (props: {
       >
         <TextField label="Name" required {...form.field("name")} />
         <TextField label="Email" type="email" required {...form.field("email")} />
-        <TextField
+        <PasswordField
           label="Initial password"
-          type="password"
           autocomplete="new-password"
           required
           helperText="At least 8 characters. Share it securely."
@@ -166,13 +175,13 @@ const CreateUserDialog = (props: {
         </div>
         <Show when={form.error()}>
           {(error) => (
-            <p role="alert" class={css({ color: "danger.text", fontSize: "sm" })}>
+            <p role="alert" class={css({ color: "danger.plain.fg", fontSize: "sm" })}>
               {error()}
             </p>
           )}
         </Show>
       </form>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -199,7 +208,10 @@ function Users() {
       header: "User",
       cell: (info) => (
         <div class={css({ display: "flex", alignItems: "center", gap: "3" })}>
-          <Avatar name={info.row.original.name} src={info.row.original.image} size="sm" />
+          <Avatar.Root size="sm">
+            <Avatar.Fallback name={info.row.original.name} />
+            <Avatar.Image src={info.row.original.image ?? undefined} />
+          </Avatar.Root>
           <div>
             <div class={css({ fontWeight: "medium" })}>{info.row.original.name}</div>
             <div class={css({ fontSize: "xs", color: "fg.muted" })}>{info.row.original.email}</div>
@@ -213,7 +225,7 @@ function Users() {
       cell: (info) => (
         <div class={css({ display: "flex", gap: "1", flexWrap: "wrap" })}>
           <For each={info.getValue()} fallback={<span class={css({ color: "fg.subtle" })}>—</span>}>
-            {(role) => <Badge tone={role === "superadmin" ? "accent" : "neutral"}>{roleName(role)}</Badge>}
+            {(role) => <Badge colorPalette={role === "superadmin" ? "accent" : "neutral"}>{roleName(role)}</Badge>}
           </For>
         </div>
       ),

@@ -1,4 +1,4 @@
-import { Badge } from "@mosaik/sdk/ui"
+import { Badge } from "@mosaik/mosaik-ui"
 import type { OrderStatus } from "../../api"
 
 const TONES = {
@@ -20,5 +20,5 @@ const LABELS: Record<OrderStatus, string> = {
 export const statusLabel = (status: OrderStatus): string => LABELS[status]
 
 export const StatusBadge = (props: { status: OrderStatus }) => (
-  <Badge tone={TONES[props.status]}>{LABELS[props.status]}</Badge>
+  <Badge colorPalette={TONES[props.status]}>{LABELS[props.status]}</Badge>
 )

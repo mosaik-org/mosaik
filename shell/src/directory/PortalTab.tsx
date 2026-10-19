@@ -1,9 +1,9 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { formatRelativeTime } from "@mosaik/client"
 import type { AppTab } from "@mosaik/console"
+import { Button, Card, Stat } from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { Button, Card, CardHeader, Stat } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { queryOptions, useQuery } from "@tanstack/solid-query"
 import { createSignal, Show } from "solid-js"
@@ -41,49 +41,56 @@ const InThePortal = (props: { readonly about: AppAbout }) => {
 
   return (
     <div class={styles.layout}>
-      <Card>
-        <CardHeader title="Use" description="Over the last 30 days, and ever." />
-        <QueryBoundary query={usage}>
-          {(stats) => (
-            <div class={styles.column}>
-              <div class={styles.stats}>
-                <Stat label="This month" value={stats().activeUsers} hint="people" />
-                <Stat label="Ever" value={stats().users} hint="people" />
-                <Stat label="Opened" value={stats().opens} hint="times" />
-              </div>
-              <Show when={stats().lastOpenedAt}>
-                {(at) => <span class={styles.muted}>Last opened {formatRelativeTime(at())}.</span>}
-              </Show>
-            </div>
-          )}
-        </QueryBoundary>
-      </Card>
-      <Card>
-        <Show
-          when={app()}
-          fallback={<span class={styles.muted}>Not listed in All apps: the Portal does not mount this app.</span>}
-        >
-          {(app) => (
-            <>
-              <div class={styles.category}>
-                <div>
-                  <div class={css({ fontWeight: "semibold" })}>Listed under {categoryOf(app())}</div>
-                  <div class={styles.muted}>In All apps, for everyone.</div>
+      <Card.Root>
+        <Card.Header>
+          <Card.Title>Use</Card.Title>
+          <Card.Description>Over the last 30 days, and ever.</Card.Description>
+        </Card.Header>
+        <Card.Body gap="4">
+          <QueryBoundary query={usage}>
+            {(stats) => (
+              <div class={styles.column}>
+                <div class={styles.stats}>
+                  <Stat label="This month" value={stats().activeUsers} hint="people" />
+                  <Stat label="Ever" value={stats().users} hint="people" />
+                  <Stat label="Opened" value={stats().opens} hint="times" />
                 </div>
-                <Button size="sm" variant="outline" onClick={() => setCategorizing(true)}>
-                  Change…
-                </Button>
+                <Show when={stats().lastOpenedAt}>
+                  {(at) => <span class={styles.muted}>Last opened {formatRelativeTime(at())}.</span>}
+                </Show>
               </div>
-              <CategoryDialog
-                app={app()}
-                categories={categories()}
-                open={categorizing()}
-                onOpenChange={setCategorizing}
-              />
-            </>
-          )}
-        </Show>
-      </Card>
+            )}
+          </QueryBoundary>
+        </Card.Body>
+      </Card.Root>
+      <Card.Root>
+        <Card.Body gap="4">
+          <Show
+            when={app()}
+            fallback={<span class={styles.muted}>Not listed in All apps: the Portal does not mount this app.</span>}
+          >
+            {(app) => (
+              <>
+                <div class={styles.category}>
+                  <div>
+                    <div class={css({ fontWeight: "semibold" })}>Listed under {categoryOf(app())}</div>
+                    <div class={styles.muted}>In All apps, for everyone.</div>
+                  </div>
+                  <Button size="xs" variant="outline" onClick={() => setCategorizing(true)}>
+                    Change…
+                  </Button>
+                </div>
+                <CategoryDialog
+                  app={app()}
+                  categories={categories()}
+                  open={categorizing()}
+                  onOpenChange={setCategorizing}
+                />
+              </>
+            )}
+          </Show>
+        </Card.Body>
+      </Card.Root>
     </div>
   )
 }

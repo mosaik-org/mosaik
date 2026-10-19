@@ -1,8 +1,9 @@
+import { Card, SelectField, Stat } from "@mosaik/mosaik-ui"
 import { Chart, donutChartOption, lineChartOption } from "@mosaik/sdk/charts"
 import { formatCompactCurrency, formatCurrency, formatNumber, formatPercent } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
 import { useSearchParams } from "@mosaik/sdk/portal"
-import { Card, CardHeader, QueryBoundary, QueryFreshness, Select, Stat } from "@mosaik/sdk/ui"
+import { QueryBoundary, QueryFreshness } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { SUMMARY_DEFAULTS, SummarySearch } from "../../api"
 import { summaryQuery } from "../queries"
@@ -33,7 +34,7 @@ export default function Overview() {
     <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
       <div class={styles.toolbar}>
         <QueryFreshness query={summary} staleAfter="5 minutes" />
-        <Select
+        <SelectField
           items={RANGES}
           value={String(days())}
           onValueChange={(value) => setSearch(() => ({ days: Number(value) }))}
@@ -64,30 +65,39 @@ export default function Overview() {
       <QueryBoundary query={summary}>
         {(data) => (
           <div class={styles.charts}>
-            <Card>
-              <CardHeader title="Revenue and orders" description="Daily, excluding cancelled and refunded orders" />
-              <Chart
-                loading={summary.isFetching}
-                option={lineChartOption({
-                  categories: data().data.daily.map((d) => d.day),
-                  series: [
-                    { name: "Revenue", type: "bar", data: data().data.daily.map((d) => d.revenueCents) },
-                    { name: "Orders", data: data().data.daily.map((d) => d.orders), yAxisIndex: 1 },
-                  ],
-                  valueFormatter: (cents) => formatCompactCurrency(cents),
-                  secondaryValueFormatter: formatNumber,
-                })}
-              />
-            </Card>
-            <Card>
-              <CardHeader title="Revenue by region" />
-              <Chart
-                option={donutChartOption({
-                  data: data().data.byRegion.map((r) => ({ name: r.region, value: r.revenueCents })),
-                  valueFormatter: (cents) => formatCurrency(cents),
-                })}
-              />
-            </Card>
+            <Card.Root>
+              <Card.Header>
+                <Card.Title>Revenue and orders</Card.Title>
+                <Card.Description>Daily, excluding cancelled and refunded orders</Card.Description>
+              </Card.Header>
+              <Card.Body gap="4">
+                <Chart
+                  loading={summary.isFetching}
+                  option={lineChartOption({
+                    categories: data().data.daily.map((d) => d.day),
+                    series: [
+                      { name: "Revenue", type: "bar", data: data().data.daily.map((d) => d.revenueCents) },
+                      { name: "Orders", data: data().data.daily.map((d) => d.orders), yAxisIndex: 1 },
+                    ],
+                    valueFormatter: (cents) => formatCompactCurrency(cents),
+                    secondaryValueFormatter: formatNumber,
+                  })}
+                />
+              </Card.Body>
+            </Card.Root>
+            <Card.Root>
+              <Card.Header>
+                <Card.Title>Revenue by region</Card.Title>
+              </Card.Header>
+              <Card.Body gap="4">
+                <Chart
+                  option={donutChartOption({
+                    data: data().data.byRegion.map((r) => ({ name: r.region, value: r.revenueCents })),
+                    valueFormatter: (cents) => formatCurrency(cents),
+                  })}
+                />
+              </Card.Body>
+            </Card.Root>
           </div>
         )}
       </QueryBoundary>

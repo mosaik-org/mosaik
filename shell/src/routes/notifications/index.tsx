@@ -1,7 +1,7 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions } from "@mosaik/auth/web"
+import { Button, Card, EmptyState, PageHeader, Tabs } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Button, Card, EmptyState, PageHeader, Tabs } from "@mosaik/ui"
 import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link, redirect } from "@tanstack/solid-router"
@@ -9,7 +9,7 @@ import { Schema } from "effect"
 import Bell from "lucide-solid/icons/bell"
 import BellOff from "lucide-solid/icons/bell-off"
 import Settings from "lucide-solid/icons/settings"
-import { Show } from "solid-js"
+import { For, Show } from "solid-js"
 import { inboxQuery } from "../../notifications/api"
 import { NotificationList, useInboxActions } from "../../notifications/NotificationList"
 
@@ -45,7 +45,7 @@ function NotificationsPage() {
             <Show when={unread() > 0}>
               <Button
                 variant="outline"
-                size="sm"
+                size="xs"
                 loading={actions.markAllRead.isPending}
                 onClick={() => actions.markAllRead.mutate()}
               >
@@ -53,7 +53,7 @@ function NotificationsPage() {
               </Button>
             </Show>
             <Link to="/notifications/settings">
-              <Button variant="ghost" size="sm">
+              <Button variant="plain" size="xs">
                 <Settings size={16} />
                 Settings
               </Button>
@@ -61,18 +61,26 @@ function NotificationsPage() {
           </>
         }
       />
-      <Tabs
+      <Tabs.Root
         value={unreadOnly() ? "unread" : "all"}
-        onValueChange={(value) => void navigate({ search: { unread: value === "unread" ? "true" : undefined } })}
-        items={[
-          { value: "all", label: "All" },
-          { value: "unread", label: unread() > 0 ? `Unread (${unread()})` : "Unread" },
-        ]}
-      />
+        onValueChange={({ value }) => void navigate({ search: { unread: value === "unread" ? "true" : undefined } })}
+      >
+        <Tabs.List>
+          <For
+            each={[
+              { value: "all", label: "All" },
+              { value: "unread", label: unread() > 0 ? `Unread (${unread()})` : "Unread" },
+            ]}
+          >
+            {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
+          </For>
+          <Tabs.Indicator />
+        </Tabs.List>
+      </Tabs.Root>
       <QueryBoundary query={inbox}>
         {() => (
           <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
-            <Card padding="none">
+            <Card.Root>
               <NotificationList
                 items={items()}
                 onOpen={actions.open}
@@ -84,7 +92,7 @@ function NotificationsPage() {
                   />
                 }
               />
-            </Card>
+            </Card.Root>
             <Show when={inbox.hasNextPage}>
               <div class={css({ display: "flex", justifyContent: "center" })}>
                 <Button variant="outline" loading={inbox.isFetchingNextPage} onClick={() => void inbox.fetchNextPage()}>

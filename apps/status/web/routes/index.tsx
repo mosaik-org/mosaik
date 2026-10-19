@@ -1,8 +1,8 @@
 import { Chart, sparklineOption } from "@mosaik/charts"
 import { formatRelativeTime } from "@mosaik/client"
 import { createEventStream } from "@mosaik/client/solid"
+import { Badge, Card } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Badge, Card } from "@mosaik/ui"
 import { Freshness, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -32,10 +32,10 @@ const styles = {
     gap: "3",
     px: "5",
     py: "4",
-    borderRadius: "card",
+    borderRadius: "l3",
     fontWeight: "medium",
-    "&[data-healthy=true]": { bg: "success.subtle", color: "success.text" },
-    "&[data-healthy=false]": { bg: "danger.subtle", color: "danger.text" },
+    "&[data-healthy=true]": { bg: "success.subtle.bg", color: "success.plain.fg" },
+    "&[data-healthy=false]": { bg: "danger.subtle.bg", color: "danger.plain.fg" },
   }),
   grid: css({
     display: "grid",
@@ -47,19 +47,21 @@ const styles = {
 }
 
 const ServiceCard = (props: { service: ServiceStatus }) => (
-  <Card>
-    <div class={css({ display: "flex", flexDirection: "column", gap: "3" })}>
-      <div class={css({ display: "flex", justifyContent: "space-between", alignItems: "center" })}>
-        <span class={styles.name}>{props.service.name}</span>
-        <Badge tone={STATE[props.service.state].tone}>{STATE[props.service.state].label}</Badge>
+  <Card.Root>
+    <Card.Body gap="4">
+      <div class={css({ display: "flex", flexDirection: "column", gap: "3" })}>
+        <div class={css({ display: "flex", justifyContent: "space-between", alignItems: "center" })}>
+          <span class={styles.name}>{props.service.name}</span>
+          <Badge colorPalette={STATE[props.service.state].tone}>{STATE[props.service.state].label}</Badge>
+        </div>
+        <Chart height="56px" option={sparklineOption({ data: props.service.history })} />
+        <div class={styles.meta}>
+          <span>{props.service.latencyMs === null ? "No response" : `${props.service.latencyMs} ms`}</span>
+          <Show when={props.service.checkedAt}>{(at) => <span>checked {formatRelativeTime(at())}</span>}</Show>
+        </div>
       </div>
-      <Chart height="56px" option={sparklineOption({ data: props.service.history })} />
-      <div class={styles.meta}>
-        <span>{props.service.latencyMs === null ? "No response" : `${props.service.latencyMs} ms`}</span>
-        <Show when={props.service.checkedAt}>{(at) => <span>checked {formatRelativeTime(at())}</span>}</Show>
-      </div>
-    </div>
-  </Card>
+    </Card.Body>
+  </Card.Root>
 )
 
 function StatusPage() {

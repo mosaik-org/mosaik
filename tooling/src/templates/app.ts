@@ -246,7 +246,8 @@ export const api = createApi(Api)
 
   "web/pages/home.tsx": `import { css } from "@mosaik/sdk/css"
 import { useAction } from "@mosaik/sdk/solid"
-import { Button, Card, QueryBoundary${t.database ? ", Stat" : ""} } from "@mosaik/sdk/ui"
+import { Button, Card${t.database ? ", Stat" : ""} } from "@mosaik/mosaik-ui"
+import { QueryBoundary } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { api } from "../api"
 
@@ -258,7 +259,8 @@ export default function Home() {
     <QueryBoundary query={hello}>
       {(data) => (
         <div class={css({ display: "grid", gap: "4", gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)" } })}>
-          <Card>
+          <Card.Root>
+            <Card.Body gap="2">
             <p class={css({ fontSize: "2xl", fontWeight: "semibold" })}>{data().message}</p>
             <p class={css({ color: "fg.muted", fontSize: "sm" })}>${t.name} {data().version}</p>
             <div>
@@ -266,7 +268,8 @@ export default function Home() {
                 Notify me
               </Button>
             </div>
-          </Card>${t.database ? '\n          <Stat label="Greetings served" value={String(data().count)} />' : ""}
+            </Card.Body>
+          </Card.Root>${t.database ? '\n          <Stat label="Greetings served" value={String(data().count)} />' : ""}
         </div>
       )}
     </QueryBoundary>
@@ -347,7 +350,7 @@ either way it talks to the platform only through the platform API with its key.
 | \`api/\` | HTTP API contract shared by server and browser |
 | \`server/\` | backend (Bun + Effect), started with \`runApp\` |
 | \`web/\` | browser bundle: \`defineWebApp\` in \`web/index.tsx\`, mounted by the shell at \`/${t.id}\` and loaded when first opened; optional \`web/search.ts\` (\`defineSearchProvider\`) for the command palette |
-| \`vendor/mosaik/\` | the SDK (\`bun create:app --sdk-only\` in the platform repo refreshes it) |
+| \`vendor/mosaik/\` | the SDK and the components (\`bun create:app --sdk-only\` in the platform repo refreshes them) |
 
 ## Develop
 

@@ -1,5 +1,5 @@
+import { IconButton, SelectField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { IconButton, Select } from "@mosaik/ui"
 import type { RowData, SolidTable } from "@tanstack/solid-table"
 import ChevronLeft from "lucide-solid/icons/chevron-left"
 import ChevronRight from "lucide-solid/icons/chevron-right"
@@ -16,14 +16,20 @@ const styles = {
     px: "4",
     py: "2.5",
     borderTopWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
     fontSize: "sm",
     color: "fg.muted",
   }),
   summary: css({ fontVariantNumeric: "tabular-nums" }),
   controls: css({ display: "flex", alignItems: "center", gap: "2" }),
-  pageSizeLabel: css({ whiteSpace: "nowrap" }),
-  pageSize: css({ w: "20" }),
+  // The field's label beside its select, not above it.
+  pageSize: css({
+    flexDirection: "row",
+    alignItems: "center",
+    gap: "2",
+    whiteSpace: "nowrap",
+    "& [data-part=root]": { w: "20" },
+  }),
   nav: css({ display: "flex", alignItems: "center", gap: "1" }),
 }
 
@@ -56,11 +62,8 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
         {summary()}
       </span>
       <div class={styles.controls}>
-        <span class={styles.pageSizeLabel} aria-hidden="true">
-          Rows per page
-        </span>
-        <Select
-          aria-label="Rows per page"
+        <SelectField
+          label="Rows per page"
           class={styles.pageSize}
           size="sm"
           items={pageSizeItems()}
@@ -69,8 +72,8 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
         />
         <div class={styles.nav}>
           <IconButton
-            label="Previous page"
-            size="sm"
+            aria-label="Previous page"
+            size="xs"
             variant="outline"
             disabled={!props.table.getCanPreviousPage()}
             onClick={() => props.table.previousPage()}
@@ -78,8 +81,8 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
             <ChevronLeft size={16} />
           </IconButton>
           <IconButton
-            label="Next page"
-            size="sm"
+            aria-label="Next page"
+            size="xs"
             variant="outline"
             disabled={!props.table.getCanNextPage()}
             onClick={() => props.table.nextPage()}

@@ -9,7 +9,7 @@ export default defineConfig({
   ...pandaConfig,
   include: [
     "./src/**/*.{ts,tsx}",
-    "../packages/{ui,table,charts,web-kit,console}/src/**/*.{ts,tsx}",
+    "../packages/{table,charts,web-kit,console}/src/**/*.{ts,tsx}",
     "../apps/*/web/**/*.{ts,tsx}",
   ],
   exclude: ["./src/routeTree.gen.ts"],

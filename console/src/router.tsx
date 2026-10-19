@@ -1,7 +1,7 @@
 import { SESSION_QUERY_KEY } from "@mosaik/auth/web"
 import { createQueryClient } from "@mosaik/client/solid"
+import { EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { EmptyState } from "@mosaik/ui"
 import { createRouter } from "@tanstack/solid-router"
 import SearchX from "lucide-solid/icons/search-x"
 import { routeTree } from "./routeTree.gen"

@@ -1,8 +1,9 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { managesAnyApp, reviewsQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
+import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, IconButton, Menu } from "@mosaik/ui"
+import { AppIcon } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import ArrowDown from "lucide-solid/icons/arrow-down"
@@ -48,17 +49,17 @@ const styles = {
     fontWeight: "medium",
     color: "fg.muted",
     transition: "background 0.15s, color 0.15s",
-    _hover: { bg: "bg.muted", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default", outlineOffset: "-2px" },
-    "&[data-status=active]": { bg: "accent.subtle", color: "accent.text" },
+    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    "&[data-status=active]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
   }),
   label: css({ flex: "1", minW: "0", truncate: true }),
   count: css({
     minW: "5",
     px: "1.5",
     borderRadius: "full",
-    bg: "accent.default",
-    color: "accent.fg",
+    bg: "accent.solid.bg",
+    color: "accent.solid.fg",
     fontSize: "xs",
     fontWeight: "semibold",
     textAlign: "center",
@@ -72,7 +73,7 @@ const styles = {
     transition: "opacity 0.15s",
   }),
   hint: css({ px: "3", fontSize: "xs", color: "fg.subtle", lineHeight: "relaxed" }),
-  hintLink: css({ color: "accent.text", _hover: { textDecoration: "underline" } }),
+  hintLink: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
 }
 
 const NavLink = (props: {
@@ -110,9 +111,9 @@ const NavLink = (props: {
 )
 
 const PinnedActions = (props: { apps: MyAppsState; app: AnyApp; index: number; count: number }) => (
-  <Menu
+  <ActionMenu
     trigger={(triggerProps) => (
-      <IconButton label={`Options for ${props.app.name}`} size="sm" variant="ghost" {...triggerProps}>
+      <IconButton aria-label={`Options for ${props.app.name}`} size="2xs" variant="plain" {...triggerProps()}>
         <Ellipsis size={14} />
       </IconButton>
     )}
@@ -214,7 +215,7 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
               appLink(
                 app,
                 <Show when={apps.canPin()}>
-                  <IconButton label={`Pin ${app.name}`} size="sm" variant="ghost" onClick={() => apps.pin(app.id)}>
+                  <IconButton aria-label={`Pin ${app.name}`} size="xs" variant="plain" onClick={() => apps.pin(app.id)}>
                     <Pin size={14} />
                   </IconButton>
                 </Show>,

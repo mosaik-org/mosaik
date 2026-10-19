@@ -1,6 +1,18 @@
 import { admin } from "@mosaik/auth/contract"
 import { useCan } from "@mosaik/auth/web"
-import { errorMessage } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
+import {
+  ActionMenu,
+  Badge,
+  Button,
+  Card,
+  CheckboxField,
+  ConfirmDialog,
+  IconButton,
+  Modal,
+  SelectField,
+  TextField,
+} from "@mosaik/mosaik-ui"
 import {
   CreateTarget,
   type RoutingRule,
@@ -10,20 +22,6 @@ import {
 } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import {
-  Badge,
-  Button,
-  Card,
-  CardHeader,
-  Checkbox,
-  ConfirmDialog,
-  Dialog,
-  IconButton,
-  Menu,
-  Select,
-  TextField,
-  toast,
-} from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -90,7 +88,7 @@ const SourcePicker = (props: { value: ReadonlyArray<string>; onChange: (value: R
       <div class={css({ display: "grid", gridTemplateColumns: { base: "1fr", sm: "1fr 1fr" }, gap: "2", mt: "1" })}>
         <For each={(catalog.data ?? []).filter((app) => app.id !== admin.id)}>
           {(app) => (
-            <Checkbox
+            <CheckboxField
               checked={props.value.includes(app.id)}
               onCheckedChange={(checked) => toggle(app.id, checked)}
               label={app.name}
@@ -140,14 +138,14 @@ const TargetDialog = (props: { open: boolean; onOpenChange: (open: boolean) => v
   }))
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={editing() ? `Edit ${props.target?.name}` : "Add a Teams or Slack channel"}
       description="Messages and notifications can be sent or routed to it."
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="target-form" loading={save.isPending}>
@@ -165,7 +163,7 @@ const TargetDialog = (props: { open: boolean; onOpenChange: (open: boolean) => v
         }}
       >
         <Show when={!editing()}>
-          <Select label="Type" items={KINDS} value={kind()} onValueChange={setKind} />
+          <SelectField label="Type" items={KINDS} value={kind()} onValueChange={setKind} />
         </Show>
         <p class={css({ fontSize: "xs", color: "fg.muted", mt: "-2" })}>
           {KINDS.find((k) => k.value === kind())?.help}
@@ -208,7 +206,7 @@ const TargetDialog = (props: { open: boolean; onOpenChange: (open: boolean) => v
         />
         <SourcePicker value={sources()} onChange={setSources} />
       </form>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -237,9 +235,9 @@ const TargetActions = (props: { target: Target }) => {
 
   return (
     <>
-      <Menu
+      <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton label={`Actions for ${props.target.name}`} size="sm" {...triggerProps}>
+          <IconButton variant="plain" aria-label={`Actions for ${props.target.name}`} size="2xs" {...triggerProps()}>
             <Ellipsis size={16} />
           </IconButton>
         )}
@@ -287,7 +285,9 @@ const TargetsCard = () => {
     targetColumn.accessor("kind", {
       header: "Type",
       cell: (info) => (
-        <Badge tone={info.getValue() === "teams-webhook" ? "accent" : "neutral"}>{kindLabel(info.getValue())}</Badge>
+        <Badge colorPalette={info.getValue() === "teams-webhook" ? "accent" : "neutral"}>
+          {kindLabel(info.getValue())}
+        </Badge>
       ),
     }),
     targetColumn.accessor("address", {
@@ -309,34 +309,38 @@ const TargetsCard = () => {
   ])
 
   return (
-    <Card>
-      <CardHeader
-        title="Teams & Slack channels"
-        description="Where apps can post with To.target(id), and where routing rules send messages and notifications."
-        actions={
-          <Show when={manage()}>
-            <Button size="sm" onClick={() => setAdding(true)}>
-              <Plus size={16} />
-              Add channel
-            </Button>
-          </Show>
-        }
-      />
-      <QueryBoundary query={targets}>
-        {(data) => (
-          <DataTable
-            columns={columns}
-            data={data()}
-            getRowId={(target) => target.id}
-            loading={targets.isFetching}
-            emptyMessage="No channels yet."
-          />
-        )}
-      </QueryBoundary>
-      <Show when={adding()}>
-        <TargetDialog open={adding()} onOpenChange={setAdding} />
-      </Show>
-    </Card>
+    <Card.Root>
+      <Card.Header flexDirection="row" alignItems="flex-start" justifyContent="space-between" gap="4">
+        <div>
+          <Card.Title>Teams & Slack channels</Card.Title>
+          <Card.Description>
+            Where apps can post with To.target(id), and where routing rules send messages and notifications.
+          </Card.Description>
+        </div>
+        <Show when={manage()}>
+          <Button size="xs" onClick={() => setAdding(true)}>
+            <Plus size={16} />
+            Add channel
+          </Button>
+        </Show>
+      </Card.Header>
+      <Card.Body gap="4">
+        <QueryBoundary query={targets}>
+          {(data) => (
+            <DataTable
+              columns={columns}
+              data={data()}
+              getRowId={(target) => target.id}
+              loading={targets.isFetching}
+              emptyMessage="No channels yet."
+            />
+          )}
+        </QueryBoundary>
+        <Show when={adding()}>
+          <TargetDialog open={adding()} onOpenChange={setAdding} />
+        </Show>
+      </Card.Body>
+    </Card.Root>
   )
 }
 
@@ -362,14 +366,14 @@ const RouteDialog = (props: {
     setSelected(checked ? [...selected(), id] : selected().filter((target) => target !== id))
 
   return (
-    <Dialog
+    <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
       title={`Route ${props.rule.key}`}
       description={props.rule.description ?? "Every message of this kind is also posted to the checked channels."}
       footer={
         <>
-          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
+          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button loading={save.isPending} onClick={() => save.mutate()}>
@@ -384,16 +388,16 @@ const RouteDialog = (props: {
           fallback={<p class={css({ color: "fg.muted", fontSize: "sm" })}>Add a channel first.</p>}
         >
           {(target) => (
-            <Checkbox
+            <CheckboxField
               checked={selected().includes(target.id)}
               onCheckedChange={(checked) => toggle(target.id, checked)}
               label={target.name}
-              description={kindLabel(target.kind)}
+              helperText={kindLabel(target.kind)}
             />
           )}
         </For>
       </div>
-    </Dialog>
+    </Modal>
   )
 }
 
@@ -421,7 +425,7 @@ const RoutingCard = () => {
     ruleColumn.accessor("category", {
       header: "Kind",
       cell: (info) => (
-        <Badge tone={info.getValue() === "notification" ? "accent" : "neutral"}>
+        <Badge colorPalette={info.getValue() === "notification" ? "accent" : "neutral"}>
           {info.getValue() === "notification" ? "Notification" : "Message"}
         </Badge>
       ),
@@ -443,7 +447,12 @@ const RoutingCard = () => {
       meta: { align: "right", width: "56px" },
       cell: (info) => (
         <Show when={can(admin.perm("notifications.manage"))}>
-          <IconButton label={`Route ${info.row.original.key}`} size="sm" onClick={() => setEditing(info.row.original)}>
+          <IconButton
+            variant="plain"
+            aria-label={`Route ${info.row.original.key}`}
+            size="xs"
+            onClick={() => setEditing(info.row.original)}
+          >
             <Pencil size={14} />
           </IconButton>
         </Show>
@@ -452,35 +461,40 @@ const RoutingCard = () => {
   ])
 
   return (
-    <Card>
-      <CardHeader
-        title="Routing"
-        description="Post notification types and message kinds to channels, in addition to their recipients. Message kinds appear once they were sent."
-      />
-      <QueryBoundary query={rules}>
-        {(data) => (
-          <DataTable
-            columns={columns}
-            data={data()}
-            getRowId={(rule) => rule.key}
-            loading={rules.isFetching}
-            emptyMessage="No notification types or message kinds yet."
-          />
-        )}
-      </QueryBoundary>
-      <Show when={editing()}>
-        {(rule) => (
-          <RouteDialog
-            rule={rule()}
-            targets={targets.data ?? []}
-            open
-            onOpenChange={(open) => {
-              if (!open) setEditing(undefined)
-            }}
-          />
-        )}
-      </Show>
-    </Card>
+    <Card.Root>
+      <Card.Header>
+        <Card.Title>Routing</Card.Title>
+        <Card.Description>
+          Post notification types and message kinds to channels, in addition to their recipients. Message kinds appear
+          once they were sent.
+        </Card.Description>
+      </Card.Header>
+      <Card.Body gap="4">
+        <QueryBoundary query={rules}>
+          {(data) => (
+            <DataTable
+              columns={columns}
+              data={data()}
+              getRowId={(rule) => rule.key}
+              loading={rules.isFetching}
+              emptyMessage="No notification types or message kinds yet."
+            />
+          )}
+        </QueryBoundary>
+        <Show when={editing()}>
+          {(rule) => (
+            <RouteDialog
+              rule={rule()}
+              targets={targets.data ?? []}
+              open
+              onOpenChange={(open) => {
+                if (!open) setEditing(undefined)
+              }}
+            />
+          )}
+        </Show>
+      </Card.Body>
+    </Card.Root>
   )
 }
 

@@ -1,5 +1,6 @@
+import { onPageThemeChange, type PageTheme, pageTheme } from "@mosaik/client"
+import { Spinner } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
-import { Spinner, useTheme } from "@mosaik/ui"
 import { type EChartsCoreOption, type EChartsType, init } from "echarts/core"
 import { createEffect, createSignal, mergeProps, onCleanup, onMount, Show } from "solid-js"
 import { DARK_THEME, LIGHT_THEME } from "./setup"
@@ -13,9 +14,9 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    bg: "bg.surface/60",
+    bg: "gray.surface.bg/60",
     color: "fg.muted",
-    animation: "fadeIn 150ms ease-out",
+    animation: "fade-in 150ms ease-out",
   }),
 }
 
@@ -28,13 +29,15 @@ export interface ChartProps {
 
 export function Chart(props: ChartProps) {
   const merged = mergeProps({ height: "320px" }, props)
-  const theme = useTheme()
+  // The page's theme (the shell's, or a standalone page's): charts draw on a canvas, not with CSS.
+  const [theme, setTheme] = createSignal<PageTheme>(pageTheme())
+  onCleanup(onPageThemeChange(setTheme))
   const [chart, setChart] = createSignal<EChartsType>()
   let container!: HTMLDivElement
 
   onMount(() => {
     createEffect(() => {
-      const instance = init(container, theme.resolved() === "dark" ? DARK_THEME : LIGHT_THEME)
+      const instance = init(container, theme() === "dark" ? DARK_THEME : LIGHT_THEME)
       setChart(instance)
       onCleanup(() => {
         setChart(undefined)

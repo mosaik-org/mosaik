@@ -1,8 +1,9 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
+import { Button, Card, EmptyState, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, Button, Card, CardHeader, EmptyState, PageHeader } from "@mosaik/ui"
+import { AppIcon } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
@@ -38,7 +39,7 @@ const styles = {
     gap: "3",
     height: "full",
     transition: "border-color 0.15s",
-    _hover: { borderColor: "accent.default" },
+    _hover: { borderColor: "accent.solid.bg" },
   }),
   icon: css({
     display: "grid",
@@ -47,8 +48,8 @@ const styles = {
     width: "10",
     height: "10",
     borderRadius: "lg",
-    bg: "accent.subtle",
-    color: "accent.text",
+    bg: "accent.subtle.bg",
+    color: "accent.plain.fg",
   }),
   tileText: css({ display: "flex", flexDirection: "column", gap: "0.5", minW: "0" }),
   name: css({ fontWeight: "semibold", truncate: true }),
@@ -59,7 +60,7 @@ const styles = {
     gap: "1",
     fontSize: "sm",
     fontWeight: "medium",
-    color: "accent.text",
+    color: "accent.plain.fg",
     _hover: { textDecoration: "underline" },
   }),
   hint: css({ fontSize: "sm", color: "fg.muted" }),
@@ -72,10 +73,10 @@ const styles = {
     py: "2.5",
     fontSize: "sm",
     borderBottomWidth: "1px",
-    borderColor: "border.default",
+    borderColor: "border",
     _last: { borderBottomWidth: "0" },
-    _hover: { bg: "bg.muted" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.default", outlineOffset: "-2px" },
+    _hover: { bg: "gray.subtle.bg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
   }),
   pageApp: css({ ml: "auto", fontSize: "xs", color: "fg.subtle", flexShrink: "0" }),
   muted: css({ px: "4", py: "6", fontSize: "sm", color: "fg.muted", textAlign: "center" }),
@@ -83,15 +84,17 @@ const styles = {
 
 const AppTile = (props: { app: AnyApp }) => (
   <Link to={appHref(props.app)}>
-    <Card class={styles.tile}>
-      <div class={styles.icon}>
-        <AppIcon name={props.app.portal.icon} size={20} />
-      </div>
-      <div class={styles.tileText}>
-        <span class={styles.name}>{props.app.name}</span>
-        <span class={styles.description}>{props.app.description}</span>
-      </div>
-    </Card>
+    <Card.Root class={styles.tile}>
+      <Card.Body gap="4">
+        <div class={styles.icon}>
+          <AppIcon name={props.app.portal.icon} size={20} />
+        </div>
+        <div class={styles.tileText}>
+          <span class={styles.name}>{props.app.name}</span>
+          <span class={styles.description}>{props.app.description}</span>
+        </div>
+      </Card.Body>
+    </Card.Root>
   </Link>
 )
 
@@ -162,28 +165,24 @@ const Personal = (props: { user: string }) => {
       </div>
 
       <div class={styles.column}>
-        <Card padding="none">
-          <div class={css({ p: "4", pb: "2" })}>
-            <CardHeader
-              title="Unread notifications"
-              actions={
-                <Link to="/notifications" class={styles.more}>
-                  All <ArrowRight size={14} />
-                </Link>
-              }
-            />
-          </div>
+        <Card.Root>
+          <Card.Header flexDirection="row" alignItems="center" justifyContent="space-between" p="4" pb="2">
+            <Card.Title>Unread notifications</Card.Title>
+            <Link to="/notifications" class={styles.more}>
+              All <ArrowRight size={14} />
+            </Link>
+          </Card.Header>
           <NotificationList
             items={unread.data?.items ?? []}
             onOpen={inbox.open}
             empty={<div class={styles.muted}>You are all caught up.</div>}
           />
-        </Card>
+        </Card.Root>
         <Show when={pages.length > 0}>
-          <Card padding="none">
-            <div class={css({ p: "4", pb: "2" })}>
-              <CardHeader title="Recent pages" />
-            </div>
+          <Card.Root>
+            <Card.Header p="4" pb="2">
+              <Card.Title>Recent pages</Card.Title>
+            </Card.Header>
             <nav class={styles.pages} aria-label="Recent pages">
               <For each={pages.slice(0, 6)}>
                 {(page) => (
@@ -195,7 +194,7 @@ const Personal = (props: { user: string }) => {
                 )}
               </For>
             </nav>
-          </Card>
+          </Card.Root>
         </Show>
       </div>
     </div>
@@ -210,25 +209,27 @@ const Visitor = () => {
       <Show when={apps.accessible().length > 0}>
         <AppSection title="Open to everyone" apps={apps.accessible()} aside={<AllAppsLink />} />
       </Show>
-      <Card>
-        <div
-          class={css({
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "4",
-            flexWrap: "wrap",
-          })}
-        >
-          <div>
-            <div class={styles.name}>More apps are available after logging in</div>
-            <div class={styles.hint}>Sign in with your company account or email.</div>
+      <Card.Root>
+        <Card.Body gap="4">
+          <div
+            class={css({
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "4",
+              flexWrap: "wrap",
+            })}
+          >
+            <div>
+              <div class={styles.name}>More apps are available after logging in</div>
+              <div class={styles.hint}>Sign in with your company account or email.</div>
+            </div>
+            <a href={signInUrl("/")}>
+              <Button>Log in</Button>
+            </a>
           </div>
-          <a href={signInUrl("/")}>
-            <Button>Log in</Button>
-          </a>
-        </div>
-      </Card>
+        </Card.Body>
+      </Card.Root>
     </div>
   )
 }

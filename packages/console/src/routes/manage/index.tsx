@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
+import { Card, EmptyState, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Card, EmptyState, PageHeader } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
@@ -21,10 +21,10 @@ const styles = {
     gap: "4",
     gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", xl: "repeat(3, 1fr)" },
   }),
-  app: css({ display: "flex", flexDirection: "column", gap: "1", _hover: { borderColor: "accent.default" } }),
+  app: css({ display: "flex", flexDirection: "column", gap: "1", _hover: { borderColor: "accent.solid.bg" } }),
   name: css({ fontWeight: "semibold", display: "flex", justifyContent: "space-between", gap: "2" }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  waiting: css({ fontSize: "sm", color: "accent.text" }),
+  waiting: css({ fontSize: "sm", color: "accent.plain.fg" }),
 }
 
 function ManagedApps() {
@@ -57,15 +57,17 @@ function ManagedApps() {
               <For each={list()}>
                 {(app) => (
                   <Link to="/manage/$app" params={{ app: app.id }}>
-                    <Card class={styles.app}>
-                      <span class={styles.name}>
-                        {app.name}
-                        <Show when={waitingFor(app.id) > 0}>
-                          <span class={styles.waiting}>{waitingFor(app.id)} waiting</span>
-                        </Show>
-                      </span>
-                      <span class={styles.muted}>{app.description ?? app.id}</span>
-                    </Card>
+                    <Card.Root class={styles.app}>
+                      <Card.Body gap="4">
+                        <span class={styles.name}>
+                          {app.name}
+                          <Show when={waitingFor(app.id) > 0}>
+                            <span class={styles.waiting}>{waitingFor(app.id)} waiting</span>
+                          </Show>
+                        </span>
+                        <span class={styles.muted}>{app.description ?? app.id}</span>
+                      </Card.Body>
+                    </Card.Root>
                   </Link>
                 )}
               </For>
