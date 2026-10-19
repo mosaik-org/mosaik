@@ -107,6 +107,13 @@ along with the platform. From the first release on, `PLATFORM_VERSION` follows s
 (`@mosaik/sdk`) shares it, and a breaking change for apps means a new major version (apps declare the major they
 were built for, and the platform refuses others).
 
+Besides the SDK's API, apps depend on two things at runtime that a change can break without a type error:
+- **the shared modules** (`SHARED_MODULES` in `@mosaik/app-kit`): their versions come from the shell;
+- **the theme's token names**: an app's own styles read the page's variables (`--mk-colors-fg-muted`).
+  `packages/styled-system/token-names.txt` records them. Its test fails when one disappears, which
+  makes removing or renaming a token a breaking change. After adding tokens, run the tests with `-u`
+  to record them.
+
 ## Database migrations
 
 Until the first real deployment, migrations may be rewritten, squashed or replaced: say so in the commit

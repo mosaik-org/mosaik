@@ -201,6 +201,11 @@ Styles name the theme's tokens:
 
 `colorPalette` picks a role for a component, as in `<Badge colorPalette="success">`.
 
+An app's own styles define none of these: they read the page's variables (`var(--mk-colors-fg-muted)`).
+A theme set at runtime, dark mode included, reaches them too. In TypeScript, use `token.var("colors.fg.muted")`
+(the variable) rather than `token(...)` (the value at build time) for anything that should follow the
+theme.
+
 **The shell's contract.** Some things on a page belong to the shell, not to an app. Apps ask for them
 through `@mosaik/sdk/client`, which works whatever the page is built with:
 - **Toasts:** `toast.success("Saved")`, `toast.error("Could not save", reason)`. They show with the
@@ -403,7 +408,7 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   `@mosaik/sdk/client` without Solid); requests go to the app's own address.
 - **Components.** The kit works there too.
   - Import its stylesheet once: `import "@mosaik/sdk/ui/styles.css"`, which carries the reset, the tokens
-    and every component.
+    and every component. A page without components needs it too: its own styles read those tokens.
   - Wrap the page in `ThemeProvider` (and offer `ThemeToggle`) for dark mode, and render `<Toasts />`
     from `@mosaik/sdk/solid` once: there is no shell to show `toast`'s toasts.
   - Its tokens are CSS variables a page's own CSS can use without Panda: `var(--mk-colors-fg-muted)`,
@@ -431,6 +436,11 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   `/client`, `/solid`, `/portal`, `/ui`, `/table`, `/charts`) and `@mosaik/mosaik-ui` come from the shell
   through an import map, so mounted apps leave them out of their bundles. A standalone page bundles what
   it uses.
-- **Styles.** Each app generates its own Panda runtime with its id as class prefix (`crm-…`), so its atomic
-  classes never collide with the shell's. It has the theme's tokens but compiles none of the kit's
-  recipes: the page has those already (the shell's stylesheet, or `@mosaik/sdk/ui/styles.css`).
+- **Styles.** Each app generates its own Panda runtime, its classes prefixed with its id (`crm-…`) so they
+  never collide with the shell's.
+  - Its CSS holds only those classes, which read the page's tokens (`--mk-…`). The reset, the tokens and
+    the components' styles come from the page: the shell's stylesheet, or `@mosaik/sdk/ui/styles.css`.
+  - `mosaikApp()` sets this up (Panda's PostCSS plugin, keeping the app's layer), so an app has no
+    `postcss.config` of its own.
+  - The token names are a contract: an app built today keeps working as long as the names it uses
+    exist, and removing one is a platform major release.

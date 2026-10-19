@@ -1,2 +1,6 @@
-/* The app's own styles (Panda extracts them from web/); the shell provides reset and base styles. */
+/*
+ * The app's own styles: Panda extracts its classes from web/ and `mosaikApp()` keeps only those (the
+ * utilities layer). The reset, tokens and components' styles are the shell's; the layer order below
+ * places the app's classes as the shell orders its own.
+ */
 @layer reset, base, tokens, recipes, utilities;

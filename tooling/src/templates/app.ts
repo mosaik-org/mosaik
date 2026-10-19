@@ -277,7 +277,11 @@ export default function Home() {
 }
 `,
 
-  "web/styles.css": `/* The app's own styles (Panda extracts them from web/); the shell provides reset and base styles. */
+  "web/styles.css": `/*
+ * The app's own styles: Panda extracts its classes from web/ and \`mosaikApp()\` keeps only those (the
+ * utilities layer). The reset, tokens and components' styles are the shell's; the layer order below
+ * places the app's classes as the shell orders its own.
+ */
 @layer reset, base, tokens, recipes, utilities;
 `,
 
@@ -295,14 +299,8 @@ import { defineConfig } from "@pandacss/dev"
 export default defineConfig(appPandaConfig({ prefix: "${t.id}", include: ["./web/**/*.{ts,tsx}"] }))
 `,
 
-  "postcss.config.cjs": `module.exports = {
-  plugins: {
-    "@pandacss/dev/postcss": {},
-  },
-}
-`,
-
   "scripts/manifest.ts": `/** Writes mosaik-app.json (the manifest with the built bundle); the Portal reads it from the image. */
+
 import { writeAppManifest } from "@mosaik/sdk/build/manifest"
 import { app } from "../manifest"
 
@@ -315,6 +313,7 @@ console.log(\`mosaik-app.json: \${manifest.id} \${manifest.version} (platform \$
  * app in a running platform as "hosted elsewhere" (http://localhost:$PORT) and put its key
  * in .env; then reload the page after changes.
  */
+
 import { runAppDev } from "@mosaik/sdk/build/dev"
 
 await runAppDev()

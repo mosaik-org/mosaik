@@ -1,4 +1,4 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../tsconfig.bun.json",
   "include": ["src", "panda.config.ts"]
 }
