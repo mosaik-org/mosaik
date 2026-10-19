@@ -147,6 +147,7 @@ packages/         The SDK and shared code
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (query defaults, event streams)
   ui              Ark UI + Panda design system, dark mode
+  mosaik-ui       @mosaik/mosaik-ui: a standalone Solid component library (Ark UI + Panda), not yet used by Mosaik; see its README
   table           DataTable (TanStack Table, client or server-side)
   charts          ECharts wrapper, themed option builders
   web-kit         Router-aware pieces: AppLayout, NavTabs, QueryBoundary, command palette

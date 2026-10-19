@@ -1,0 +1,16 @@
+{
+  "name": "verify-plain",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@mosaik/mosaik-ui": "TARBALL",
+    "solid-js": "^1.9.17"
+  },
+  "devDependencies": {
+    "vite": "^8.3.4",
+    "vite-plugin-solid": "^2.11.14"
+  }
+}

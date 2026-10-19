@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "@mosaik/mosaik-ui": ["../src/index.ts"],
+      "styled-system/*": ["../styled-system/*"]
+    }
+  },
+  "include": [".", "../src", "../styled-system", "../catalog/examples", "../catalog/filler.ts"]
+}

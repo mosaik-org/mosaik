@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.web.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "rootDir": "."
+  },
+  "include": ["src"],
+  "exclude": ["src/theme"]
+}

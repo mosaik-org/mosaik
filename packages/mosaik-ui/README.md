@@ -1,0 +1,162 @@
+# @mosaik/mosaik-ui
+
+Accessible components for [Solid](https://www.solidjs.com), built on [Ark UI](https://ark-ui.com)
+(behavior, keyboard, focus and ARIA) and styled with [Panda CSS](https://panda-css.com) recipes. It
+works in any Solid app, with or without Panda, rendered in the browser or on the server.
+
+```tsx
+import "@mosaik/mosaik-ui/styles.css"
+import { Button, SelectField, TextField } from "@mosaik/mosaik-ui"
+
+<TextField label="Email" type="email" value={email()} onValueChange={setEmail} errorText={error()} />
+<SelectField label="Status" items={["Open", "Closed"]} value={status()} onValueChange={setStatus} />
+<Button type="submit">Save</Button>
+```
+
+It lives in the Mosaik repository for now, and imports nothing of Mosaik (`bun lint` checks it), so it
+can move to a repository of its own.
+
+## Using it
+
+Install `@mosaik/mosaik-ui` and `solid-js`. Then pick how the styles get to the page.
+
+**Without Panda.** Import the stylesheet once. It holds every component, variant, palette and token,
+in cascade layers (`reset, base, tokens, recipes, utilities`), so your own CSS wins without
+`!important`:
+
+```ts
+import "@mosaik/mosaik-ui/styles.css"
+```
+
+To load less, import the layers and the recipes you use from `@mosaik/mosaik-ui/styles/*`
+(`tokens.css`, `recipes/button.css`, ...) after declaring the layer order yourself:
+`@layer reset, base, tokens, recipes, utilities;`.
+
+Style props on components (`<Button mt="4">`) need Panda: without it, use `class`.
+
+**With Panda** (2.x). Point Panda at the library instead of scanning it:
+
+```ts
+// panda.config.ts
+export default defineConfig({
+  designSystem: "@mosaik/mosaik-ui",
+  include: ["./src/**/*.{ts,tsx}"],
+  jsxFramework: "solid",
+})
+```
+
+Your code then styles itself with the library's tokens, recipes and patterns, from the library:
+
+```tsx
+import { css } from "@mosaik/mosaik-ui/css"
+import { Stack } from "@mosaik/mosaik-ui/jsx"
+
+<main class={css({ p: "6", bg: "accent.subtle.bg" })}>
+```
+
+Panda generates the library's styles from its build info, plus yours. Class names and CSS variables
+carry the `mk` prefix, so they never collide with another Panda build on the page.
+
+**Server rendering.** The package's `solid` export condition gives Vite and SolidStart the sources,
+which they compile for the browser or the server (hydratable or not). Other tools get prebuilt DOM
+(`browser`) and server (`node`) builds.
+
+## Components
+
+Each component is a set of **parts** named after Ark's, styled by a slot recipe, with every Ark prop
+and `asChild`:
+
+```tsx
+<Dialog.Root>
+  <Dialog.Trigger asChild={(trigger) => <Button {...trigger()}>Edit</Button>} />
+  <Portal>
+    <Dialog.Backdrop />
+    <Dialog.Positioner>
+      <Dialog.Content>
+        <Dialog.Header>
+          <Dialog.Title>Edit profile</Dialog.Title>
+        </Dialog.Header>
+        <Dialog.Body>...</Dialog.Body>
+      </Dialog.Content>
+    </Dialog.Positioner>
+  </Portal>
+</Dialog.Root>
+```
+
+| | |
+|---|---|
+| Actions | `Button`, `ButtonGroup`, `IconButton`, `CloseButton`, `Toggle`, `ToggleGroup`, `Link`, `Clipboard` |
+| Form controls | `Field`, `Fieldset`, `Input`, `InputGroup`, `InputAddon`, `Textarea`, `PasswordInput`, `NumberInput`, `PinInput`, `Checkbox`, `RadioGroup`, `RadioCardGroup`, `Switch`, `Select`, `Combobox`, `TagsInput`, `SegmentGroup`, `Slider`, `RatingGroup`, `DatePicker`, `ColorPicker`, `FileUpload`, `Editable` |
+| Overlays | `Dialog`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `Menu`, `Toaster` / `toaster` |
+| Navigation | `Tabs`, `Breadcrumb`, `Pagination`, `Steps`, `Accordion`, `Collapsible` |
+| Display | `Card`, `Alert`, `Badge`, `Avatar`, `Table`, `Code`, `Kbd`, `Heading`, `Text`, `DisplayValue`, `Image`, `Icon`, `Progress`, `Skeleton`, `Spinner`, `Loader`, `Carousel`, `ScrollArea`, `Splitter` |
+| Layout | `Group`, `AbsoluteCenter`, `Span` |
+
+## Fields
+
+For forms, the **fields** put a label, the control, help and the error together, linked for
+assistive technology. They take plain values and give plain values back: no change events to unpack.
+
+| Field | Value |
+|---|---|
+| `TextField`, `TextareaField`, `PasswordField` | `string` |
+| `NumberField` | `number \| null` (`null` while empty); `formatOptions` for currency, percent, ... |
+| `SelectField`, `ComboboxField`, `RadioGroupField` | `string \| null`, from `items` (`["Open", "Closed"]` or `{ label, value, disabled }`) |
+| `CheckboxField`, `SwitchField` | `checked: boolean` |
+| `SliderField` / `RangeSliderField` | `number` / `[number, number]` |
+| `DatePickerField` / `DateRangePickerField` | ISO dates, `"2026-10-19"` / `["2026-10-01", "2026-10-31"]` |
+
+All of them take the same props besides the value:
+
+- `label`, `helperText`;
+- `errorText`, which marks the field invalid while set;
+- `optionalText`, shown after the label of a field that is not `required`;
+- `required`, `disabled`, `readOnly`, `invalid`, `name`;
+- `onBlur`, so a form can show a field's error once it was left.
+
+They are controlled (`value`) or not (`defaultValue`). `FormField` wraps a control of your own the
+same way.
+
+The library has no form state or validation: pass `errorText` from whatever checks your form. With
+`noValidate` on the `<form>`, people read your messages, not the browser's.
+
+## Theming
+
+Colors come in **palettes** (`neutral`, `indigo`, `blue`, `green`, `red`, `amber`, `orange`, `teal`,
+`violet`, `pink`), each a 12-step scale with the colors the recipes read (`solid.bg`, `subtle.fg`,
+`surface.border`, ...). Components use **roles**:
+
+- `accent`: primary actions, focus, selection; indigo;
+- `gray`: surfaces, borders and text; neutral;
+- `danger`: red;
+- `success`: green;
+- `warning`: amber.
+
+`colorPalette` picks a role or a palette for any component: `<Button colorPalette="danger">`.
+
+**Dark mode** follows a `dark` class or `data-theme="dark"` on an ancestor, usually `<html>`.
+
+**Your brand**:
+- **With Panda:** override a role's tokens in your config, or build from
+  `createPreset({ accent: "blue", radius: "md" })` (`@mosaik/mosaik-ui/preset`).
+- **Without Panda:** set the role's CSS variables on `<html>` (`--mk-colors-accent-solid-bg`, ...).
+
+## Developing
+
+| Command (in `packages/mosaik-ui`) | |
+|---|---|
+| `bun run catalog` | the catalog at http://localhost:6006: every example of every component, light and dark, with any accent |
+| `bun run test` | behavior and accessibility (axe) of the fields and of every catalog example in a DOM; every example rendered on the server |
+| `bun run typecheck` | the sources, the catalog, the tests and the scripts |
+| `bun run build` | the published package in `dist/package/`, packed to `dist/*.tgz` |
+| `bun run verify` | after `build`: installs the tarball into the apps in `verify/` (one without Panda, one with `designSystem`) and renders on the server |
+
+- **Adding a component:** its recipe goes in `src/theme/recipes/` and its parts in
+  `src/components/`, with `createSlotRecipeContext`. Its examples go in
+  `catalog/examples/<component>/`. The tests pick the examples up.
+- **Generated files:** `styled-system/` is generated by `panda codegen` (the `prepare` script).
+
+## License
+
+MIT. The theme, recipes and components started from [Park UI](https://park-ui.com) (MIT), and the
+icons are [Lucide](https://lucide.dev)'s (ISC); see [LICENSE](LICENSE).

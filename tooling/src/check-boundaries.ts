@@ -11,6 +11,8 @@
  * 7. Core (its services and the shared packages) never depends on the Portal.
  * 8. The Portal (its service, the shell, built-in apps) uses Core only through its contracts and
  *    the SDK, never the code of Core's services.
+ * 9. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
+ *    directory, so it can move to a repository of its own.
  */
 import { dirname, relative, resolve, sep } from "node:path"
 import { Glob } from "bun"
@@ -50,6 +52,8 @@ const BROWSER_ONLY = [
   /^solid-js/,
   /^@mosaik\/(ui|table|charts|web-kit|styled-system)(\/|$)/,
   /^@mosaik\/auth\/web$/,
+  // The component library, except its Panda preset (build time).
+  /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
   /^@mosaik\/sdk\/(client|solid|portal|ui|table|charts|css|jsx|patterns|tokens)$/,
   /^@tanstack\/solid-/,
   /^lucide-solid/,
@@ -87,6 +91,7 @@ const exampleOf = (path: string) => /^examples\/([^/]+)\//.exec(path)?.[1]
 const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
   /^packages\/(ui|table|charts|web-kit|client|console)\//.test(path) ||
+  path.startsWith("packages/mosaik-ui/src/") ||
   path.startsWith("packages/auth/src/web/") ||
   path.startsWith("shell/src/") ||
   path.startsWith("console/src/")
@@ -98,6 +103,8 @@ const isContract = (path: string) =>
   path.startsWith("packages/auth/src/contract/") ||
   path.startsWith("packages/notifications/src/contract/") ||
   path.startsWith("packages/platform/src/contract/")
+
+const MOSAIK_UI = "packages/mosaik-ui/"
 
 const rules: ReadonlyArray<Rule> = [
   {
@@ -149,6 +156,15 @@ const rules: ReadonlyArray<Rule> = [
   },
   // Core and the Portal, in both directions: what keeps Core usable without the Portal.
   {
+    name: "@mosaik/mosaik-ui must stand alone",
+    files: (path) => path.startsWith(MOSAIK_UI),
+    forbidden: (specifier, file) => {
+      if (specifier.startsWith("@mosaik/")) return !/^@mosaik\/mosaik-ui(\/|$)/.test(specifier)
+      const resolved = target(specifier, file)
+      return resolved !== null && !`${resolved}/`.startsWith(MOSAIK_UI)
+    },
+  },
+  {
     name: "Core must not depend on the Portal",
     files: isCore,
     forbidden: (specifier, file) =>
@@ -174,6 +190,8 @@ for (const pattern of [
   "shell/src/**/*.{ts,tsx}",
   "console/src/**/*.{ts,tsx}",
   "packages/*/src/**/*.{ts,tsx}",
+  "packages/mosaik-ui/{catalog,test,scripts,verify}/**/*.{ts,tsx,js}",
+  "packages/mosaik-ui/*.config.ts",
   "apps/*/**/*.{ts,tsx}",
   "examples/*/**/*.{ts,tsx}",
 ]) {

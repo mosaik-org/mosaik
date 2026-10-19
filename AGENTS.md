@@ -20,7 +20,8 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
   `packages/console`, which the shell mounts too), `services/` (Core: gateway, auth, notifications,
   platform; Portal: portal), `apps/` (the Portal's built-in apps), `examples/` (example apps, written like a team's app: they
   import only `@mosaik/sdk`), `packages/` (`packages/sdk` is the one package apps use, re-exporting the
-  internal packages; `packages/portal` is the Portal's contract),
+  internal packages; `packages/portal` is the Portal's contract; `packages/mosaik-ui` is a component
+  library that stands alone, importing nothing of Mosaik, to be moved to its own repository),
   `tooling/`, `infra/`, `docs/`.
 - **New features for app teams** are shown in an example when that helps: examples are the code teams
   copy.
