@@ -61,7 +61,7 @@ export const appFiles = (t: AppTemplate): Record<string, string> => ({
 
   ".env.example": `# Where the platform API is (the platform's public URL when hosted elsewhere).
 PLATFORM_URL=http://localhost:3000
-# Issued when the app is installed (Administration → Apps → Install → Hosted elsewhere).
+# Issued when the app is installed (Portal → Apps → Install app → Hosted elsewhere).
 MOSAIK_APP_KEY=
 PORT=4300
 ${t.database ? `# Your database (the platform provides one when it runs the image).\nDATABASE_URL=postgres://postgres:postgres@localhost:5432/${t.id.replaceAll("-", "_")}\n` : ""}GREETING=Hello
@@ -355,7 +355,7 @@ either way it talks to the platform only through the platform API with its key.
 ## Develop
 
 1. \`bun install\`, then \`cp .env.example .env\`.
-2. In the platform (\`bun dev\`): Administration → Apps → Install app → *Hosted elsewhere*, URL \`http://localhost:4300\`.
+2. In the platform (\`bun dev\`): Portal → Apps (/portal/apps) → Install app → *Hosted elsewhere*, URL \`http://localhost:4300\`.
    Put the key it shows in \`.env\`.
 3. \`bun run dev\`, then open the platform. Reload the page after changing \`web/\`.
 
@@ -363,7 +363,7 @@ either way it talks to the platform only through the platform API with its key.
 
 The app receives the events listed in \`events\` in \`manifest.ts\` (\`user.created\`, \`user.deleted\`,
 \`user.access_changed\`), handled in \`server/events.ts\`. They arrive in order and at least once, so make handlers
-safe to repeat. A failing handler is retried before later events; admins see the error under Administration → Apps
+safe to repeat. A failing handler is retried before later events; operators see the error on the Portal's Apps page
 and can skip past it. Events are kept for 30 days: an app away longer gets the \`missed\` handler instead.
 
 ## Ship as an image
@@ -374,7 +374,7 @@ docker tag ${t.id}:latest registry.example.com/team/${t.id}:1.0.0
 docker push registry.example.com/team/${t.id}:1.0.0
 \`\`\`
 
-Then Administration → Apps → Install app → *Docker image*. Bump \`version\` in \`manifest.ts\` for every release;
+Then Portal → Apps → Install app → *Docker image*. Bump \`version\` in \`manifest.ts\` for every release;
 update with *Update…* (a release that does not become healthy is rolled back).
 
 The SDK version must match the platform's major version: after a platform major upgrade, update \`vendor/mosaik/\`,

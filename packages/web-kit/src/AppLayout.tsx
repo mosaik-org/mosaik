@@ -11,6 +11,8 @@ export interface AppLayoutProps {
   /** Sub-navigation; items with a `permission` are hidden from principals without it. */
   readonly nav?: ReadonlyArray<NavTabItem & { readonly permission?: string }>
   readonly actions?: JSX.Element
+  /** A lucide icon name; defaults to the one the app gives the Portal (`portal.icon`). */
+  readonly icon?: string
 }
 
 /** Standard frame for an app: header from the manifest, sub-navigation and the active page. */
@@ -21,7 +23,7 @@ export const AppLayout = (props: AppLayoutProps) => {
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
       <PageHeader
-        icon={<AppIcon name={props.app.portal.icon} size={22} />}
+        icon={<AppIcon name={props.icon ?? props.app.portal.icon} size={22} />}
         title={props.app.name}
         description={props.app.description}
         actions={props.actions}

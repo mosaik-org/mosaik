@@ -11,21 +11,25 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/app'
 import { Route as indexRouteImport } from './routes/index'
-import { Route as accessRequestsRouteImport } from './routes/access-requests'
-import { Route as AdminRouteRouteImport } from './../../apps/admin/web/routes/route'
+import { Route as AdminRouteRouteImport } from './../../packages/console/src/routes/admin/route'
+import { Route as PortalRouteRouteImport } from './../../apps/portal/web/routes/route'
 import { Route as StatusRouteRouteImport } from './../../apps/status/web/routes/route'
-import { Route as AdminIndexRouteImport } from './../../apps/admin/web/routes/index'
-import { Route as AdminAppsRouteImport } from './../../apps/admin/web/routes/apps'
-import { Route as AdminAuditRouteImport } from './../../apps/admin/web/routes/audit'
-import { Route as AdminDeliveriesRouteImport } from './../../apps/admin/web/routes/deliveries'
-import { Route as AdminNotificationsRouteImport } from './../../apps/admin/web/routes/notifications'
-import { Route as AdminRolesRouteImport } from './../../apps/admin/web/routes/roles'
-import { Route as AdminUsageRouteImport } from './../../apps/admin/web/routes/usage'
-import { Route as AdminUsersRouteImport } from './../../apps/admin/web/routes/users'
+import { Route as AccessRequestsIndexRouteImport } from './../../packages/console/src/routes/access-requests/index'
+import { Route as AdminIndexRouteImport } from './../../packages/console/src/routes/admin/index'
+import { Route as AdminAuditRouteImport } from './../../packages/console/src/routes/admin/audit'
+import { Route as AdminDeliveriesRouteImport } from './../../packages/console/src/routes/admin/deliveries'
+import { Route as AdminNotificationsRouteImport } from './../../packages/console/src/routes/admin/notifications'
+import { Route as AdminRolesRouteImport } from './../../packages/console/src/routes/admin/roles'
+import { Route as AdminUsersRouteImport } from './../../packages/console/src/routes/admin/users'
 import { Route as directoryIndexRouteImport } from './routes/directory/index'
 import { Route as directoryAppRouteImport } from './routes/directory/app'
+import { Route as ManageIndexRouteImport } from './../../packages/console/src/routes/manage/index'
+import { Route as ManageAppRouteImport } from './../../packages/console/src/routes/manage/$app'
 import { Route as notificationsIndexRouteImport } from './routes/notifications/index'
 import { Route as notificationsSettingsRouteImport } from './routes/notifications/settings'
+import { Route as PortalIndexRouteImport } from './../../apps/portal/web/routes/index'
+import { Route as PortalAppsRouteImport } from './../../apps/portal/web/routes/apps'
+import { Route as PortalUsageRouteImport } from './../../apps/portal/web/routes/usage'
 import { Route as StatusIndexRouteImport } from './../../apps/status/web/routes/index'
 
 const appRoute = appRouteImport.update({
@@ -37,14 +41,14 @@ const indexRoute = indexRouteImport.update({
   path: '/',
   getParentRoute: () => appRoute,
 } as any)
-const accessRequestsRoute = accessRequestsRouteImport.update({
-  id: '/access-requests',
-  path: '/access-requests',
-  getParentRoute: () => appRoute,
-} as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => appRoute,
+} as any)
+const PortalRouteRoute = PortalRouteRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => appRoute,
 } as any)
 const StatusRouteRoute = StatusRouteRouteImport.update({
@@ -52,14 +56,14 @@ const StatusRouteRoute = StatusRouteRouteImport.update({
   path: '/status',
   getParentRoute: () => appRoute,
 } as any)
+const AccessRequestsIndexRoute = AccessRequestsIndexRouteImport.update({
+  id: '/access-requests/',
+  path: '/access-requests/',
+  getParentRoute: () => appRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminAppsRoute = AdminAppsRouteImport.update({
-  id: '/apps',
-  path: '/apps',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -82,11 +86,6 @@ const AdminRolesRoute = AdminRolesRouteImport.update({
   path: '/roles',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AdminUsageRoute = AdminUsageRouteImport.update({
-  id: '/usage',
-  path: '/usage',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -102,6 +101,16 @@ const directoryAppRoute = directoryAppRouteImport.update({
   path: '/directory/$app',
   getParentRoute: () => appRoute,
 } as any)
+const ManageIndexRoute = ManageIndexRouteImport.update({
+  id: '/manage/',
+  path: '/manage/',
+  getParentRoute: () => appRoute,
+} as any)
+const ManageAppRoute = ManageAppRouteImport.update({
+  id: '/manage/$app',
+  path: '/manage/$app',
+  getParentRoute: () => appRoute,
+} as any)
 const notificationsIndexRoute = notificationsIndexRouteImport.update({
   id: '/notifications/',
   path: '/notifications/',
@@ -112,6 +121,21 @@ const notificationsSettingsRoute = notificationsSettingsRouteImport.update({
   path: '/notifications/settings',
   getParentRoute: () => appRoute,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PortalRouteRoute,
+} as any)
+const PortalAppsRoute = PortalAppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => PortalRouteRoute,
+} as any)
+const PortalUsageRoute = PortalUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => PortalRouteRoute,
+} as any)
 const StatusIndexRoute = StatusIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -121,58 +145,69 @@ const StatusIndexRoute = StatusIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof indexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/portal': typeof PortalRouteRouteWithChildren
   '/status': typeof StatusRouteRouteWithChildren
-  '/access-requests': typeof accessRequestsRoute
-  '/admin/apps': typeof AdminAppsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
-  '/admin/usage': typeof AdminUsageRoute
   '/admin/users': typeof AdminUsersRoute
   '/directory/$app': typeof directoryAppRoute
+  '/manage/$app': typeof ManageAppRoute
   '/notifications/settings': typeof notificationsSettingsRoute
+  '/portal/apps': typeof PortalAppsRoute
+  '/portal/usage': typeof PortalUsageRoute
+  '/access-requests/': typeof AccessRequestsIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/directory/': typeof directoryIndexRoute
+  '/manage/': typeof ManageIndexRoute
   '/notifications/': typeof notificationsIndexRoute
+  '/portal/': typeof PortalIndexRoute
   '/status/': typeof StatusIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof indexRoute
-  '/access-requests': typeof accessRequestsRoute
-  '/admin/apps': typeof AdminAppsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
-  '/admin/usage': typeof AdminUsageRoute
   '/admin/users': typeof AdminUsersRoute
   '/directory/$app': typeof directoryAppRoute
+  '/manage/$app': typeof ManageAppRoute
   '/notifications/settings': typeof notificationsSettingsRoute
+  '/portal/apps': typeof PortalAppsRoute
+  '/portal/usage': typeof PortalUsageRoute
+  '/access-requests': typeof AccessRequestsIndexRoute
   '/admin': typeof AdminIndexRoute
   '/directory': typeof directoryIndexRoute
+  '/manage': typeof ManageIndexRoute
   '/notifications': typeof notificationsIndexRoute
+  '/portal': typeof PortalIndexRoute
   '/status': typeof StatusIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof appRouteWithChildren
   '/_app/admin': typeof AdminRouteRouteWithChildren
+  '/_app/portal': typeof PortalRouteRouteWithChildren
   '/_app/status': typeof StatusRouteRouteWithChildren
   '/_app/': typeof indexRoute
-  '/_app/access-requests': typeof accessRequestsRoute
-  '/_app/admin/apps': typeof AdminAppsRoute
   '/_app/admin/audit': typeof AdminAuditRoute
   '/_app/admin/deliveries': typeof AdminDeliveriesRoute
   '/_app/admin/notifications': typeof AdminNotificationsRoute
   '/_app/admin/roles': typeof AdminRolesRoute
-  '/_app/admin/usage': typeof AdminUsageRoute
   '/_app/admin/users': typeof AdminUsersRoute
   '/_app/directory/$app': typeof directoryAppRoute
+  '/_app/manage/$app': typeof ManageAppRoute
   '/_app/notifications/settings': typeof notificationsSettingsRoute
+  '/_app/portal/apps': typeof PortalAppsRoute
+  '/_app/portal/usage': typeof PortalUsageRoute
+  '/_app/access-requests/': typeof AccessRequestsIndexRoute
   '/_app/admin/': typeof AdminIndexRoute
   '/_app/directory/': typeof directoryIndexRoute
+  '/_app/manage/': typeof ManageIndexRoute
   '/_app/notifications/': typeof notificationsIndexRoute
+  '/_app/portal/': typeof PortalIndexRoute
   '/_app/status/': typeof StatusIndexRoute
 }
 export interface FileRouteTypes {
@@ -180,57 +215,68 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/portal'
     | '/status'
-    | '/access-requests'
-    | '/admin/apps'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
     | '/admin/roles'
-    | '/admin/usage'
     | '/admin/users'
     | '/directory/$app'
+    | '/manage/$app'
     | '/notifications/settings'
+    | '/portal/apps'
+    | '/portal/usage'
+    | '/access-requests/'
     | '/admin/'
     | '/directory/'
+    | '/manage/'
     | '/notifications/'
+    | '/portal/'
     | '/status/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/access-requests'
-    | '/admin/apps'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
     | '/admin/roles'
-    | '/admin/usage'
     | '/admin/users'
     | '/directory/$app'
+    | '/manage/$app'
     | '/notifications/settings'
+    | '/portal/apps'
+    | '/portal/usage'
+    | '/access-requests'
     | '/admin'
     | '/directory'
+    | '/manage'
     | '/notifications'
+    | '/portal'
     | '/status'
   id:
     | '__root__'
     | '/_app'
     | '/_app/admin'
+    | '/_app/portal'
     | '/_app/status'
     | '/_app/'
-    | '/_app/access-requests'
-    | '/_app/admin/apps'
     | '/_app/admin/audit'
     | '/_app/admin/deliveries'
     | '/_app/admin/notifications'
     | '/_app/admin/roles'
-    | '/_app/admin/usage'
     | '/_app/admin/users'
     | '/_app/directory/$app'
+    | '/_app/manage/$app'
     | '/_app/notifications/settings'
+    | '/_app/portal/apps'
+    | '/_app/portal/usage'
+    | '/_app/access-requests/'
     | '/_app/admin/'
     | '/_app/directory/'
+    | '/_app/manage/'
     | '/_app/notifications/'
+    | '/_app/portal/'
     | '/_app/status/'
   fileRoutesById: FileRoutesById
 }
@@ -254,18 +300,18 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof indexRouteImport
       parentRoute: typeof appRoute
     }
-    '/_app/access-requests': {
-      id: '/_app/access-requests'
-      path: '/access-requests'
-      fullPath: '/access-requests'
-      preLoaderRoute: typeof accessRequestsRouteImport
-      parentRoute: typeof appRoute
-    }
     '/_app/admin': {
       id: '/_app/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/portal': {
+      id: '/_app/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/status': {
@@ -275,18 +321,18 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof StatusRouteRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/access-requests/': {
+      id: '/_app/access-requests/'
+      path: '/access-requests'
+      fullPath: '/access-requests/'
+      preLoaderRoute: typeof AccessRequestsIndexRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/admin/': {
       id: '/_app/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/_app/admin/apps': {
-      id: '/_app/admin/apps'
-      path: '/apps'
-      fullPath: '/admin/apps'
-      preLoaderRoute: typeof AdminAppsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/_app/admin/audit': {
@@ -317,13 +363,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AdminRolesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
-    '/_app/admin/usage': {
-      id: '/_app/admin/usage'
-      path: '/usage'
-      fullPath: '/admin/usage'
-      preLoaderRoute: typeof AdminUsageRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
     '/_app/admin/users': {
       id: '/_app/admin/users'
       path: '/users'
@@ -345,6 +384,20 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof directoryAppRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/manage/': {
+      id: '/_app/manage/'
+      path: '/manage'
+      fullPath: '/manage/'
+      preLoaderRoute: typeof ManageIndexRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/manage/$app': {
+      id: '/_app/manage/$app'
+      path: '/manage/$app'
+      fullPath: '/manage/$app'
+      preLoaderRoute: typeof ManageAppRouteImport
+      parentRoute: typeof appRoute
+    }
     '/_app/notifications/': {
       id: '/_app/notifications/'
       path: '/notifications'
@@ -359,6 +412,27 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof notificationsSettingsRouteImport
       parentRoute: typeof appRoute
     }
+    '/_app/portal/': {
+      id: '/_app/portal/'
+      path: '/'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof PortalRouteRoute
+    }
+    '/_app/portal/apps': {
+      id: '/_app/portal/apps'
+      path: '/apps'
+      fullPath: '/portal/apps'
+      preLoaderRoute: typeof PortalAppsRouteImport
+      parentRoute: typeof PortalRouteRoute
+    }
+    '/_app/portal/usage': {
+      id: '/_app/portal/usage'
+      path: '/usage'
+      fullPath: '/portal/usage'
+      preLoaderRoute: typeof PortalUsageRouteImport
+      parentRoute: typeof PortalRouteRoute
+    }
     '/_app/status/': {
       id: '/_app/status/'
       path: '/'
@@ -370,29 +444,41 @@ declare module '@tanstack/solid-router' {
 }
 
 interface AdminRouteRouteChildren {
-  AdminAppsRoute: typeof AdminAppsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminDeliveriesRoute: typeof AdminDeliveriesRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminRolesRoute: typeof AdminRolesRoute
-  AdminUsageRoute: typeof AdminUsageRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
-  AdminAppsRoute: AdminAppsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminDeliveriesRoute: AdminDeliveriesRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminRolesRoute: AdminRolesRoute,
-  AdminUsageRoute: AdminUsageRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
+)
+
+interface PortalRouteRouteChildren {
+  PortalAppsRoute: typeof PortalAppsRoute
+  PortalUsageRoute: typeof PortalUsageRoute
+  PortalIndexRoute: typeof PortalIndexRoute
+}
+
+const PortalRouteRouteChildren: PortalRouteRouteChildren = {
+  PortalAppsRoute: PortalAppsRoute,
+  PortalUsageRoute: PortalUsageRoute,
+  PortalIndexRoute: PortalIndexRoute,
+}
+
+const PortalRouteRouteWithChildren = PortalRouteRoute._addFileChildren(
+  PortalRouteRouteChildren,
 )
 
 interface StatusRouteRouteChildren {
@@ -409,23 +495,29 @@ const StatusRouteRouteWithChildren = StatusRouteRoute._addFileChildren(
 
 interface appRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  PortalRouteRoute: typeof PortalRouteRouteWithChildren
   StatusRouteRoute: typeof StatusRouteRouteWithChildren
   indexRoute: typeof indexRoute
-  accessRequestsRoute: typeof accessRequestsRoute
   directoryAppRoute: typeof directoryAppRoute
+  ManageAppRoute: typeof ManageAppRoute
   notificationsSettingsRoute: typeof notificationsSettingsRoute
+  AccessRequestsIndexRoute: typeof AccessRequestsIndexRoute
   directoryIndexRoute: typeof directoryIndexRoute
+  ManageIndexRoute: typeof ManageIndexRoute
   notificationsIndexRoute: typeof notificationsIndexRoute
 }
 
 const appRouteChildren: appRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  PortalRouteRoute: PortalRouteRouteWithChildren,
   StatusRouteRoute: StatusRouteRouteWithChildren,
   indexRoute: indexRoute,
-  accessRequestsRoute: accessRequestsRoute,
   directoryAppRoute: directoryAppRoute,
+  ManageAppRoute: ManageAppRoute,
   notificationsSettingsRoute: notificationsSettingsRoute,
+  AccessRequestsIndexRoute: AccessRequestsIndexRoute,
   directoryIndexRoute: directoryIndexRoute,
+  ManageIndexRoute: ManageIndexRoute,
   notificationsIndexRoute: notificationsIndexRoute,
 }
 

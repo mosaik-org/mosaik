@@ -5,6 +5,7 @@
   "workspaces": [
     "services/*",
     "shell",
+    "console",
     "packages/*",
     "apps/*",
     "examples/*",
@@ -15,7 +16,7 @@
     "dev": "bun tooling/src/dev.ts",
     "infra:up": "docker compose -f infra/compose.dev.yml up -d --wait",
     "infra:down": "docker compose -f infra/compose.dev.yml down",
-    "build": "bun --filter @mosaik/shell build",
+    "build": "bun --filter @mosaik/shell build && bun --filter @mosaik/console-app build",
     "db:provision": "bun tooling/src/db-provision.ts",
     "create:app": "bun tooling/src/create-app.ts",
     "typecheck": "bun --filter '*' typecheck",

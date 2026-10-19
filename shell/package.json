@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@mosaik/auth": "workspace:*",
-    "@mosaik/builtin-admin": "workspace:*",
     "@mosaik/builtin-status": "workspace:*",
     "@mosaik/charts": "workspace:*",
     "@mosaik/client": "workspace:*",
+    "@mosaik/console": "workspace:*",
     "@mosaik/core": "workspace:*",
     "@mosaik/notifications": "workspace:*",
     "@mosaik/platform": "workspace:*",

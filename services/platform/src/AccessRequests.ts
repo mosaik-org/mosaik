@@ -25,6 +25,7 @@ import {
 import { AccessAdmin, AccessRequest, type AccessRequestStatus, canManageApp } from "@mosaik/platform/contract"
 import { Context, Effect, Layer, Option, Schedule, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
+import { Apps } from "./Apps"
 import { NotificationsClient } from "./clients"
 
 /** The platform sends notifications as `platform`, an id no app can take. */
@@ -48,8 +49,8 @@ const NOTIFICATION_TYPES = [
   }),
 ]
 
-/** Where owners and admins answer an app's requests. */
-const reviewPath = (app: string) => `/directory/${app}?tab=requests`
+/** Where owners and admins answer an app's requests: the console's app page, with or without the Portal. */
+const reviewPath = (app: string) => `/manage/${app}?tab=requests`
 
 const RequestRow = Schema.Struct({
   ...AccessRequest.fields,
@@ -101,6 +102,7 @@ export class AccessRequests extends Context.Service<
     Effect.gen(function* () {
       const sql = yield* PgClient.PgClient
       const auth = yield* InternalClient
+      const apps = yield* Apps
       const notifications = yield* NotificationsClient
 
       // The notifications service may still be starting.
@@ -172,23 +174,36 @@ export class AccessRequests extends Context.Service<
           })
           .pipe(Effect.catchCause((cause) => Effect.logWarning("Could not send an access notification", cause)))
 
+      /** Where the app opens: a standalone app's own address, else its path in the Portal. */
+      const openLink = (app: string) =>
+        apps.get(app).pipe(
+          Effect.map((record) =>
+            Option.getOrElse(
+              Option.flatMapNullishOr(record, (row) => row.publicUrl),
+              () => `/${app}`,
+            ),
+          ),
+        )
+
       const tellRequester = (request: AccessRequest) =>
-        notify(
-          AccessNotifications.answered,
-          Audiences.users(request.userId),
-          request.status === "approved"
-            ? {
-                title: `You can now open ${request.appName}`,
-                ...(request.grantedRole === null ? {} : { body: `You have the ${request.grantedRole.name} role.` }),
-                link: `/${request.app}`,
-                linkLabel: `Open ${request.appName}`,
-                severity: "success",
-              }
-            : {
-                title: `Your request for access to ${request.appName} was declined`,
-                ...(request.response === null ? {} : { body: request.response }),
-              },
-          `access-request-${request.id}-${request.status}`,
+        Effect.flatMap(openLink(request.app), (link) =>
+          notify(
+            AccessNotifications.answered,
+            Audiences.users(request.userId),
+            request.status === "approved"
+              ? {
+                  title: `You can now open ${request.appName}`,
+                  ...(request.grantedRole === null ? {} : { body: `You have the ${request.grantedRole.name} role.` }),
+                  link,
+                  linkLabel: `Open ${request.appName}`,
+                  severity: "success",
+                }
+              : {
+                  title: `Your request for access to ${request.appName} was declined`,
+                  ...(request.response === null ? {} : { body: request.response }),
+                },
+            `access-request-${request.id}-${request.status}`,
+          ),
         )
 
       const get = Effect.fn("AccessRequests.get")(function* (id: number) {

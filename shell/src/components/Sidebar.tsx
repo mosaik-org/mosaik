@@ -1,4 +1,5 @@
 import { usePrincipal } from "@mosaik/auth/web"
+import { managesAnyApp, reviewsQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { css } from "@mosaik/styled-system/css"
 import { AppIcon, IconButton, Menu } from "@mosaik/ui"
@@ -12,8 +13,8 @@ import LayoutDashboard from "lucide-solid/icons/layout-dashboard"
 import LayoutGrid from "lucide-solid/icons/layout-grid"
 import Pin from "lucide-solid/icons/pin"
 import PinOff from "lucide-solid/icons/pin-off"
+import Settings2 from "lucide-solid/icons/settings-2"
 import { For, type JSX, Show } from "solid-js"
-import { managesAnyApp, reviewsQuery } from "../access/queries"
 import { appHref } from "../apps"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
 
@@ -179,6 +180,7 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
             count={waiting.data?.length ?? 0}
             onNavigate={props.onNavigate}
           />
+          <NavLink to="/manage" icon={<Settings2 size={18} />} label="Manage apps" onNavigate={props.onNavigate} />
         </Show>
       </div>
       <Show when={apps.pinned().length > 0}>

@@ -1,0 +1,27 @@
+{
+  "name": "@mosaik/builtin-portal",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./manifest": "./manifest.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/core": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/portal": "workspace:*",
+    "@mosaik/client": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/table": "workspace:*",
+    "@mosaik/ui": "workspace:*",
+    "@mosaik/web-kit": "workspace:*",
+    "@tanstack/solid-query": "^5.104.3",
+    "@tanstack/solid-router": "^1.170.41",
+    "effect": "^4.0.5",
+    "lucide-solid": "^1.57.0",
+    "solid-js": "^1.9.17"
+  }
+}

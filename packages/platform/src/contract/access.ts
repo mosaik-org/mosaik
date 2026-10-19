@@ -95,6 +95,13 @@ export class AccessReviewGroup extends HttpApiGroup.make("accessReview")
   .prefix("/access-requests")
   .middleware(AccessControl) {}
 
+/** An app someone decides about (see {@link canManageApp}). */
+export class ManagedApp extends Schema.Class<ManagedApp>("@mosaik/platform/ManagedApp")({
+  id: Schema.String,
+  name: Schema.String,
+  description: Schema.NullOr(Schema.String),
+}) {}
+
 /** What anyone may know about an app: its roles, and whom to ask for access. */
 export class AppAbout extends Schema.Class<AppAbout>("@mosaik/platform/AppAbout")({
   app: RegisteredApp,
@@ -111,6 +118,8 @@ const appParams = { id: AppId }
  */
 export class AppsGroup extends HttpApiGroup.make("apps")
   .add(
+    /** The apps the caller decides about: the ones they own, or every app for admins. */
+    HttpApiEndpoint.get("list", "/apps", { success: Schema.Array(ManagedApp) }),
     HttpApiEndpoint.get("about", "/apps/:id/about", { params: appParams, success: AppAbout, error: NotFound }),
     HttpApiEndpoint.get("members", "/apps/:id/members", {
       params: appParams,

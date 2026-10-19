@@ -77,6 +77,7 @@ export const AppsHandlers = HttpApiBuilder.group(
     const ownership = yield* Ownership
     const { audit } = yield* makeAudit
     return handlers.handleAll({
+      list: () => Effect.flatMap(CurrentPrincipal, (principal) => ownership.managed(principal)),
       about: ({ params }) => ownership.about(params.id),
       members: ({ params }) => Effect.flatMap(CurrentPrincipal, (principal) => ownership.members(principal, params.id)),
       setMemberRoles: ({ params, payload }) =>

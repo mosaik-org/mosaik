@@ -16,8 +16,9 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 - **Vocabulary:** everything is an **app**: *built-in* (`apps/<id>`, part of the Portal) or *installed*
   (its team's repository, added at runtime); *mounted* in the shell or *standalone* (its own address and
   page, Core only). Not "dashboard".
-- **Layout:** `shell/` (the web UI), `services/` (Core: gateway, auth, notifications, platform; Portal:
-  portal), `apps/` (the Portal's built-in apps), `examples/` (example apps, written like a team's app: they
+- **Layout:** `shell/` (the Portal's web UI), `console/` (Core's, without the Portal; its pages are in
+  `packages/console`, which the shell mounts too), `services/` (Core: gateway, auth, notifications,
+  platform; Portal: portal), `apps/` (the Portal's built-in apps), `examples/` (example apps, written like a team's app: they
   import only `@mosaik/sdk`), `packages/` (`packages/sdk` is the one package apps use, re-exporting the
   internal packages; `packages/portal` is the Portal's contract),
   `tooling/`, `infra/`, `docs/`.
@@ -31,7 +32,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 | Command | |
 |---|---|
 | `bun check` | lint + boundaries + typecheck + tests: must pass before a change is done |
-| `bun run build` | build the shell (also regenerates `shell/src/routeTree.gen.ts`) |
+| `bun run build` | build the shell and the console (also regenerates their `src/routeTree.gen.ts`) |
 | `bun dev` | run everything (needs `bun infra:up`); `--headless`: Core and standalone examples only |
 | `bun sdk:pack` | pack the SDK, after changing `packages/` that apps use |
 | `bun examples:verify` | build the examples against the packed SDK, after changing what `@mosaik/sdk` exports or packs |

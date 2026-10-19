@@ -20,9 +20,10 @@ The image runs every service and built-in app (the examples are not deployed). O
 and it also serves the shell. For Entra ID, register the redirect URI
 `<PUBLIC_URL>/api/auth/callback/microsoft`. `.env.example` documents every setting.
 
-- **Core and the Portal.** Core is the `auth`, `notifications`, `platform` and `gateway` services; the
-  Portal is the `portal` service and the shell the gateway serves (`STATIC_DIR`). To run Core alone, for
-  standalone apps only, leave out the `portal` service, `UPSTREAM_PORTAL` and `STATIC_DIR`.
+- **Core and the Portal.** Core is the `auth`, `notifications`, `platform` and `gateway` services and its
+  console; the Portal is the `portal` service and the shell. The gateway serves one of the two UIs at `/`
+  (`STATIC_DIR`): the shell (`/app/shell/dist`), or without the Portal the console
+  (`/app/console/dist`), then also leave out the `portal` service and `UPSTREAM_PORTAL`.
 - **Configured apps** are listed in `CONFIGURED_APPS` (`id=url,…`, platform service): built-in apps with a
   backend, and standalone apps. Their keys are derived from `INTERNAL_KEY` (an app outside the image gets
   its key as `MOSAIK_APP_KEY`). They follow the list: an app removed from it loses its identity (its
@@ -36,11 +37,13 @@ and it also serves the shell. For Entra ID, register the redirect URI
 
 ## Sign-in and Core's pages
 
-- **One sign-in.** Everything signs in on Core's page, `/api/auth/sign-in`: the shell and standalone apps.
-  It offers e-mail and password, and *Sign in with Microsoft* when Entra ID is set up.
+- **One sign-in.** Everything signs in on Core's page, `/api/auth/sign-in`: the shell, the console and
+  standalone apps. It offers e-mail and password, and *Sign in with Microsoft* when Entra ID is set up.
 - **Branding.** Core's pages (sign-in, requesting access, notification settings) show `BRAND_NAME`
   (default `Mosaik`), `BRAND_LOGO_URL` (a square image; without it, the name's first letter) and
   `BRAND_COLOR` (default `#2563eb`).
+- **The console** (`/admin`, `/manage`, `/access-requests`) is for admins (`admin:access`) and app owners,
+  for the apps they own. With the Portal, the shell shows the same pages.
 - **For everyone:** *request access* (`/api/platform/request-access/<app>`, where standalone apps send
   people) and *notification settings* (`/api/notifications/preferences`, linked from every notification
   e-mail).
@@ -56,12 +59,13 @@ A standalone app runs on its own address with its own page and uses Core without
    `MOSAIK_PUBLIC_URL` (the app's own public address). It registers that address with Core, and sign-in
    returns only to addresses under it.
 
-People sign in on Core's page, and can ask for access to the app on Core's request page. Admins manage the
-app's roles, owners and audit log as for any other app.
+People sign in on Core's page, and the app links to Core's pages for asking for access and for
+notification settings. Admins and the app's owners manage it in the console (`/manage/<id>`), as any other
+app.
 
 ## Installing apps
 
-Installed apps are added at runtime, with no platform release, from **Administration → Apps**
+Installed apps are added at runtime, with no platform release, from the Portal's **Apps** page (`/portal/apps`)
 (`portal:apps.manage`, the Portal's *App operator* role):
 
 | | Hosted elsewhere | Docker image |
@@ -98,7 +102,7 @@ Installed apps are added at runtime, with no platform release, from **Administra
   - `APP_ADDRESSING=host` (`bun dev`, or the Portal on the host): ports are published on 127.0.0.1 only.
 - **Databases.** The platform (Core) provisions an app's database with `POSTGRES_URL` (superuser) when the
   Portal asks, and the container gets only its own `DATABASE_URL`, built for `APP_DB_SERVER_URL`.
-- **Registries.** Private registries' credentials are stored under Administration → Apps (encrypted).
+- **Registries.** Private registries' credentials are stored on the Portal's Apps page (encrypted).
 - **Encryption key.** Settings, keys and registry passwords are encrypted with a key derived from
   `INTERNAL_KEY`: rotating it means entering them again.
 
@@ -112,14 +116,15 @@ Installed apps are added at runtime, with no platform release, from **Administra
 - **Users.** **Administration → Users** (`admin:users.manage`) creates users (SSO users are created on their
   first sign-in), gives roles and deletes users.
 - **App owners.** Holders of an app's *Owner* role (or of a role granting `<app>:access.manage`) decide who
-  can use it, on the app's page (`/directory/<id>`):
+  can use it, on its page in the console (`/manage/<id>`; in the shell, *Manage apps* or *Manage* on the
+  app's directory page):
+  - *Roles*: what each of the app's roles allows, and its owners.
   - *People*: who has which of the app's roles, and who reaches it through another role; add someone or
     change their roles. Their other roles stay as they are.
   - *Requests*: approve with one of the app's roles, or decline with a reason.
-  - its use over the last 30 days, and where All apps lists it.
+  - *Portal* (in the shell): its use over the last 30 days, and where All apps lists it.
 
-  Admins with `admin:users.manage` can do the same for every app. Usage and the category are the Portal's;
-  the rest is Core's, and works for standalone apps too (through Core's API).
+  Admins with `admin:users.manage` can do the same for every app, standalone ones included.
 - **Access requests.** Someone who can't open an app asks for one of its roles from All apps or the app's
   page in the shell, or on Core's request page (standalone apps link to it). Its owners are notified, or the admins when it has none; superadmins aren't notified about apps
   that have owners. *Access requests* in the sidebar lists the requests waiting for the apps someone
@@ -140,11 +145,12 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
 - **All apps** (`/directory`). Every app by category, with search, *Most used* sorting and pinning. Apps the
   user can't open are listed too, with *Request access*. Apps declare a category; owners and admins can
   list an app under another one.
-- **App pages** (`/directory/<id>`). An app's roles and what each allows, who can use it and its owners.
+- **App pages** (`/directory/<id>`). An app's roles and what each allows, who can use it and its owners;
+  *Manage* for the people who decide about it.
 - **Overview.** Pinned and recently used apps, unread notifications, and the pages the user visited last
   (kept in the browser).
 - **Usage.** The shell reports each time someone goes into an app. It drives the recent list and the palette
-  ranking; **Administration → Usage** shows per app how many people used it in the last 30 days, ever, and
+  ranking; the Portal's **Usage** page (`/portal/usage`) shows per app how many people used it in the last 30 days, ever, and
   when it was last opened.
 
 ## Notifications and channels

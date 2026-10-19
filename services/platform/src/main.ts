@@ -24,7 +24,8 @@ import { RouteFeed } from "./RouteFeed"
 const Clients = Layer.mergeAll(InternalClient.layer, NotificationsClient.layer, FetchHttpClient.layer)
 
 const Domain = Layer.mergeAll(Registry.layer, RouteFeed.layer, Ownership.layer).pipe(
-  Layer.provideMerge(Layer.mergeAll(Apps.layer, Events.layer, AccessRequests.layer, Provisioner.layer)),
+  Layer.provideMerge(Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer)),
+  Layer.provideMerge(Apps.layer),
   Layer.provideMerge(Database.layer({ serviceId: "platform", migrations })),
   Layer.provideMerge(PlatformConfig.layer),
   Layer.provideMerge(Clients),

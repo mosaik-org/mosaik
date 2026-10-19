@@ -4,8 +4,8 @@
 #   docker compose -f infra/compose.yml --env-file .env up -d --build
 #
 # Core is auth, notifications, platform and the gateway; the Portal is the `portal` service and
-# the shell the gateway serves. Without the Portal (standalone apps only), remove `portal`,
-# UPSTREAM_PORTAL and STATIC_DIR.
+# the shell the gateway serves. Without the Portal (standalone apps only), remove `portal` and
+# UPSTREAM_PORTAL, and serve Core's console instead of the shell (STATIC_DIR=/app/console/dist).
 #
 # Adding a built-in app: add a service below (copy `status`), and add it to CONFIGURED_APPS
 # (platform) and MOSAIK_SERVICES. `bun create:app --builtin` prints the snippet. The examples
@@ -139,6 +139,7 @@ services:
       - "${HTTP_PORT:-8080}:3000"
     environment:
       <<: *env
+      # The Portal's shell; without the Portal, Core's console (/app/console/dist).
       STATIC_DIR: /app/shell/dist
       UPSTREAM_AUTH: http://auth:3000
       UPSTREAM_ADMIN: http://auth:3000

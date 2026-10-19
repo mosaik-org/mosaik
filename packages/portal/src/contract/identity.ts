@@ -2,15 +2,16 @@ import { defineApp } from "@mosaik/core"
 
 /**
  * The Portal's permissions, registered with Core when the Portal service starts (like an
- * app's manifest), so admins give them in roles like any app's.
+ * app's manifest), so admins give them in roles like any app's. The shell lists its pages
+ * (`apps/portal`) as an app for the people who hold them.
  */
 export const portalApp = defineApp({
   id: "portal",
   name: "Portal",
-  description: "The shell, the app directory, and installing and running apps.",
-  access: "use",
+  description: "Installing and running apps, and how much they are used.",
+  // Its pages are for operators: everyone else uses the Portal without a permission of its own.
+  access: "apps.manage",
   permissions: {
-    use: { description: "Use the Portal", defaultRoles: ["authenticated"] },
     "apps.manage": { description: "Install, update and remove apps", dangerous: true },
   },
   roles: {

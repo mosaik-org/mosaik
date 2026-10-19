@@ -67,11 +67,12 @@ const target = (specifier: string, file: string): string | null =>
         .join("/")
     : null
 
-/** Core's services; the shared packages (`packages/`, except the Portal's contract) are Core's too. */
+/** Core's services; the shared packages (`packages/`, except the Portal's contract) and the console are Core's too. */
 const CORE_SERVICES = ["auth", "notifications", "platform", "gateway"]
 
 const isCore = (path: string) =>
   CORE_SERVICES.some((service) => path.startsWith(`services/${service}/`)) ||
+  path.startsWith("console/") ||
   (path.startsWith("packages/") && !path.startsWith("packages/portal/"))
 
 const isPortal = (path: string) =>
@@ -85,9 +86,10 @@ const exampleOf = (path: string) => /^examples\/([^/]+)\//.exec(path)?.[1]
 
 const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
-  /^packages\/(ui|table|charts|web-kit|client)\//.test(path) ||
+  /^packages\/(ui|table|charts|web-kit|client|console)\//.test(path) ||
   path.startsWith("packages/auth/src/web/") ||
-  path.startsWith("shell/src/")
+  path.startsWith("shell/src/") ||
+  path.startsWith("console/src/")
 
 const isContract = (path: string) =>
   /^(apps|examples)\/[^/]+\/(manifest\.ts|api\/)/.test(path) ||
@@ -170,6 +172,7 @@ const violations: Array<string> = []
 for (const pattern of [
   "services/*/src/**/*.{ts,tsx}",
   "shell/src/**/*.{ts,tsx}",
+  "console/src/**/*.{ts,tsx}",
   "packages/*/src/**/*.{ts,tsx}",
   "apps/*/**/*.{ts,tsx}",
   "examples/*/**/*.{ts,tsx}",

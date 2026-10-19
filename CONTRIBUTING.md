@@ -23,7 +23,7 @@ typecheck and tests. Git hooks run them for you:
 
 If a hook refuses, fix the cause. `--no-verify` is for emergencies, not for getting around a failing check.
 
-Before you call a change done, also run what it touches: `bun run build` for the shell, `bun dev` and the
+Before you call a change done, also run what it touches: `bun run build` for the shell and the console, `bun dev` and the
 pages involved for behavior, `bun examples:verify` for the SDK (it packs it too).
 
 ## Commit messages
@@ -69,8 +69,8 @@ Refs: https://example.com/related-discussion
 | `chore` | anything else that changes no behavior (tooling, cleanup) |
 | `revert` | undoing an earlier commit |
 
-**Scopes** name the part changed: Core's `gateway`, `auth`, `notifications`, `platform`; the Portal's
-`portal` and `shell`; `sdk` (the `packages/` apps build on), `ui`, `db`, `apps/<id>` (a built-in app),
+**Scopes** name the part changed: Core's `gateway`, `auth`, `notifications`, `platform`, `console`; the
+Portal's `portal` and `shell`; `sdk` (the `packages/` apps build on), `ui`, `db`, `apps/<id>` (a built-in app),
 `examples/<id>`, `tooling`, `infra`, `docs`. Leave the scope out when a change spans many parts.
 
 **Breaking changes** for apps get a `!` (`feat(sdk)!: …`) and a `BREAKING CHANGE:` footer saying what apps

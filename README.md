@@ -37,8 +37,8 @@ bun dev          # provisions databases, runs everything
 ```
 
 Open http://localhost:5173 and log in as `admin@mosaik.local` / `admin12345` (see `.env.example`).
-`bun dev --headless` runs Core alone with the standalone example: open Notes at http://localhost:4300 and
-sign in on Core's page.
+`bun dev --headless` runs Core alone: its console at http://localhost:5173 (for admins and app owners) and
+the standalone example, Notes, at http://localhost:4300. Everything signs in on Core's page.
 Traces: http://localhost:16686 (set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` in `.env`).
 E-mails sent in development: http://localhost:8025 (Mailpit).
 
@@ -51,7 +51,7 @@ E-mails sent in development: http://localhost:8025 (Mailpit).
 | `bun examples:verify [ids...]` | Typecheck and build the examples against the packed SDK, outside the workspace |
 | `bun db:provision` | Create per-service databases (idempotent) |
 | `bun typecheck` / `bun lint` / `bun test` | TypeScript 7, Biome + boundary checks, Vitest |
-| `bun run build` | Build the shell |
+| `bun run build` | Build the shell and the console |
 
 ## Documentation
 
@@ -97,6 +97,8 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
   the audit log and the token signing keys (`/.well-known/jwks.json`). It serves the admin API, streams
   access changes (Postgres `LISTEN/NOTIFY`) to the gateway and to browsers, and serves the one sign-in
   page everything uses, with OAuth for standalone apps.
+- **The console.** Core's web UI for admins and app owners: Administration, the apps someone manages and
+  access requests. Without the Portal, the gateway serves it; the shell mounts the same pages.
 - **Notifications service.** Delivers what apps send: in-app notifications, e-mail (SMTP), Slack and Teams.
   It keeps an outbox, retries failed deliveries, and serves users' inbox and channel settings.
 - **Platform service.** App identities and keys, and the platform API apps call with their key: registering
@@ -116,14 +118,15 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
 ## Repository
 
 ```
-shell/            The web shell: layout, directory, app pages, inbox; mounts apps/*/web/routes at /<id>
+shell/            The Portal's web shell: layout, directory, inbox; mounts the console's pages and apps/*/web/routes at /<id>
+console/          Core's console app: frames the console's pages when Mosaik runs without the Portal
 services/
   gateway/        Core: reverse proxy, session → token exchange, serves the built shell in production
   auth/           Core: Better Auth, roles and grants, app registry, audit log, admin API, OAuth for standalone apps
   notifications/  Core: outbox, worker, channels (e-mail, Slack, Teams), inbox, settings, routing
   platform/       Core: app identities and keys, platform API, events, databases, access requests
   portal/         Portal: installing and running apps, catalog, pins, usage and categories
-apps/<id>/        The Portal's built-in apps (admin, status)
+apps/<id>/        The Portal's built-in apps: admin (lists Core's administration), portal (installs, usage), status
   manifest.ts     id, permissions, roles, notifications, database (isomorphic)
   api/            HttpApi contract shared by server and web (isomorphic)
   server/         Backend process (Bun + Effect)
@@ -139,6 +142,7 @@ packages/         The SDK and shared code
   notifications   contract (content, destinations, audiences, internal and browser APIs)
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
   portal          contract of the Portal service (catalog, workspace, installs) and its permissions
+  console         Core's console pages (administration, apps people manage, access requests), mounted by both UIs
   app-kit         Building apps: shared-module list, Vite plugin (bundle for the shell, or a standalone page), Panda config
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (query defaults, event streams)

@@ -77,8 +77,8 @@ const shared = (): Record<string, string> => ({ ...common(), AUTH_URL, NOTIFICAT
 
 export interface PlanOptions {
   /**
-   * Core alone (`bun dev --headless`): its services, the gateway and the standalone examples,
-   * without the Portal, the shell or the built-in apps. People sign in on Core's own page.
+   * Core alone (`bun dev --headless`): its services, the gateway, the console and the standalone
+   * examples, without the Portal, the shell or the built-in apps.
    */
   readonly headless?: boolean
 }
@@ -94,8 +94,8 @@ export const planServices = (
   options: PlanOptions = {},
 ): Array<ServicePlan> => {
   const headless = options.headless ?? false
-  // Where people's browsers reach Core: through Vite (which proxies to the gateway), or the gateway itself.
-  const coreUrl = headless ? `http://localhost:${PORTS.gateway}` : env("PUBLIC_URL")
+  // Where people's browsers reach Core: Vite, serving the shell or the console and proxying `/api` to the gateway.
+  const coreUrl = env("PUBLIC_URL")
   const backends = headless ? [] : apps.filter((d) => d.entrypoint !== null)
 
   const appPlans = backends.map((app, index): ServicePlan => {
@@ -182,8 +182,9 @@ export const planServices = (
     },
   }
   const webPlan: ServicePlan = {
-    name: "web",
-    cwd: `${root}/shell`,
+    name: headless ? "console" : "web",
+    // The Portal's shell, or Core's console without it: the same address, so Core's links work either way.
+    cwd: `${root}/${headless ? "console" : "shell"}`,
     cmd: ["bun", "--bun", "vite", "--port", String(PORTS.web), "--strictPort"],
     port: PORTS.web,
     env: { GATEWAY_URL: `http://localhost:${PORTS.gateway}` },
@@ -247,7 +248,7 @@ export const planServices = (
       port: PORTS.gateway,
       env: { ...shared(), PORT: String(PORTS.gateway), ...upstreams },
     },
-    ...(headless ? [] : [webPlan]),
+    webPlan,
   ]
 }
 

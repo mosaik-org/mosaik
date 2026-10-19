@@ -80,9 +80,10 @@ const main = async () => {
     children[index] = start(plan, index, width)
   })
 
-  const web = plans.find((plan) => plan.name === "web")
-  if (web !== undefined) console.log(`\n  App      http://localhost:${web.port}`)
-  else console.log(`\n  Core     http://localhost:${plans.find((plan) => plan.name === "gateway")?.port} (no Portal)`)
+  const web = plans.find((plan) => plan.name === "web" || plan.name === "console")
+  console.log(
+    `\n  ${headless ? "Console" : "App    "}  http://localhost:${web?.port}${headless ? " (Core without the Portal)" : ""}`,
+  )
   for (const example of examples.filter((example) => example.standalone)) {
     const plan = plans.find((candidate) => candidate.name === example.manifest.id)
     if (plan !== undefined)

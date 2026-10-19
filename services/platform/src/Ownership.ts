@@ -9,7 +9,7 @@ import {
   type PrincipalUser,
   type UserId,
 } from "@mosaik/core"
-import { AppAbout, canManageApp } from "@mosaik/platform/contract"
+import { AppAbout, canManageApp, ManagedApp } from "@mosaik/platform/contract"
 import { Context, Effect, Layer } from "effect"
 
 /**
@@ -19,6 +19,8 @@ import { Context, Effect, Layer } from "effect"
 export class Ownership extends Context.Service<
   Ownership,
   {
+    /** The apps the principal decides about, by name. */
+    managed(principal: Principal): Effect.Effect<ReadonlyArray<ManagedApp>>
     about(app: string): Effect.Effect<AppAbout, NotFound>
     members(principal: Principal, app: string): Effect.Effect<ReadonlyArray<AppMember>, NotFound | Forbidden>
     /** Sets the user's roles in the app; returns who they are, for the audit log. */
@@ -47,6 +49,14 @@ export class Ownership extends Context.Service<
         )
 
       return Ownership.of({
+        managed: Effect.fn("Ownership.managed")(function* (principal: Principal) {
+          const apps = yield* auth.internal.apps().pipe(Effect.orDie)
+          return apps
+            .filter((app) => canManageApp(principal, app.id))
+            .map((app) => new ManagedApp({ id: app.id, name: app.name, description: app.description }))
+            .toSorted((a, b) => a.name.localeCompare(b.name))
+        }),
+
         about: Effect.fn("Ownership.about")(function* (app: string) {
           const { app: registered, openTo, members } = yield* access(app)
           return new AppAbout({

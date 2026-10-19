@@ -341,6 +341,8 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   - `/api/auth/identity/session` says who is signed in and what they may do (a `SessionInfo`, as in the
     shell). People who are not signed in get no token: the API answers 401.
 - **Calling the API.** `makeApiClient(Api)` as in the Portal; requests go to the app's own address.
+- **Managing it.** Its owners and the admins give its roles and answer its requests in Core's console
+  (`/manage/<id>`), as for every app.
 - **Running it.** Core must know the app (`CONFIGURED_APPS`) and the app its key; see
   [Operating Mosaik](operations.md#standalone-apps).
 
@@ -350,7 +352,7 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   `dist/sdk/mosaik-sdk-<version>.tgz` (TypeScript sources, which Bun and Vite read as they are), and
   `bun create:app <id> --dir <path> --sdk-only` refreshes an app's copy in `vendor/mosaik/`.
 - **Image.** `bun run image` builds the app's Docker image, which carries `mosaik-app.json` (the manifest
-  with its built browser bundle). Admins install it from Administration → Apps; see
+  with its built browser bundle). Operators install it on the Portal's Apps page (`/portal/apps`); see
   [Operating Mosaik](operations.md#installing-apps).
 - **Compatibility.** Apps declare the platform major version they were built for; others are refused. A
   platform major release means rebuilding every app. Bump `version` in the manifest for every release.

@@ -1,5 +1,6 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
+import { type ConsoleExtensions, ConsoleExtensionsProvider } from "@mosaik/console"
 import { Button } from "@mosaik/ui"
 import { AccessDenied, CommandProvider, type SearchSource } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
@@ -9,6 +10,7 @@ import { allApps, appForPath } from "../apps"
 import { builtinSearchSources } from "../builtinSearch"
 import { useShellCommands } from "../commands"
 import { AppShell } from "../components/AppShell"
+import { portalAppTab } from "../directory/PortalTab"
 import { installedSearchSources } from "../installedSearch"
 import { useMyApps, useRecordAppOpens } from "../workspace/myApps"
 import { workspaceKeys } from "../workspace/queries"
@@ -34,6 +36,9 @@ export const Route = createFileRoute("/_app")({
   },
   component: ShellLayout,
 })
+
+/** The Portal's parts of Core's console pages. */
+const extensions: ConsoleExtensions = { appTabs: [portalAppTab] }
 
 function ShellLayout() {
   const principal = usePrincipal()
@@ -84,7 +89,9 @@ function ShellLayout() {
             </Show>
           }
         >
-          <Outlet />
+          <ConsoleExtensionsProvider value={extensions}>
+            <Outlet />
+          </ConsoleExtensionsProvider>
         </Show>
       </AppShell>
     </CommandProvider>

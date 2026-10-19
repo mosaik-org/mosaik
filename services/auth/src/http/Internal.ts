@@ -36,6 +36,7 @@ export const InternalHandlers = HttpApiBuilder.group(
       // Within Bun's idle timeout (60 s), and often enough for the gateway to notice a dead connection.
       accessStream: () => Live.eventStream(AccessChange, feed.changes, { heartbeat: "20 seconds" }),
       registerApp: ({ payload }) => registry.register(payload).pipe(Effect.orDie),
+      apps: () => registry.catalog,
       app: ({ params }) =>
         registry.find(params.id).pipe(
           Effect.flatMap(

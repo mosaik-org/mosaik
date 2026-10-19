@@ -20,6 +20,15 @@ const appRouteDirs = readdirSync(APPS, { withFileTypes: true })
 
 const appRoutes = appRouteDirs.map(({ id, dir }) => physical(`/${id}`, relative(ROUTES, dir)))
 
+/**
+ * Core's console pages (`@mosaik/console`): Administration, the apps people manage and access
+ * requests, at the same paths as in the console app, so Core's links work with the Portal too.
+ */
+const CONSOLE_ROUTES = resolve(import.meta.dirname, "../packages/console/src/routes")
+const consoleRoutes = ["admin", "manage", "access-requests"].map((section) =>
+  physical(`/${section}`, relative(ROUTES, join(CONSOLE_ROUTES, section))),
+)
+
 /** Apps are discovered at startup; restart the dev server when one is added (`bun create:app`). */
 const restartOnNewApp = (): Plugin => ({
   name: "mosaik:restart-on-new-app",
@@ -97,8 +106,8 @@ export default defineConfig({
         layout("app.tsx", [
           index("index.tsx"),
           route("/directory", [index("directory/index.tsx"), route("/$app", "directory/app.tsx")]),
-          route("/access-requests", "access-requests.tsx"),
           route("/notifications", [index("notifications/index.tsx"), route("/settings", "notifications/settings.tsx")]),
+          ...consoleRoutes,
           ...appRoutes,
         ]),
       ]),

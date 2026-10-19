@@ -19,6 +19,7 @@ import {
   HttpApiSchema,
   HttpApiSecurity,
 } from "effect/http-api"
+import { CatalogApp } from "./admin/domain"
 
 export const INTERNAL_KEY_HEADER = "x-mosaik-internal-key"
 
@@ -136,6 +137,8 @@ export class InternalGroup extends HttpApiGroup.make("internal")
       payload: ManifestPayload,
       success: HttpApiSchema.NoContent,
     }),
+    /** Every registered app (its permissions included), for the platform's list of apps people manage. */
+    HttpApiEndpoint.get("apps", "/apps", { success: Schema.Array(CatalogApp) }),
     HttpApiEndpoint.get("app", "/apps/:id", {
       params: { id: Schema.String },
       success: RegisteredApp,
