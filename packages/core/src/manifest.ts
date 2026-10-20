@@ -12,6 +12,7 @@ import {
   RoleNamePattern,
   type RoleSpec,
 } from "./roles"
+import { type NoSettings, SettingNamePattern, type SettingsSpec, settingProblem } from "./settings"
 
 export interface PermissionSpec {
   readonly description: string
@@ -43,14 +44,25 @@ export type NotificationKey<Id extends string = string, Name extends string = st
 /**
  * A setting the app reads from its environment (e.g. `JIRA_URL`). For apps the Portal
  * runs, admins fill them in at install; secrets are stored encrypted and never shown again.
+ * For where things are and credentials; how the app behaves is a setting (`settings`), changed
+ * while it runs.
  */
 export interface ConfigSpec {
+  /** What the form shows, e.g. "Jira address". Defaults to the variable's name. */
+  readonly label?: string
   readonly description: string
+  /**
+   * How the form asks for it and checks it; the app still reads text from its environment
+   * (`true`/`false` for `boolean`). Defaults to `text`.
+   */
+  readonly kind?: ConfigKind
   /** Defaults to `true`. */
   readonly required?: boolean
   /** Defaults to `false`. */
   readonly secret?: boolean
 }
+
+export type ConfigKind = "text" | "url" | "number" | "boolean"
 
 /**
  * How the Portal lists and runs the app. Core ignores it; a standalone app (on its own
@@ -70,6 +82,7 @@ export interface AppSpec<
   Name extends string,
   Notification extends string = never,
   Event extends PlatformEventType = never,
+  Settings extends SettingsSpec = NoSettings,
 > {
   /** URL segment, API prefix and permission namespace. */
   readonly id: Id
@@ -91,6 +104,11 @@ export interface AppSpec<
   readonly notifications?: { readonly [K in Notification]: NotificationSpec }
   /** Platform events the app receives (see `Events` in `@mosaik/server`). */
   readonly events?: ReadonlyArray<Event>
+  /**
+   * How the app behaves, changed by its owners and admins while it runs, by name: declare them
+   * with `Setting` and read them with `Settings` in `@mosaik/server`.
+   */
+  readonly settings?: Settings
   /** Needs a Postgres database (`DATABASE_URL`): provisioned by the platform, or the app's own. */
   readonly database?: boolean
   /** Whether the app runs its own backend process. Defaults to `true`. */
@@ -106,7 +124,8 @@ export interface App<
   Name extends string = string,
   Notification extends string = string,
   Event extends PlatformEventType = PlatformEventType,
-> extends Omit<AppSpec<Id, Name, Notification, Event>, "roles" | "portal"> {
+  Settings extends SettingsSpec = SettingsSpec,
+> extends Omit<AppSpec<Id, Name, Notification, Event, Settings>, "roles" | "portal" | "settings"> {
   readonly [AppTypeId]: typeof AppTypeId
   readonly portal: PortalSpec
   readonly apiPrefix: `/api/${Id}`
@@ -116,6 +135,7 @@ export interface App<
   /** The app's roles as declared (or the default `member` role), then its `owner` role. */
   readonly roles: ReadonlyArray<ManifestRole>
   readonly events: ReadonlyArray<Event>
+  readonly settings: Settings
   readonly database: boolean
   readonly backend: boolean
   /** Fully qualified, type-checked permission key. */
@@ -124,7 +144,7 @@ export interface App<
   notification<N extends Notification>(name: N): NotificationKey<Id, N>
 }
 
-export type AnyApp = App<string, string, string, PlatformEventType>
+export type AnyApp = App<string, string, string, PlatformEventType, SettingsSpec>
 
 /** Reserved ids that would clash with platform routes. */
 const RESERVED_IDS = new Set([
@@ -148,9 +168,10 @@ export const defineApp = <
   const Name extends string,
   const Notification extends string = never,
   const Event extends PlatformEventType = never,
+  const Settings extends SettingsSpec = NoSettings,
 >(
-  spec: AppSpec<Id, Name, Notification, Event>,
-): App<Id, Name, Notification, Event> => {
+  spec: AppSpec<Id, Name, Notification, Event, Settings>,
+): App<Id, Name, Notification, Event, Settings> => {
   if (!AppIdPattern.test(spec.id) || RESERVED_IDS.has(spec.id)) {
     throw new Error(`Invalid app id "${spec.id}"`)
   }
@@ -164,6 +185,12 @@ export const defineApp = <
       throw new Error(`Invalid notification name "${name}" in app "${spec.id}"`)
     }
   }
+  for (const [name, setting] of Object.entries<SettingsSpec[string]>(spec.settings ?? {})) {
+    if (!SettingNamePattern.test(name))
+      throw new Error(`Invalid setting name "${name}" in app "${spec.id}" (camelCase)`)
+    const problem = settingProblem(setting, setting.default)
+    if (problem !== undefined) throw new Error(`Default of setting "${name}" in app "${spec.id}": ${problem}`)
+  }
   if (!(spec.access in spec.permissions)) {
     throw new Error(`Access permission "${spec.access}" is not defined in app "${spec.id}"`)
   }
@@ -175,6 +202,7 @@ export const defineApp = <
     ...spec,
     [AppTypeId]: AppTypeId,
     events: [...new Set(spec.events ?? [])],
+    settings: spec.settings ?? ({} as Settings),
     database: spec.database ?? false,
     backend: spec.backend ?? true,
     portal: spec.portal ?? {},

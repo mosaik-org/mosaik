@@ -1,5 +1,5 @@
 import { AccessControl, BadRequest, Conflict, NotFound, RequiredPermission } from "@mosaik/core"
-import { AppKey, AppManifest, EventConsumer } from "@mosaik/platform/contract"
+import { AppKey, AppManifest, ConfigSetting, EventConsumer } from "@mosaik/platform/contract"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { AppsAdmin } from "./identity"
@@ -41,7 +41,11 @@ export type DatabaseMode = typeof DatabaseMode.Type
 
 export class ConfigValue extends Schema.Class<ConfigValue>("@mosaik/portal/ConfigValue")({
   name: Schema.String,
+  /** What the form shows; the name when the app gives none. */
+  label: Schema.NullOr(Schema.String),
   description: Schema.String,
+  /** How the form asks for it (see `configAsSetting` in `@mosaik/platform/contract`). */
+  kind: ConfigSetting.fields.kind,
   required: Schema.Boolean,
   secret: Schema.Boolean,
   /** Whether a value is stored. */

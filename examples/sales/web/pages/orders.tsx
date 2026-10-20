@@ -2,17 +2,17 @@ import { Button, Input, SelectField } from "@mosaik/mosaik-ui"
 import { formatCurrency, formatDateTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
 import { useCommands, useSearchParams, useTableSearch } from "@mosaik/sdk/portal"
-import { Can, createDebounced, useCan } from "@mosaik/sdk/solid"
+import { createDebounced, useCan } from "@mosaik/sdk/solid"
 import { createColumnHelper, DataTable } from "@mosaik/sdk/table"
 import { QueryFreshness } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Download from "lucide-solid/icons/download"
-import { createEffect, createSignal, on } from "solid-js"
+import { createEffect, createSignal, on, Show } from "solid-js"
 import { ORDERS_DEFAULTS, type Order, OrderSortField, OrderStatus, OrdersSearch } from "../../api"
 import { sales } from "../../manifest"
 import { OrderActions } from "../components/OrderActions"
 import { StatusBadge } from "../components/StatusBadge"
-import { exportUrl, ordersQuery } from "../queries"
+import { exportUrl, optionsQuery, ordersQuery } from "../queries"
 
 const column = createColumnHelper<Order>()
 
@@ -58,6 +58,9 @@ export default function Orders() {
   })
   const orders = useQuery(() => ordersQuery(table.params()))
   const can = useCan()
+  const options = useQuery(optionsQuery)
+  // Their role allows it, and Sales' settings do (until they say otherwise, assume they do).
+  const canExport = () => can(sales.perm("orders.export")) && options.data?.exportsEnabled !== false
 
   useCommands(() => [
     ...STATUS_FILTERS.map((filter) => ({
@@ -67,7 +70,7 @@ export default function Orders() {
       keywords: ["filter", "status"],
       perform: () => table.setFilters({ status: filter.value === "all" ? undefined : (filter.value as OrderStatus) }),
     })),
-    ...(can(sales.perm("orders.export"))
+    ...(canExport()
       ? [
           {
             id: "sales:orders:export",
@@ -119,14 +122,14 @@ export default function Orders() {
         />
         <div class={css({ flex: "1" })} />
         <QueryFreshness query={orders} source="orders database" />
-        <Can permission={sales.perm("orders.export")}>
+        <Show when={canExport()}>
           <a href={exportUrl(table.params())} download="orders.csv">
             <Button variant="outline" size="xs">
               <Download size={16} />
               Export CSV
             </Button>
           </a>
-        </Can>
+        </Show>
       </div>
 
       <DataTable

@@ -1,12 +1,10 @@
-import { CurrentPrincipal } from "@mosaik/sdk"
-import { Audiences, Audit, Notify } from "@mosaik/sdk/server"
+import { Conflict, CurrentPrincipal } from "@mosaik/sdk"
+import { Audiences, Audit, Notify, Settings } from "@mosaik/sdk/server"
 import { DateTime, Effect, Layer } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
-import { ORDERS_DEFAULTS, type Order, SalesApi, SUMMARY_DEFAULTS } from "../api"
+import { ORDERS_DEFAULTS, type Order, OrderOptions, SalesApi, SUMMARY_DEFAULTS } from "../api"
 import { sales } from "../manifest"
-
-const money = new Intl.NumberFormat("en", { style: "currency", currency: "EUR" })
-
+import { money } from "./money"
 import { Orders } from "./Orders"
 
 const csvCell = (value: string | number): string => {
@@ -48,11 +46,21 @@ const OrdersHandlers = HttpApiBuilder.group(
     const orders = yield* Orders
     const audit = yield* Audit
     const notify = yield* Notify
+    // Read on every request: owners change them while Sales runs.
+    const settings = yield* Settings.for(sales)
 
     return handlers.handleAll({
       list: ({ query }) => orders.list({ ...ORDERS_DEFAULTS, ...query }),
 
+      options: Effect.fn(function* () {
+        const { exportsEnabled, refundLimit } = yield* settings.all
+        return new OrderOptions({ exportsEnabled, refundLimitCents: Math.round(refundLimit * 100) })
+      }),
+
       export: Effect.fn(function* ({ query }) {
+        if (!(yield* settings.get("exportsEnabled"))) {
+          return yield* new Conflict({ message: "Exports are switched off in Sales' settings" })
+        }
         const rows = yield* orders.all(query)
         yield* audit.record({ action: "orders.export", details: { rows: rows.length, ...query } })
         return toCsv(rows)
@@ -65,7 +73,8 @@ const OrdersHandlers = HttpApiBuilder.group(
       }),
 
       refund: Effect.fn(function* ({ params, payload }) {
-        const order = yield* orders.refund(params.id, payload.reason)
+        const largest = yield* settings.get("refundLimit")
+        const order = yield* orders.refund(params.id, payload.reason, Math.round(largest * 100))
         yield* audit.record({
           action: "orders.refund",
           target: order.number,

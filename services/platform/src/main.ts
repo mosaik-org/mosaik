@@ -13,17 +13,18 @@ import { Events } from "./Events"
 import { AppHandlers, KeysHandlers } from "./http/App"
 import { ClientsHandlers, EventsHandlers, RegistryHandlers, RoutesHandlers } from "./http/Internal"
 import { RequestAccessRoutes } from "./http/Pages"
-import { AccessHandlers, AccessReviewHandlers, AppsHandlers } from "./http/Web"
+import { AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers } from "./http/Web"
 import { migrations } from "./migrations"
 import { Ownership } from "./Ownership"
 import { PlatformConfig } from "./PlatformConfig"
 import { Provisioner } from "./Provisioner"
 import { Registry } from "./Registry"
 import { RouteFeed } from "./RouteFeed"
+import { SettingsStore } from "./Settings"
 
 const Clients = Layer.mergeAll(InternalClient.layer, NotificationsClient.layer, FetchHttpClient.layer)
 
-const Domain = Layer.mergeAll(Registry.layer, RouteFeed.layer, Ownership.layer).pipe(
+const Domain = Layer.mergeAll(Registry.layer, RouteFeed.layer, Ownership.layer, SettingsStore.layer).pipe(
   Layer.provideMerge(Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer)),
   Layer.provideMerge(Apps.layer),
   Layer.provideMerge(Database.layer({ serviceId: "platform", migrations })),
@@ -36,7 +37,7 @@ const AppHttp = HttpApiBuilder.layer(PlatformApi).pipe(Layer.provide([AppHandler
 
 /** Who can use apps and requests for access (`/api/platform`), through the gateway. */
 const WebHttp = HttpApiBuilder.layer(PlatformWebApi, { openapiPath: `${PLATFORM_WEB_PREFIX}/openapi.json` }).pipe(
-  Layer.provide([AccessHandlers, AccessReviewHandlers, AppsHandlers]),
+  Layer.provide([AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers]),
 )
 
 /** Platform services only (`/internal`: routes, events, the app registry, sign-in clients), never routed by the gateway. */

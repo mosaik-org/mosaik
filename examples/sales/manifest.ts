@@ -1,4 +1,4 @@
-import { defineApp } from "@mosaik/sdk"
+import { defineApp, Setting } from "@mosaik/sdk"
 
 export const sales = defineApp({
   id: "sales",
@@ -22,6 +22,21 @@ export const sales = defineApp({
   },
   notifications: {
     "order.refunded": { description: "An order was refunded", defaultChannels: ["inApp"] },
+  },
+  // Changed by Sales' owners in its management page; the backend reads them while it runs.
+  settings: {
+    refundLimit: Setting.number({
+      label: "Largest refund",
+      description: "Larger refunds are refused here: finance handles them.",
+      unit: "EUR",
+      min: 0,
+      default: 500,
+    }),
+    exportsEnabled: Setting.boolean({
+      label: "Allow CSV exports",
+      description: "When off, nobody exports orders, whatever their role.",
+      default: true,
+    }),
   },
   database: true,
   portal: {

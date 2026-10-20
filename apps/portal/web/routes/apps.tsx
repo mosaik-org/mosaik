@@ -16,6 +16,13 @@ import {
   TextField,
 } from "@mosaik/mosaik-ui"
 import {
+  type ConfigSetting,
+  configAsSetting,
+  configFieldValue,
+  configProblem,
+  configText,
+} from "@mosaik/platform/contract"
+import {
   type AdminApp,
   type AppKind,
   type AppSource,
@@ -27,7 +34,7 @@ import {
 } from "@mosaik/portal/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { QueryBoundary } from "@mosaik/web-kit"
+import { QueryBoundary, SettingField } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import Ellipsis from "lucide-solid/icons/ellipsis"
@@ -349,11 +356,9 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
                 </Show>
                 <For each={manifest().portal.config}>
                   {(setting) => (
-                    <TextField
-                      label={setting.name}
-                      type={setting.secret ? "password" : "text"}
+                    <ConfigField
+                      config={setting}
                       required={setting.required}
-                      helperText={setting.description}
                       value={config()[setting.name] ?? ""}
                       onValueChange={(value) => setConfig({ ...config(), [setting.name]: value })}
                     />
@@ -428,6 +433,47 @@ const UpgradeDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (ope
   )
 }
 
+/**
+ * A config entry's field, typed by its kind (a number, a switch; see `configAsSetting`); a password
+ * field for secrets. The value stays the text the app reads from its environment.
+ */
+const ConfigField = (props: {
+  config: ConfigSetting
+  value: string
+  onValueChange: (value: string) => void
+  required: boolean
+  placeholder?: string | undefined
+}) => {
+  // The variable's name still matters to whoever runs the app: shown when the app gives a label.
+  const helperText = () =>
+    props.config.label === null ? props.config.description : `${props.config.description} (${props.config.name})`
+  return (
+    <Show
+      when={!props.config.secret}
+      fallback={
+        <PasswordField
+          label={props.config.label ?? props.config.name}
+          required={props.required}
+          placeholder={props.placeholder}
+          helperText={helperText()}
+          value={props.value}
+          onValueChange={props.onValueChange}
+        />
+      }
+    >
+      <SettingField
+        setting={configAsSetting(props.config)}
+        name={props.config.name}
+        required={props.required}
+        helperText={helperText()}
+        value={configFieldValue(props.config, props.value)}
+        onValueChange={(value) => props.onValueChange(configText(value))}
+        errorText={configProblem(props.config, props.value)}
+      />
+    </Show>
+  )
+}
+
 const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open: boolean) => void }) => {
   const invalidate = useInvalidate()
   const [values, setValues] = createSignal<Record<string, string>>(
@@ -439,17 +485,17 @@ const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open
     mutationFn: () =>
       portalApi((client) => client.admin.setConfig({ params: { id: props.app.id }, payload: { values: values() } })),
     onSuccess: () => {
-      toast.success("Settings saved", "The app restarts to apply them")
+      toast.success("Configuration saved", "The app restarts to apply it")
       void invalidate()
       props.onOpenChange(false)
     },
-    onError: onError("Could not save the settings"),
+    onError: onError("Could not save the configuration"),
   }))
   return (
     <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
-      title={`Settings of ${props.app.name}`}
+      title={`Configuration of ${props.app.name}`}
       description="Passed to the app as environment variables. Saving restarts it."
       footer={
         <>
@@ -463,14 +509,12 @@ const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open
       }
     >
       <div class={styles.stack}>
-        <For each={props.app.config} fallback={<p class={styles.muted}>This app has no settings.</p>}>
+        <For each={props.app.config} fallback={<p class={styles.muted}>This app has no configuration.</p>}>
           {(setting) => (
-            <TextField
-              label={setting.name}
-              type={setting.secret ? "password" : "text"}
+            <ConfigField
+              config={setting}
               required={setting.required && !setting.set}
               placeholder={setting.secret && setting.set ? "Stored; leave empty to keep" : undefined}
-              helperText={setting.description}
               value={values()[setting.name] ?? ""}
               onValueChange={(value) => setValues({ ...values(), [setting.name]: value })}
             />
@@ -609,7 +653,7 @@ const AppActions = (props: { app: AdminApp }) => {
               onSelect: action("Rolling back", () => portalApi((client) => client.admin.rollback(id))),
             },
           ]),
-      { value: "config", label: "Settings…", onSelect: () => setDialog("config") },
+      { value: "config", label: "Configuration…", onSelect: () => setDialog("config") },
       { value: "logs", label: "Logs", onSelect: () => setDialog("logs") },
       {
         value: "restart",

@@ -1,11 +1,12 @@
 import { AuditEventInput } from "@mosaik/auth/contract"
 import { InternalClient } from "@mosaik/auth/server"
-import { CurrentPrincipal, type PrincipalUser } from "@mosaik/core"
-import { PlatformWebApi } from "@mosaik/platform/contract"
+import { CurrentPrincipal, Forbidden, ownerPermission, type PrincipalUser } from "@mosaik/core"
+import { canManageApp, PlatformWebApi } from "@mosaik/platform/contract"
 import { Effect, Schedule, type Schema } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessRequests } from "../AccessRequests"
 import { Ownership } from "../Ownership"
+import { SettingsStore } from "../Settings"
 
 /** Records changes in the central audit log; a failure to record is logged, not returned. */
 const makeAudit = Effect.gen(function* () {
@@ -89,6 +90,35 @@ export const AppsHandlers = HttpApiBuilder.group(
         ),
       people: ({ params, query }) =>
         Effect.flatMap(CurrentPrincipal, (principal) => ownership.people(principal, params.id, query.q)),
+    })
+  }),
+)
+
+/** An app's settings, for its owners and admins: changes apply while the app runs, and are audited. */
+export const SettingsHandlers = HttpApiBuilder.group(
+  PlatformWebApi,
+  "settings",
+  Effect.fn(function* (handlers) {
+    const store = yield* SettingsStore
+    const { audit } = yield* makeAudit
+    /** The same people who decide who can use the app. */
+    const check = (app: string) =>
+      Effect.flatMap(CurrentPrincipal, (principal) =>
+        canManageApp(principal, app) ? Effect.void : Effect.fail(new Forbidden({ permission: ownerPermission(app) })),
+      )
+    return handlers.handleAll({
+      get: ({ params }) => Effect.andThen(check(params.id), store.view(params.id)),
+      set: ({ params, payload }) =>
+        Effect.gen(function* () {
+          yield* check(params.id)
+          const { settings, changes } = yield* store.set(params.id, yield* currentUser, payload)
+          if (changes.length > 0) {
+            yield* audit("app.settings.set", params.id, {
+              changes: changes.map(({ name, from, to }) => ({ name, from, to })),
+            })
+          }
+          return settings
+        }),
     })
   }),
 )

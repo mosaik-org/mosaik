@@ -16,6 +16,7 @@ import {
   HttpApiSecurity,
 } from "effect/http-api"
 import { AppManifest } from "./manifest"
+import { AppSettingsSnapshot } from "./settings"
 
 export const PLATFORM_API_PREFIX = "/api/platform/v1"
 
@@ -84,7 +85,7 @@ export class AppEventBatch extends Schema.Class<AppEventBatch>("@mosaik/platform
   missed: Schema.Boolean,
 }) {}
 
-/** The longest an events request waits for new events. */
+/** The longest an events or settings request waits for something new. */
 export const MAX_EVENTS_WAIT_SECONDS = 25
 
 /** What apps can ask of the platform. Reachable internally and through the gateway. */
@@ -124,6 +125,15 @@ export class AppGroup extends HttpApiGroup.make("app")
       payload: Schema.Struct({ position: Schema.Number, error: Schema.NullOr(Schema.String) }),
       success: HttpApiSchema.NoContent,
       error: BadRequest,
+    }),
+    /**
+     * The app's settings, once they are newer than the version `after`: at once if they already
+     * are (or without `after`), else when they change, or after `wait` seconds (at most 25)
+     * with the same version.
+     */
+    HttpApiEndpoint.get("settings", "/settings", {
+      query: { after: Schema.optional(Schema.NumberFromString), wait: Schema.optional(Schema.NumberFromString) },
+      success: AppSettingsSnapshot,
     }),
   )
   .middleware(AppAuth) {}

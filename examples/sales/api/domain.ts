@@ -29,6 +29,13 @@ export class Order extends Schema.Class<Order>("@mosaik/sales/Order")({
   createdAt: Schema.DateTimeUtc,
 }) {}
 
+/** What the pages need of Sales' settings (the rest stays on the server). */
+export class OrderOptions extends Schema.Class<OrderOptions>("@mosaik/sales/OrderOptions")({
+  exportsEnabled: Schema.Boolean,
+  /** The largest refund allowed; larger ones are refused. */
+  refundLimitCents: Schema.Int,
+}) {}
+
 export const OrderSortField = Schema.Literals(["createdAt", "amountCents", "customer", "number"])
 export type OrderSortField = typeof OrderSortField.Type
 

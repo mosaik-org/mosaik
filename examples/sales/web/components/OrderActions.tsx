@@ -1,16 +1,20 @@
 import { ActionMenu, ConfirmDialog, IconButton, TextField } from "@mosaik/mosaik-ui"
 import { formatCurrency } from "@mosaik/sdk/client"
 import { createForm, useAction, useCan } from "@mosaik/sdk/solid"
+import { useQuery } from "@tanstack/solid-query"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import { createSignal, Show } from "solid-js"
 import { type Order, Refund, StatusTransitions } from "../../api"
 import { sales } from "../../manifest"
-import { salesApi } from "../queries"
+import { optionsQuery, salesApi } from "../queries"
 import { statusLabel } from "./StatusBadge"
 
 /** Row actions for an order; only shows what the principal may do. */
 export const OrderActions = (props: { order: Order }) => {
   const can = useCan()
+  const options = useQuery(optionsQuery)
+  /** Above the largest refund in Sales' settings: finance handles it, the server refuses it. */
+  const aboveLimit = () => props.order.amountCents > (options.data?.refundLimitCents ?? Number.POSITIVE_INFINITY)
   const [refunding, setRefunding] = createSignal(false)
   const order = () => ({ params: { id: props.order.id } })
 
@@ -44,7 +48,15 @@ export const OrderActions = (props: { order: Order }) => {
         }))
       : []),
     ...(can(sales.perm("orders.refund")) && (props.order.status === "paid" || props.order.status === "shipped")
-      ? [{ value: "refund", label: "Refund…", danger: true, onSelect: () => setRefunding(true) }]
+      ? [
+          {
+            value: "refund",
+            label: aboveLimit() ? "Refund (above the limit: finance)" : "Refund…",
+            danger: true,
+            disabled: aboveLimit(),
+            onSelect: () => setRefunding(true),
+          },
+        ]
       : []),
   ]
 

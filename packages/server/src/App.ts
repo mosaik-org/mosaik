@@ -11,11 +11,12 @@ import { Messages } from "./Messages"
 import { Notify } from "./Notify"
 import { Registration } from "./Registration"
 import { runMain, serve } from "./Server"
+import { Settings } from "./Settings"
 import { standaloneRoutes } from "./Standalone"
 import { loadWebBundle, webAssetsRoute } from "./WebAssets"
 
 /** Services every app backend gets for free (plus the `AccessControl` middleware). */
-export type AppServices = Audit | Messages | Notify | HttpClient.HttpClient | AccessControl
+export type AppServices = Audit | Messages | Notify | Settings | HttpClient.HttpClient | AccessControl
 
 export interface AppServerOptions<Id extends string, Groups extends HttpApiGroup.Constraint, E, R> {
   readonly app: AnyApp
@@ -33,7 +34,7 @@ const ManifestRoute = (manifest: AppManifest) =>
 
 /**
  * Builds an app backend: the API under `/api/<id>`, access control, manifest
- * registration, audit log, messages and notifications, platform events, its browser
+ * registration, audit log, messages and notifications, settings, platform events, its browser
  * bundle (if built), health check and observability.
  *
  * Everything platform-related goes through the platform API (`PLATFORM_URL`), authenticated
@@ -72,10 +73,13 @@ const makeServer = <Id extends string, Groups extends HttpApiGroup.Constraint, E
     throw new Error(`"${app.id}" has event handlers but subscribes to no events: add them to the manifest`)
   }
 
-  const Platform = Layer.mergeAll(Audit.layer, Messages.layer, Notify.layer, FetchHttpClient.layer).pipe(
-    Layer.provideMerge(Registration.layer(manifest)),
-    Layer.provideMerge(PlatformClient.layer(app.id)),
-  )
+  const Platform = Layer.mergeAll(
+    Audit.layer,
+    Messages.layer,
+    Notify.layer,
+    Settings.layer,
+    FetchHttpClient.layer,
+  ).pipe(Layer.provideMerge(Registration.layer(manifest)), Layer.provideMerge(PlatformClient.layer(app.id)))
 
   const ApiRoutes = HttpApiBuilder.layer(options.api, { openapiPath: `${app.apiPrefix}/openapi.json` }).pipe(
     Layer.provide(options.handlers),

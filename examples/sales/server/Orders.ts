@@ -12,6 +12,7 @@ import {
   SalesSummary,
   StatusTransitions,
 } from "../api"
+import { money } from "./money"
 
 const OrderRow = Schema.Struct({ ...Order.fields, createdAt: Schema.DateTimeUtcFromDate })
 
@@ -43,7 +44,8 @@ export class Orders extends Context.Service<
     /** Cached for a minute (it aggregates the whole table); `asOf` says how old it is. */
     summary(days: number): Effect.Effect<Fresh<SalesSummary>>
     setStatus(id: OrderId, status: OrderStatus): Effect.Effect<Order, NotFound | BadRequest>
-    refund(id: OrderId, reason: string): Effect.Effect<Order, NotFound | Conflict>
+    /** Refuses orders above `largestCents` (Sales' settings). */
+    refund(id: OrderId, reason: string, largestCents: number): Effect.Effect<Order, NotFound | Conflict>
   }
 >()("@mosaik/sales/Orders") {
   static readonly layer = Layer.effect(
@@ -174,11 +176,16 @@ export class Orders extends Context.Service<
           return yield* get(id).pipe(Effect.orDie)
         }),
 
-        refund: Effect.fn("Orders.refund")(function* (id: OrderId, reason: string) {
+        refund: Effect.fn("Orders.refund")(function* (id: OrderId, reason: string, largestCents: number) {
           const order = yield* get(id)
           if (order.status !== "paid" && order.status !== "shipped") {
             return yield* new Conflict({
               message: `Only paid or shipped orders can be refunded (order is ${order.status})`,
+            })
+          }
+          if (order.amountCents > largestCents) {
+            return yield* new Conflict({
+              message: `Refunds above ${money.format(largestCents / 100)} are handled by finance (Sales' settings)`,
             })
           }
           yield* updateStatus(id, "refunded", reason)

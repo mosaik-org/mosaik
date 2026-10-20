@@ -7,6 +7,10 @@ import {
   type NotificationSpec,
   PermissionKey,
   PlatformEventType,
+  Setting,
+  SettingDeclaration,
+  settingProblem,
+  toSettingDeclaration,
 } from "@mosaik/core"
 import { NotificationTypeInput } from "@mosaik/notifications/contract"
 import { Schema } from "effect"
@@ -27,11 +31,47 @@ export const AppId = Schema.String.check(
 
 export const ConfigSetting = Schema.Struct({
   name: Schema.String.check(Schema.isPattern(/^[A-Z][A-Z0-9_]*$/, { message: "UPPER_SNAKE_CASE" })),
+  /** What the form shows; the variable's name when the app gives none. */
+  label: Schema.NullOr(Schema.String),
   description: Schema.String,
+  /** How the form asks for it and checks it (see `ConfigSpec` in `@mosaik/core`). */
+  kind: Schema.Literals(["text", "url", "number", "boolean"]),
   required: Schema.Boolean,
   secret: Schema.Boolean,
 })
 export type ConfigSetting = typeof ConfigSetting.Type
+
+/**
+ * A config entry as a setting, so forms show it with the right field (a number, a switch). Its
+ * value stays text in the app's environment: see {@link configFieldValue} and {@link configText}.
+ */
+export const configAsSetting = (config: ConfigSetting): Setting => {
+  const base = { label: config.label ?? config.name, description: config.description }
+  switch (config.kind) {
+    case "number":
+      return Setting.number({ ...base, default: 0 })
+    case "boolean":
+      return Setting.boolean({ ...base, default: false })
+    case "url":
+      return Setting.text({ ...base, format: "url", default: "" })
+    case "text":
+      return Setting.text({ ...base, default: "" })
+  }
+}
+
+/** The environment's text as the entry's field holds it: a number, `true`/`false`, or the text. */
+export const configFieldValue = (config: ConfigSetting, text: string): unknown =>
+  config.kind === "number" ? (text === "" ? null : Number(text)) : config.kind === "boolean" ? text === "true" : text
+
+/** A field's value as the environment's text. */
+export const configText = (value: unknown): string => (value === null || value === undefined ? "" : String(value))
+
+/** Why `text` is not a value of the entry, if it is not. Empty is not checked here: it means unset. */
+export const configProblem = (config: ConfigSetting, text: string): string | undefined => {
+  if (text === "") return undefined
+  if (config.kind === "boolean") return text === "true" || text === "false" ? undefined : "true or false"
+  return settingProblem(configAsSetting(config), configFieldValue(config, text))
+}
 
 /** The app's browser bundle (an ES module and its styles), served by the app under `/apps/<id>/`. */
 export const WebBundle = Schema.Struct({
@@ -70,6 +110,8 @@ export class AppManifest extends Schema.Class<AppManifest>("@mosaik/platform/App
   notifications: Schema.Array(NotificationTypeInput),
   /** Platform events the app subscribes to. */
   events: Schema.Array(PlatformEventType),
+  /** How the app behaves, changed while it runs by its owners and admins (see `Setting` in `@mosaik/core`). */
+  settings: Schema.Array(SettingDeclaration),
   database: Schema.Boolean,
   portal: PortalManifest,
 }) {}
@@ -93,13 +135,16 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
         }),
     ),
     events: app.events,
+    settings: Object.entries<Setting>(app.settings).map(([name, setting]) => toSettingDeclaration(name, setting)),
     database: app.database,
     portal: new PortalManifest({
       icon: app.portal.icon ?? null,
       category: app.portal.category ?? null,
       config: Object.entries<ConfigSpec>(app.portal.config ?? {}).map(([name, spec]) => ({
         name,
+        label: spec.label ?? null,
         description: spec.description,
+        kind: spec.kind ?? "text",
         required: spec.required ?? true,
         secret: spec.secret ?? false,
       })),

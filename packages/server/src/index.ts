@@ -17,3 +17,4 @@ export {
   pathOf,
 } from "./Pages"
 export { runMain, type ServeOptions, serve } from "./Server"
+export { type AppSettingsReader, Settings } from "./Settings"

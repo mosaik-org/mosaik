@@ -3,6 +3,7 @@ import {
   AppKey,
   AppManifest,
   type ConfigSetting,
+  configProblem,
   MANIFEST_PATH,
   PLATFORM_MAJOR,
   type RegistryApp,
@@ -127,6 +128,8 @@ export class Installer extends Context.Service<
           const value = stored.find((row) => row.name === name)
           return new ConfigValue({
             name,
+            label: setting?.label ?? null,
+            kind: setting?.kind ?? "text",
             description:
               setting?.description ?? (name === "DATABASE_URL" ? "The app's own database" : "Not declared by the app"),
             required: setting?.required ?? false,
@@ -373,7 +376,12 @@ export class Installer extends Context.Service<
           if (RESERVED_ENV.has(name) && !databaseUrl) {
             return yield* new BadRequest({ message: `"${name}" is set by the Portal` })
           }
-          const secret = databaseUrl || (declared.find((setting) => setting.name === name)?.secret ?? false)
+          const setting = declared.find((candidate) => candidate.name === name)
+          const problem = setting === undefined ? undefined : configProblem(setting, value)
+          if (setting !== undefined && problem !== undefined) {
+            return yield* new BadRequest({ message: `${setting.label ?? name}: ${problem}` })
+          }
+          const secret = databaseUrl || (setting?.secret ?? false)
           if (value === "") {
             if (!secret) next.delete(name)
             continue

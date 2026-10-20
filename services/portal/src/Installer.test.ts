@@ -15,6 +15,7 @@ const manifest = (changes: Partial<ConstructorParameters<typeof AppManifest>[0]>
     notifications: [],
     events: [],
     database: false,
+    settings: [],
     portal: new PortalManifest({ icon: null, category: null, config: [], web: null }),
     ...changes,
   })
@@ -34,7 +35,9 @@ describe("manifestProblems", () => {
           portal: new PortalManifest({
             icon: null,
             category: null,
-            config: [{ name: "MOSAIK_APP_KEY", description: "", required: true, secret: true }],
+            config: [
+              { name: "MOSAIK_APP_KEY", label: null, description: "", kind: "text", required: true, secret: true },
+            ],
             web: null,
           }),
         }),

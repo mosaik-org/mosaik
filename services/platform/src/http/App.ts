@@ -10,6 +10,7 @@ import { Apps } from "../Apps"
 import { NotificationsClient } from "../clients"
 import { appSubscriber, Events } from "../Events"
 import { Registry } from "../Registry"
+import { SettingsStore } from "../Settings"
 
 /**
  * The platform API apps call. The calling app's identity comes from its key, never
@@ -24,6 +25,7 @@ export const AppHandlers = HttpApiBuilder.group(
     const notifications = yield* NotificationsClient
     const apps = yield* Apps
     const events = yield* Events
+    const settings = yield* SettingsStore
 
     /** The calling app's registered manifest: it decides which events the app gets. */
     const manifest = Effect.fn(function* (id: string) {
@@ -90,6 +92,15 @@ export const AppHandlers = HttpApiBuilder.group(
         yield* manifest(app.id)
         yield* events.acknowledge(app.id, payload.position, payload.error?.slice(0, 2000) ?? null)
       }),
+
+      // Apps wait here for changes all the time, like for events; keep it out of the request log.
+      settings: ({ query }) =>
+        HttpMiddleware.withLoggerDisabled(
+          Effect.gen(function* () {
+            const app = yield* CurrentApp
+            return yield* settings.snapshot(app.id, query.after, Duration.seconds(Math.max(0, query.wait ?? 0)))
+          }).pipe(Effect.withSpan("Platform.settings")),
+        ),
     })
   }),
 )

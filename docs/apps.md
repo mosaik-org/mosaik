@@ -65,8 +65,8 @@ code runs and which layer of Mosaik it needs:
 
 | Import | Where | What |
 |---|---|---|
-| `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Principal`, errors, `AccessControl`, `RequiredPermission`, `Fresh`, platform event types |
-| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Live`, `Database` and migrations |
+| `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Setting`, `Principal`, errors, `AccessControl`, `RequiredPermission`, `Fresh`, platform event types |
+| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`); no framework |
 | `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `<Toasts />` |
@@ -108,12 +108,15 @@ export const sales = defineApp({
     "order.refunded": { description: "An order was refunded", defaultChannels: ["inApp"] },
   },
   events: ["user.deleted"],    // platform events the backend handles
+  settings: {                  // how it behaves, changed by its owners while it runs (see Settings)
+    refundLimit: Setting.number({ label: "Largest refund", unit: "EUR", min: 0, default: 500 }),
+  },
   database: true,              // a Postgres database of its own
   portal: {
     icon: "chart-line",
     category: "Sales",         // where All apps lists it (owners and admins can change it)
-    config: {                  // settings admins enter when the Portal runs the app's image
-      PAYMENTS_URL: { description: "Payments API base URL" },
+    config: {                  // environment variables admins enter when the Portal runs the app's image
+      PAYMENTS_URL: { label: "Payments API", kind: "url", description: "Base address of the payments API" },
     },
   },
 })
@@ -166,6 +169,7 @@ runApp({
 - **`Audit`** records an action in the central audit log, attributed to the user.
 - **`Notify`** and **`Messages`**: see [below](#notifications-and-messages).
 - **`Events`**: see [Platform events](#platform-events).
+- **`Settings`**: see [Settings](#settings).
 - **`Live.eventStream`** serves Server-Sent Events, consumed in the browser with `createEventStream`. Its
   address can be an accessor (`` () => `/api/orders/live?region=${region()}` ``): the stream connects again
   only when the address changes, and waits while it is `undefined` (until what it needs has loaded).
@@ -350,6 +354,45 @@ yield* messages.send({
   `RateLimited` or `Unavailable`). Deliveries are retried with backoff; rejections are not. Delivery is at-least-once.
 - **Content** is channel-neutral: the service renders it as HTML and plain-text e-mail, Slack Block Kit and
   Teams Adaptive Cards, escaping everything.
+
+## Settings
+
+Settings are how an app behaves, changed by its owners and admins while it runs: a limit, a text, a switch.
+The app declares them in its manifest, each with a default, so it works before anyone changes them:
+
+```ts
+settings: {
+  refundLimit: Setting.number({ label: "Largest refund", unit: "EUR", min: 0, default: 500,
+    description: "Larger refunds are refused here: finance handles them." }),
+  exportsEnabled: Setting.boolean({ label: "Allow CSV exports", default: true }),
+  banner: Setting.text({ label: "Notice on the orders page", multiline: true, maxLength: 280, default: "" }),
+  defaultRegion: Setting.choice({ label: "Default region", options: { emea: "EMEA", na: "North America" }, default: "emea" }),
+},
+```
+
+- **Where they are changed.** The app's management page (Manage apps → the app) gets a **Settings**
+  tab, in the Portal and in Core's console, for its owners and admins. Each field shows who changed it and
+  when, and goes back to the default in one click. Changes are checked against the declaration and
+  recorded in the audit log (`app.settings.set`).
+- **Reading them.** In the backend, typed by the manifest; read them when needed, not once at startup:
+
+  ```ts
+  const settings = yield* Settings.for(sales)
+  const limit = yield* settings.get("refundLimit")   // number
+  ```
+
+  Changes arrive without a restart (`runApp` keeps asking the platform, like for events). While the
+  platform cannot be reached, the app keeps the last values it had, the defaults before the first answer.
+  `settings.changes` is a stream of all values, the current ones first, for what must react to a change.
+- **Pages** see what the app's API gives them: Sales' pages ask `GET /api/sales/orders/options` whether
+  exports are on, and hide the button.
+- **Upgrades.** A value chosen before a newer version changed the declaration (a tighter limit, a removed
+  option) gives way to the default; the Settings tab says so.
+- **Settings or config.** Settings are for behavior, visible to the app's owners, applied while it runs.
+  `portal.config` is for where things are and credentials (addresses, tokens): environment variables an
+  admin sets when the Portal runs the app's image, secrets stored encrypted, applied by restarting it.
+  Give config a `label` and a `kind` (`text`, `url`, `number`, `boolean`) so the form asks for it with the
+  right field and checks it; the app still reads text (`true`/`false` for `boolean`).
 
 ## Platform events
 

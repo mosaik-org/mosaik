@@ -1,11 +1,12 @@
 import { HttpApi } from "effect/http-api"
 import { AccessGroup, AccessReviewGroup, AppsGroup } from "./access"
+import { SettingsGroup } from "./settings"
 
 export const PLATFORM_WEB_PREFIX = "/api/platform"
 
-/** Browser API of the platform service (through the gateway): who can use apps, and asking for access. */
+/** Browser API of the platform service (through the gateway): who can use apps, asking for access, apps' settings. */
 export class PlatformWebApi extends HttpApi.make("platform-web")
-  .add(AccessGroup, AccessReviewGroup, AppsGroup)
+  .add(AccessGroup, AccessReviewGroup, AppsGroup, SettingsGroup)
   .prefix(PLATFORM_WEB_PREFIX) {}
 
 /**

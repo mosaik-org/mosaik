@@ -13,11 +13,25 @@ export const issues = defineApp({
     category: "Engineering",
     // Without JIRA_URL (outside production) the app serves sample data.
     config: {
-      JIRA_URL: { description: "Jira base URL, e.g. https://acme.atlassian.net", required: false },
-      JIRA_TOKEN: { description: "Data Center / Server: personal access token", required: false, secret: true },
-      JIRA_EMAIL: { description: "Cloud: the account's e-mail", required: false },
-      JIRA_API_TOKEN: { description: "Cloud: API token", required: false, secret: true },
-      JIRA_FLAVOR: { description: "cloud or datacenter (detected from the URL when empty)", required: false },
+      JIRA_URL: {
+        label: "Jira address",
+        kind: "url",
+        description: "Jira base URL, e.g. https://acme.atlassian.net",
+        required: false,
+      },
+      JIRA_TOKEN: {
+        label: "Personal access token",
+        description: "Data Center / Server: personal access token",
+        required: false,
+        secret: true,
+      },
+      JIRA_EMAIL: { label: "Account e-mail", description: "Cloud: the account's e-mail", required: false },
+      JIRA_API_TOKEN: { label: "API token", description: "Cloud: API token", required: false, secret: true },
+      JIRA_FLAVOR: {
+        label: "Jira flavor",
+        description: "cloud or datacenter (detected from the URL when empty)",
+        required: false,
+      },
     },
   },
 })

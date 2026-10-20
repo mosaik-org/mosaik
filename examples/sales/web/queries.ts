@@ -6,6 +6,9 @@ import { sales } from "../manifest"
 /** The API for the pages: queries keyed by the contract, and calls (see `useAction`). */
 export const salesApi = createApi(SalesApi)
 
+/** What Sales' settings allow (exports, the largest refund): changed by its owners while it runs. */
+export const optionsQuery = () => salesApi.orders.options.query({})
+
 export const summaryQuery = (days: number) => salesApi.stats.summary.query({ query: { days } })
 
 // While the next page loads, the table keeps the current one.

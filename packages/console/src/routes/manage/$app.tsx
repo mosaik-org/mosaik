@@ -15,9 +15,10 @@ import { Members } from "../../access/Members"
 import { aboutQuery, reviewsQuery } from "../../access/queries"
 import { AccessRequests } from "../../access/Requests"
 import { useConsoleExtensions } from "../../extensions"
+import { AppSettingsTab, appSettingsQuery } from "../../settings/AppSettings"
 
 const AppSearch = Schema.Struct({
-  /** `roles`, `people`, `requests`, or a tab a host added. */
+  /** `roles`, `people`, `requests`, `settings`, or a tab a host added. */
   tab: Schema.optional(Schema.String),
   /** On the requests tab: the answered ones. */
   answered: Schema.optional(Schema.Boolean),
@@ -25,7 +26,7 @@ const AppSearch = Schema.Struct({
 
 /**
  * One app, for the people who decide who can use it: its roles and owners, who has which role,
- * and requests for access. The same page with and without the Portal (Core's notifications
+ * requests for access, and its settings when it has some. The same page with and without the Portal (Core's notifications
  * link here); hosts can add tabs (see `ConsoleExtensions`).
  */
 export const Route = createFileRoute("/_app/manage/$app")({
@@ -64,6 +65,11 @@ function ManagedApp() {
     enabled: manages(),
   }))
   const waitingCount = () => waiting.data?.length ?? 0
+  const settings = useQuery(() => ({
+    ...appSettingsQuery(principal().user?.id ?? "", params().app),
+    enabled: manages(),
+  }))
+  const hasSettings = () => (settings.data?.settings.length ?? 0) > 0
   const tab = () => search().tab ?? "roles"
   const extra = () => (extensions.appTabs ?? []).find((candidate) => candidate.id === tab())
 
@@ -106,6 +112,7 @@ function ManagedApp() {
                       { value: "roles", label: "Roles" },
                       { value: "people", label: "People" },
                       { value: "requests", label: waitingCount() > 0 ? `Requests (${waitingCount()})` : "Requests" },
+                      ...(hasSettings() ? [{ value: "settings", label: "Settings" }] : []),
                       ...(extensions.appTabs ?? []).map((extension) => ({
                         value: extension.id,
                         label: extension.label,
@@ -129,6 +136,9 @@ function ManagedApp() {
                       void navigate({ search: (previous) => ({ ...previous, answered: answered || undefined }) })
                     }
                   />
+                </Match>
+                <Match when={tab() === "settings"}>
+                  <AppSettingsTab user={principal().user?.id ?? ""} app={params().app} appName={about().app.name} />
                 </Match>
                 <Match when={extra()}>
                   {(extension) => {
