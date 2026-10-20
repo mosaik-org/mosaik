@@ -1,4 +1,4 @@
-import { BadRequest, PlatformEventType, PrincipalUser, Unauthorized } from "@mosaik/core"
+import { BadRequest, NotFound, PlatformEventType, PrincipalUser, Unauthorized } from "@mosaik/core"
 import {
   MessageAccepted,
   MessageRequest,
@@ -17,6 +17,7 @@ import {
 } from "effect/http-api"
 import { AppManifest } from "./manifest"
 import { AppSettingsSnapshot } from "./settings"
+import { StorageKey, StorageUnavailable, StoredObject, StoredObjectsPage } from "./storage"
 
 export const PLATFORM_API_PREFIX = "/api/platform/v1"
 
@@ -85,6 +86,13 @@ export class AppEventBatch extends Schema.Class<AppEventBatch>("@mosaik/platform
   missed: Schema.Boolean,
 }) {}
 
+/**
+ * Where an app stores a file's content (`PUT`, the request body, its `content-type`) and reads it
+ * back (`GET`), with `?key=` and the app's key. Streamed both ways, so outside the typed API below;
+ * `Storage` in `@mosaik/server` uses them.
+ */
+export const STORAGE_CONTENT_PATH = `${PLATFORM_API_PREFIX}/storage/content`
+
 /** The longest an events or settings request waits for something new. */
 export const MAX_EVENTS_WAIT_SECONDS = 25
 
@@ -134,6 +142,28 @@ export class AppGroup extends HttpApiGroup.make("app")
     HttpApiEndpoint.get("settings", "/settings", {
       query: { after: Schema.optional(Schema.NumberFromString), wait: Schema.optional(Schema.NumberFromString) },
       success: AppSettingsSnapshot,
+    }),
+    /** A stored file's size, type and date (its content: {@link STORAGE_CONTENT_PATH}). */
+    HttpApiEndpoint.get("storedObject", "/storage/object", {
+      query: { key: StorageKey },
+      success: StoredObject,
+      error: [NotFound, StorageUnavailable],
+    }),
+    /** Removes a stored file; nothing happens when there is none. */
+    HttpApiEndpoint.delete("deleteStoredObject", "/storage/object", {
+      query: { key: StorageKey },
+      success: HttpApiSchema.NoContent,
+      error: StorageUnavailable,
+    }),
+    /** The app's stored files whose key starts with `prefix`, in key order, a page at a time. */
+    HttpApiEndpoint.get("storedObjects", "/storage/objects", {
+      query: {
+        prefix: Schema.optional(Schema.String),
+        after: Schema.optional(Schema.String),
+        limit: Schema.optional(Schema.NumberFromString.check(Schema.isBetween({ minimum: 1, maximum: 1000 }))),
+      },
+      success: StoredObjectsPage,
+      error: StorageUnavailable,
     }),
   )
   .middleware(AppAuth) {}

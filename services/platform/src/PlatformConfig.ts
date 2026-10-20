@@ -30,6 +30,16 @@ export interface DatabaseAdmin {
   readonly appServerUrl: string
 }
 
+/** Where apps' files are kept: an S3 service (SeaweedFS), one bucket, a folder per app. */
+export interface StorageConfig {
+  readonly url: string
+  readonly bucket: string
+  readonly accessKeyId: string
+  readonly secretAccessKey: Redacted.Redacted<string>
+  /** What each app may store unless an admin sets its own limit (`STORAGE_DEFAULT_LIMIT_GB`, 5). */
+  readonly defaultLimitBytes: number
+}
+
 const nonEmpty = (name: string) =>
   Config.String(name).pipe(Config.option, Config.map(Option.filter((value) => value.length > 0)))
 
@@ -48,6 +58,8 @@ export class PlatformConfig extends Context.Service<
     readonly databaseAdmin: Option.Option<DatabaseAdmin>
     /** How long platform events are kept for subscribers that have not processed them (`EVENT_RETENTION_DAYS`, 30). */
     readonly eventRetention: Duration.Duration
+    /** Without `STORAGE_URL`, apps cannot store files. */
+    readonly storage: Option.Option<StorageConfig>
   }
 >()("@mosaik/platform-service/PlatformConfig") {
   static readonly layer = Layer.effect(
@@ -63,6 +75,18 @@ export class PlatformConfig extends Context.Service<
       }).pipe(Config.option)
       const appServerUrl = yield* nonEmpty("APP_DB_SERVER_URL")
       const databaseAdmin = Option.zipWith(admin, appServerUrl, (admin, appServerUrl) => ({ ...admin, appServerUrl }))
+      const storageUrl = yield* nonEmpty("STORAGE_URL")
+      const storage = Option.isNone(storageUrl)
+        ? Option.none<StorageConfig>()
+        : Option.some({
+            url: storageUrl.value,
+            bucket: yield* Config.String("STORAGE_BUCKET").pipe(Config.withDefault("mosaik")),
+            accessKeyId: yield* Config.String("STORAGE_ACCESS_KEY_ID"),
+            secretAccessKey: yield* Config.Redacted("STORAGE_SECRET_ACCESS_KEY"),
+            defaultLimitBytes: Math.round(
+              (yield* Config.Number("STORAGE_DEFAULT_LIMIT_GB").pipe(Config.withDefault(5))) * 1024 ** 3,
+            ),
+          })
       return PlatformConfig.of({
         configuredApps,
         internalKey: yield* Config.Redacted("INTERNAL_KEY"),
@@ -70,6 +94,7 @@ export class PlatformConfig extends Context.Service<
         eventRetention: Duration.days(
           Math.max(1, yield* Config.Int("EVENT_RETENTION_DAYS").pipe(Config.withDefault(30))),
         ),
+        storage,
       })
     }),
   )

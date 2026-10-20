@@ -46,6 +46,7 @@ export class Orders extends Context.Service<
     setStatus(id: OrderId, status: OrderStatus): Effect.Effect<Order, NotFound | BadRequest>
     /** Refuses orders above `largestCents` (Sales' settings). */
     refund(id: OrderId, reason: string, largestCents: number): Effect.Effect<Order, NotFound | Conflict>
+    get(id: OrderId): Effect.Effect<Order, NotFound>
   }
 >()("@mosaik/sales/Orders") {
   static readonly layer = Layer.effect(
@@ -191,6 +192,8 @@ export class Orders extends Context.Service<
           yield* updateStatus(id, "refunded", reason)
           return yield* get(id).pipe(Effect.orDie)
         }),
+
+        get,
       })
     }),
   )

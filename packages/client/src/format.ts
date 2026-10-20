@@ -32,6 +32,17 @@ const percentFormat = new Intl.NumberFormat(undefined, { style: "percent", maxim
 /** `formatPercent(0.123)` → `12.3%` */
 export const formatPercent = (ratio: number): string => percentFormat.format(ratio)
 
+const BYTE_UNITS = ["kilobyte", "megabyte", "gigabyte", "terabyte"] as const
+const byteFormats = BYTE_UNITS.map(
+  (unit) => new Intl.NumberFormat(undefined, { style: "unit", unit, unitDisplay: "short", maximumFractionDigits: 1 }),
+)
+/** A size as people read it: `512 B`, `4.2 MB`, `5 GB` (units of 1024). */
+export const formatBytes = (bytes: number): string => {
+  if (bytes < 1024) return `${numberFormat.format(bytes)} B`
+  const index = Math.min(BYTE_UNITS.length, Math.floor(Math.log(bytes) / Math.log(1024)))
+  return (byteFormats[index - 1] as Intl.NumberFormat).format(bytes / 1024 ** index)
+}
+
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" })
 export const formatDate = (input: DateInput): string => dateFormat.format(toDate(input))
 

@@ -73,6 +73,14 @@ export const fileUpload = defineSlotRecipe({
   },
   variants: {
     size: {
+      // A field in a form (`FileUploadField`): a drop area as tall as a few lines.
+      sm: {
+        root: { gap: "3" },
+        dropzone: { px: "4", py: "3", minHeight: "32", gap: "1.5", textStyle: "sm" },
+        item: { p: "3", gap: "2", textStyle: "sm" },
+        itemGroup: { gap: "2" },
+        itemDeleteTrigger: { _icon: { boxSize: "4" } },
+      },
       md: {
         root: { gap: "4" },
         dropzone: { px: "6", py: "4", minHeight: "xs", gap: "0" },

@@ -113,6 +113,8 @@ export class AppManifest extends Schema.Class<AppManifest>("@mosaik/platform/App
   /** How the app behaves, changed while it runs by its owners and admins (see `Setting` in `@mosaik/core`). */
   settings: Schema.Array(SettingDeclaration),
   database: Schema.Boolean,
+  /** Stores files with the platform. */
+  storage: Schema.Boolean,
   portal: PortalManifest,
 }) {}
 
@@ -137,6 +139,7 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
     events: app.events,
     settings: Object.entries<Setting>(app.settings).map(([name, setting]) => toSettingDeclaration(name, setting)),
     database: app.database,
+    storage: app.storage,
     portal: new PortalManifest({
       icon: app.portal.icon ?? null,
       category: app.portal.category ?? null,

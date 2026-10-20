@@ -7,6 +7,7 @@ import { AccessRequests } from "./AccessRequests"
 import { type AppRecord, Apps } from "./Apps"
 import { NotificationsClient } from "./clients"
 import { appSubscriber, Events, type Subscriber } from "./Events"
+import { AppStorage } from "./Storage"
 
 const subscriber = (app: AppRecord): Option.Option<Subscriber> =>
   app.manifest === null ? Option.none() : Option.some(appSubscriber(app.id, app.manifest))
@@ -48,6 +49,7 @@ export class Registry extends Context.Service<
     Effect.gen(function* () {
       const apps = yield* Apps
       const events = yield* Events
+      const storage = yield* AppStorage
       const auth = yield* InternalClient
       const notifications = yield* NotificationsClient
       const accessRequests = yield* AccessRequests
@@ -140,6 +142,7 @@ export class Registry extends Context.Service<
             .pipe(Effect.orDie)
           yield* accessRequests.forgetApp(id)
           yield* events.forget(id)
+          yield* storage.removeApp(id)
           yield* apps.delete(id)
           yield* Effect.logInfo(`Removed app "${id}"`)
         }),

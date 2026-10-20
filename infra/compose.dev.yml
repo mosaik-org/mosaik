@@ -17,6 +17,30 @@ services:
       timeout: 3s
       retries: 30
 
+  # Apps' files (the platform's storage), over S3 on 8333. Credentials come from the environment:
+  # the start script writes them into SeaweedFS's S3 configuration.
+  # Development credentials (`mosaik` / `dev-storage-secret`) unless `.env` sets others.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    ports:
+      - "8333:8333"
+    environment:
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:-mosaik}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:-dev-storage-secret}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        printf '{"identities":[{"name":"mosaik","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","Write","List","Tagging"]}]}'
+        "$$STORAGE_ACCESS_KEY_ID" "$$STORAGE_SECRET_ACCESS_KEY" > /tmp/s3.json
+        && exec weed server -dir=/data -s3 -s3.config=/tmp/s3.json
+    volumes:
+      - files:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8333"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
   # Traces from every service: http://localhost:16686
   jaeger:
     image: jaegertracing/jaeger:latest
@@ -33,3 +57,4 @@ services:
 
 volumes:
   pgdata:
+  files:

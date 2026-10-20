@@ -13,7 +13,8 @@ import { Events } from "./Events"
 import { AppHandlers, KeysHandlers } from "./http/App"
 import { ClientsHandlers, EventsHandlers, RegistryHandlers, RoutesHandlers } from "./http/Internal"
 import { RequestAccessRoutes } from "./http/Pages"
-import { AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers } from "./http/Web"
+import { StorageContentRoutes } from "./http/StorageContent"
+import { AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers, StorageHandlers } from "./http/Web"
 import { migrations } from "./migrations"
 import { Ownership } from "./Ownership"
 import { PlatformConfig } from "./PlatformConfig"
@@ -21,11 +22,12 @@ import { Provisioner } from "./Provisioner"
 import { Registry } from "./Registry"
 import { RouteFeed } from "./RouteFeed"
 import { SettingsStore } from "./Settings"
+import { AppStorage } from "./Storage"
 
 const Clients = Layer.mergeAll(InternalClient.layer, NotificationsClient.layer, FetchHttpClient.layer)
 
 const Domain = Layer.mergeAll(Registry.layer, RouteFeed.layer, Ownership.layer, SettingsStore.layer).pipe(
-  Layer.provideMerge(Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer)),
+  Layer.provideMerge(Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer, AppStorage.layer)),
   Layer.provideMerge(Apps.layer),
   Layer.provideMerge(Database.layer({ serviceId: "platform", migrations })),
   Layer.provideMerge(PlatformConfig.layer),
@@ -37,7 +39,7 @@ const AppHttp = HttpApiBuilder.layer(PlatformApi).pipe(Layer.provide([AppHandler
 
 /** Who can use apps and requests for access (`/api/platform`), through the gateway. */
 const WebHttp = HttpApiBuilder.layer(PlatformWebApi, { openapiPath: `${PLATFORM_WEB_PREFIX}/openapi.json` }).pipe(
-  Layer.provide([AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers]),
+  Layer.provide([AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers, StorageHandlers]),
 )
 
 /** Platform services only (`/internal`: routes, events, the app registry, sign-in clients), never routed by the gateway. */
@@ -52,9 +54,11 @@ const Middleware = Layer.mergeAll(AppAuthLive, InternalAuthLive, AccessControlUs
   Layer.provide(Verifier),
 )
 
-const Main = serve(Layer.mergeAll(AppHttp, WebHttp, InternalHttp, RequestAccessRoutes), {
+const Main = serve(Layer.mergeAll(AppHttp, WebHttp, InternalHttp, RequestAccessRoutes, StorageContentRoutes), {
   name: "mosaik-platform",
   port: 4002,
+  // Apps' files stream through here (`StorageContentRoutes`); what an app may store is its limit.
+  maxRequestBodySize: 16 * 1024 ** 3,
 }).pipe(Layer.provide(Middleware), Layer.provide(Domain))
 
 runMain(Main)

@@ -318,6 +318,7 @@
         "@mosaik/connectors": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
+        "@mosaik/platform": "workspace:*",
         "@mosaik/portal": "workspace:*",
         "@mosaik/server": "workspace:*",
         "@mosaik/styled-system": "workspace:*",

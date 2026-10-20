@@ -29,6 +29,18 @@ export class Order extends Schema.Class<Order>("@mosaik/sales/Order")({
   createdAt: Schema.DateTimeUtc,
 }) {}
 
+/** A file attached to an order, kept in the platform's storage under `orders/<id>/<name>`. */
+export class Attachment extends Schema.Class<Attachment>("@mosaik/sales/Attachment")({
+  name: Schema.String,
+  size: Schema.Number,
+  contentType: Schema.String,
+  uploadedAt: Schema.DateTimeUtc,
+}) {}
+
+/** What Sales takes as attachments: PDFs and images, up to 10 MB (it checks; the platform only counts). */
+export const ATTACHMENT_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"] as const
+export const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+
 /** What the pages need of Sales' settings (the rest stays on the server). */
 export class OrderOptions extends Schema.Class<OrderOptions>("@mosaik/sales/OrderOptions")({
   exportsEnabled: Schema.Boolean,

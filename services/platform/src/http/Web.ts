@@ -1,12 +1,13 @@
 import { AuditEventInput } from "@mosaik/auth/contract"
 import { InternalClient } from "@mosaik/auth/server"
-import { CurrentPrincipal, Forbidden, ownerPermission, type PrincipalUser } from "@mosaik/core"
-import { canManageApp, PlatformWebApi } from "@mosaik/platform/contract"
+import { CurrentPrincipal, Forbidden, ownerPermission, type Principal, type PrincipalUser } from "@mosaik/core"
+import { AccessAdmin, canManageApp, PlatformWebApi } from "@mosaik/platform/contract"
 import { Effect, Schedule, type Schema } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessRequests } from "../AccessRequests"
 import { Ownership } from "../Ownership"
 import { SettingsStore } from "../Settings"
+import { AppStorage } from "../Storage"
 
 /** Records changes in the central audit log; a failure to record is logged, not returned. */
 const makeAudit = Effect.gen(function* () {
@@ -118,6 +119,34 @@ export const SettingsHandlers = HttpApiBuilder.group(
             })
           }
           return settings
+        }),
+    })
+  }),
+)
+
+/** An app's storage: its usage for the people who manage it, its limit for admins. */
+export const StorageHandlers = HttpApiBuilder.group(
+  PlatformWebApi,
+  "storage",
+  Effect.fn(function* (handlers) {
+    const storage = yield* AppStorage
+    const { audit } = yield* makeAudit
+    const check = (allowed: (principal: Principal) => boolean, permission: string) =>
+      Effect.flatMap(CurrentPrincipal, (principal) =>
+        allowed(principal) ? Effect.void : Effect.fail(new Forbidden({ permission })),
+      )
+    return handlers.handleAll({
+      usage: ({ params }) =>
+        Effect.andThen(
+          check((principal) => canManageApp(principal, params.id), ownerPermission(params.id)),
+          storage.usage(params.id),
+        ),
+      setLimit: ({ params, payload }) =>
+        Effect.gen(function* () {
+          yield* check((principal) => principal.can(AccessAdmin.manage), AccessAdmin.manage)
+          const usage = yield* storage.setLimit(params.id, payload.limitBytes)
+          yield* audit("app.storage.set-limit", params.id, { limitBytes: payload.limitBytes })
+          return usage
         }),
     })
   }),

@@ -15,6 +15,7 @@ const manifest = (changes: Partial<ConstructorParameters<typeof AppManifest>[0]>
     notifications: [],
     events: [],
     database: false,
+    storage: false,
     settings: [],
     portal: new PortalManifest({ icon: null, category: null, config: [], web: null }),
     ...changes,

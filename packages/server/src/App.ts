@@ -13,10 +13,11 @@ import { Registration } from "./Registration"
 import { runMain, serve } from "./Server"
 import { Settings } from "./Settings"
 import { standaloneRoutes } from "./Standalone"
+import { Storage } from "./Storage"
 import { loadWebBundle, webAssetsRoute } from "./WebAssets"
 
 /** Services every app backend gets for free (plus the `AccessControl` middleware). */
-export type AppServices = Audit | Messages | Notify | Settings | HttpClient.HttpClient | AccessControl
+export type AppServices = Audit | Messages | Notify | Settings | Storage | HttpClient.HttpClient | AccessControl
 
 export interface AppServerOptions<Id extends string, Groups extends HttpApiGroup.Constraint, E, R> {
   readonly app: AnyApp
@@ -26,6 +27,11 @@ export interface AppServerOptions<Id extends string, Groups extends HttpApiGroup
   readonly handlers: Layer.Layer<HttpApiGroup.ToService<Id, Groups>, E, R>
   /** Handlers of the platform events the app subscribes to (`Events.handlers`). */
   readonly events?: Layer.Layer<EventHandlers, unknown, AppServices>
+  /**
+   * The largest request the backend accepts, in bytes (Bun's default: 128 MB). Raise it for an app
+   * that takes larger uploads; each upload endpoint still sets its own limit (`asMultipart`).
+   */
+  readonly maxRequestBodySize?: number
 }
 
 /** The app's manifest as static JSON, read by the platform when it is installed. */
@@ -34,7 +40,7 @@ const ManifestRoute = (manifest: AppManifest) =>
 
 /**
  * Builds an app backend: the API under `/api/<id>`, access control, manifest
- * registration, audit log, messages and notifications, settings, platform events, its browser
+ * registration, audit log, messages and notifications, settings, file storage, platform events, its browser
  * bundle (if built), health check and observability.
  *
  * Everything platform-related goes through the platform API (`PLATFORM_URL`), authenticated
@@ -78,6 +84,7 @@ const makeServer = <Id extends string, Groups extends HttpApiGroup.Constraint, E
     Messages.layer,
     Notify.layer,
     Settings.layer,
+    Storage.layer(app.id),
     FetchHttpClient.layer,
   ).pipe(Layer.provideMerge(Registration.layer(manifest)), Layer.provideMerge(PlatformClient.layer(app.id)))
 
@@ -95,6 +102,7 @@ const makeServer = <Id extends string, Groups extends HttpApiGroup.Constraint, E
 
   const server = serve(Layer.mergeAll(ApiRoutes, ManifestRoute(manifest), assets, Consumer), {
     name: `mosaik-${app.id}`,
+    ...(options.maxRequestBodySize === undefined ? {} : { maxRequestBodySize: options.maxRequestBodySize }),
   }).pipe(Layer.provide(AccessControlLive(app).pipe(Layer.provideMerge(Verifier))), Layer.provide(Platform))
   // TypeScript cannot reduce the router's request types for a generic `R`; the
   // `R extends AppServices` constraint guarantees everything is provided.

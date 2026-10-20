@@ -39,6 +39,8 @@ export const sales = defineApp({
     }),
   },
   database: true,
+  // Files attached to orders (see `Storage` in the backend), within the limit admins give Sales.
+  storage: true,
   portal: {
     icon: "chart-line",
     category: "Sales",

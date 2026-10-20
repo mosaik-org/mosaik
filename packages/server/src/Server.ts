@@ -15,6 +15,8 @@ export interface ServeOptions {
   readonly name: string
   /** Default port; overridden by `PORT`. */
   readonly port?: number
+  /** The largest request body accepted, in bytes; Bun's default is 128 MB. */
+  readonly maxRequestBodySize?: number
 }
 
 /**
@@ -30,6 +32,9 @@ export const serve = <E, R>(routes: Layer.Layer<never, E, R>, options: ServeOpti
         // Bun closes connections idle for 10s by default, which cuts quiet event streams
         // (`Live.eventStream` heartbeats every 15s). Bun's maximum is 255.
         idleTimeout: Config.succeed(60),
+        ...(options.maxRequestBodySize === undefined
+          ? {}
+          : { maxRequestBodySize: Config.succeed(options.maxRequestBodySize) }),
       }),
     ),
     Layer.provide(Observability.layer(options.name)),

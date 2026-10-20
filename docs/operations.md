@@ -31,6 +31,18 @@ and it also serves the shell. For Entra ID, register the redirect URI
 - **Databases.** Each service and built-in app has its own Postgres database, `mosaik_<id>`, created by the
   Compose `provision` job (`bun db:provision`). Passwords are derived from `DB_PASSWORD_SECRET`. The
   platform provisions databases for apps the Portal runs (`POSTGRES_URL`, `APP_DB_SERVER_URL`).
+- **Files.** Apps that declare `storage` keep files with the platform service, which stores them in an S3
+  service: SeaweedFS (`seaweedfs` in compose), reached at `STORAGE_URL` with `STORAGE_ACCESS_KEY_ID` and
+  `STORAGE_SECRET_ACCESS_KEY` (the same values configure SeaweedFS), in the bucket `STORAGE_BUCKET`
+  (`mosaik`), a folder per app. Any S3-compatible service works in its place. Without `STORAGE_URL`, apps
+  cannot store files.
+  - **Limits.** Each app may store `STORAGE_DEFAULT_LIMIT_GB` (5) unless an admin gives it a limit of its
+    own on its management page (Storage tab, audited); owners see their app's usage there. Files beyond the
+    limit are refused as they arrive. Per-file limits are each app's own.
+  - **Uploads** reach apps through the gateway: each request is limited to 128 MB (Bun's default) by the
+    gateway and the app, unless raised (`maxRequestBodySize` in `runApp` and `serve`).
+  - **Backups.** File contents are in the `files` volume, their sizes and types in the platform's database:
+    back up both together. Removing an app deletes its files.
 - **Signing keys.** The auth service creates the token signing keys on first start and publishes them at
   `/.well-known/jwks.json`; apps verify tokens against the platform's copy (`/api/platform/v1/jwks.json`).
 - **Observability.** Set `OTEL_EXPORTER_OTLP_ENDPOINT` to export traces, logs and metrics over OTLP.
@@ -103,7 +115,7 @@ Installed apps are added at runtime, with no platform release, from the Portal's
 - **Databases.** The platform (Core) provisions an app's database with `POSTGRES_URL` (superuser) when the
   Portal asks, and the container gets only its own `DATABASE_URL`, built for `APP_DB_SERVER_URL`.
 - **Registries.** Private registries' credentials are stored on the Portal's Apps page (encrypted).
-- **Encryption key.** Settings, keys and registry passwords are encrypted with a key derived from
+- **Encryption key.** Configuration values, keys and registry passwords are encrypted with a key derived from
   `INTERNAL_KEY`: rotating it means entering them again.
 
 ## Access: roles, owners and requests

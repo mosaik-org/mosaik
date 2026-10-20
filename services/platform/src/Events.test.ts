@@ -15,6 +15,7 @@ const manifest = new AppManifest({
   notifications: [],
   events: ["user.access_changed", "user.deleted"],
   database: false,
+  storage: false,
   settings: [],
   portal: new PortalManifest({ icon: null, category: null, config: [], web: null }),
 })

@@ -12,3 +12,4 @@ export {
   type ToastType,
   toast,
 } from "./shell"
+export { type UploadOptions, uploadFile } from "./upload"

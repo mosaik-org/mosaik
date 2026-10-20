@@ -66,7 +66,7 @@ code runs and which layer of Mosaik it needs:
 | Import | Where | What |
 |---|---|---|
 | `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Setting`, `Principal`, errors, `AccessControl`, `RequiredPermission`, `Fresh`, platform event types |
-| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Live`, `Database` and migrations |
+| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Storage`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`); no framework |
 | `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `<Toasts />` |
@@ -112,6 +112,7 @@ export const sales = defineApp({
     refundLimit: Setting.number({ label: "Largest refund", unit: "EUR", min: 0, default: 500 }),
   },
   database: true,              // a Postgres database of its own
+  storage: true,               // files kept by the platform (see Files)
   portal: {
     icon: "chart-line",
     category: "Sales",         // where All apps lists it (owners and admins can change it)
@@ -170,6 +171,7 @@ runApp({
 - **`Notify`** and **`Messages`**: see [below](#notifications-and-messages).
 - **`Events`**: see [Platform events](#platform-events).
 - **`Settings`**: see [Settings](#settings).
+- **`Storage`**: see [Files](#files).
 - **`Live.eventStream`** serves Server-Sent Events, consumed in the browser with `createEventStream`. Its
   address can be an accessor (`` () => `/api/orders/live?region=${region()}` ``): the stream connects again
   only when the address changes, and waits while it is `undefined` (until what it needs has loaded).
@@ -393,6 +395,41 @@ settings: {
   admin sets when the Portal runs the app's image, secrets stored encrypted, applied by restarting it.
   Give config a `label` and a `kind` (`text`, `url`, `number`, `boolean`) so the form asks for it with the
   right field and checks it; the app still reads text (`true`/`false` for `boolean`).
+
+## Files
+
+An app that declares `storage: true` keeps files with the platform, within a limit admins set for it
+(Manage apps → the app → Storage, where its owners see the usage). Files go through the app: it takes
+uploads in its own API, checks them as it wants (type, content, size), stores them, and serves them. The
+platform only stores and counts.
+
+```ts
+// api/: an upload endpoint, with the app's own limit per file
+HttpApiEndpoint.post("attach", "/:id/attachments", {
+  params: { id: OrderId },
+  payload: Schema.Struct({ file: Multipart.SingleFileSchema }).pipe(
+    HttpApiSchema.asMultipart({ maxFileSize: 10 * 1024 * 1024 }),
+  ),
+  success: Attachment,
+  error: [NotFound, BadRequest, StorageLimitReached, StorageUnavailable],
+})
+
+// server/: store it, serve it
+const storage = yield* Storage
+const stored = yield* storage.put(`orders/${id}/${file.name}`, file)       // StorageLimitReached when full
+return yield* storage.respond(`orders/${id}/${name}`, { inline: true })    // in a handler: the download
+```
+
+- **`Storage`** (`@mosaik/sdk/server`): `put` (bytes, text, a stream, a `Blob` or an uploaded file),
+  `get` (a stream), `head`, `delete`, `list({ prefix })`. Keys are the app's own paths
+  (`orders/123/invoice.pdf`, see `storageKeyProblem`); contents stream both ways.
+- **Serving** with `storage.respond`: files are downloads, never shown as the app's page, so an uploaded
+  HTML or SVG file cannot run scripts as the app. Images and PDFs may be shown in place (`inline`).
+- **In a page**, `uploadFile(url, file, { onProgress })` (`@mosaik/sdk/client`) sends a file to the
+  app's endpoint with progress, and `<FileUploadField>` (`@mosaik/mosaik-ui`) lets people choose it,
+  refusing other types and sizes at once. Downloads are plain links to the app's API.
+- **Size.** A request to the app is limited to 128 MB unless it sets `maxRequestBodySize` in `runApp`.
+- Sales attaches PDFs and images to orders: `examples/sales` (`Attachments.tsx`, `server/http.ts`).
 
 ## Platform events
 

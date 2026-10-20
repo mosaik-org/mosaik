@@ -111,6 +111,8 @@ export interface AppSpec<
   readonly settings?: Settings
   /** Needs a Postgres database (`DATABASE_URL`): provisioned by the platform, or the app's own. */
   readonly database?: boolean
+  /** Stores files with the platform (see `Storage` in `@mosaik/server`), within a limit admins set. */
+  readonly storage?: boolean
   /** Whether the app runs its own backend process. Defaults to `true`. */
   readonly backend?: boolean
   /** How the Portal lists and runs the app (see {@link PortalSpec}). */
@@ -137,6 +139,7 @@ export interface App<
   readonly events: ReadonlyArray<Event>
   readonly settings: Settings
   readonly database: boolean
+  readonly storage: boolean
   readonly backend: boolean
   /** Fully qualified, type-checked permission key. */
   perm<N extends Name>(name: N): PermissionKey<Id, N>
@@ -204,6 +207,7 @@ export const defineApp = <
     events: [...new Set(spec.events ?? [])],
     settings: spec.settings ?? ({} as Settings),
     database: spec.database ?? false,
+    storage: spec.storage ?? false,
     backend: spec.backend ?? true,
     portal: spec.portal ?? {},
     apiPrefix: `/api/${spec.id}`,

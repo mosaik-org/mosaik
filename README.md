@@ -10,7 +10,7 @@ at runtime from its team's repository. Together they look and work like one prod
 Mosaik comes in two layers ([Architecture](docs/architecture.md)):
 
 - **Mosaik Core:** the primitives. Sign-in, permissions and roles, app owners and access requests, audit,
-  notifications and messages, platform events, databases. Any app can use Core alone, as a
+  notifications and messages, platform events, settings, databases and file storage. Any app can use Core alone, as a
   *standalone* app on its own address with its own page.
 - **Mosaik Portal:** the shared product built on Core. The shell everyone uses, the directory of apps,
   pins and usage, and installing and running apps. Apps *mounted* in the Portal share its sign-in,
@@ -71,13 +71,14 @@ Browser ── shell (Portal) ──► Gateway (Core)
                                 ├─ /api/auth/*          → auth (sessions, Better Auth, sign-in for standalone apps)
                                 ├─ /api/admin/*         → auth (users, roles, audit)
                                 ├─ /api/notifications/* → notifications (inbox, settings, admin)
-                                ├─ /api/platform/*      → platform (who can use apps, access requests)
+                                ├─ /api/platform/*      → platform (who can use apps, access requests, apps' settings and storage)
                                 ├─ /api/portal/*        → portal (catalog, pins and usage, installs)
                                 └─ /api/<id>/*          → app <id> (route from the platform's registry)
                                      + Authorization: Bearer <token for that app only>
 
 Apps ── /api/platform/v1 (app key) ──► platform ──► auth (permissions, roles, audit)
-                                                 └─► notifications ──► SMTP, Slack, Teams
+                                                 ├─► notifications ──► SMTP, Slack, Teams
+                                                 └─► SeaweedFS (S3: apps' files)
 Portal ── /internal (service key) ──► platform (app identities, databases, events)
 
 Browser ── standalone app (own address, own page) ── sign-in ──► Core (OAuth: /api/auth/oauth/*)
@@ -102,8 +103,9 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
 - **Notifications service.** Delivers what apps send: in-app notifications, e-mail (SMTP), Slack and Teams.
   It keeps an outbox, retries failed deliveries, and serves users' inbox and channel settings.
 - **Platform service.** App identities and keys, and the platform API apps call with their key: registering
-  their manifest, audit entries, messages and notifications, platform events. It provisions apps'
-  databases, runs access requests, and gives the Portal its registry API.
+  their manifest, audit entries, messages and notifications, platform events, settings and files. It
+  provisions apps' databases, stores apps' files in SeaweedFS within their limits, keeps apps' settings,
+  runs access requests, and gives the Portal its registry API.
 - **Apps.** Each backend checks tokens locally against the platform's JWKS (no call per request) and
   enforces each endpoint's permission. Every app serves its manifest at `/.well-known/mosaik-app.json`.
 

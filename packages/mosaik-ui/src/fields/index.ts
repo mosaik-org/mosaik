@@ -21,6 +21,7 @@ export {
   type IsoDate,
   type IsoDateRange,
 } from "./date-fields"
+export { FileUploadField, type FileUploadFieldProps } from "./file-field"
 export { type FieldProps, FormField, type FormFieldProps } from "./form-field"
 export {
   NumberField,

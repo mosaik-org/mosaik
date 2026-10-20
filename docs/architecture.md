@@ -39,6 +39,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 | Audit, notifications, messages | auth, notifications; the console's administration; a page for notification settings | the inbox, the bell, settings in the shell |
 | Platform events | platform: the log, delivery to apps and to services | consumes `user.deleted` like any client |
 | App settings | platform: values, checks, audit, delivery to running apps; the console's Settings tab | — |
+| App files | platform: storage in SeaweedFS (S3), per-app limits; the console's Storage tab | — |
 | App identity | platform: id, origin (configured or managed), key, status, address, registered manifest | creates the apps it installs |
 | Databases | platform: provisions an app's database on request | asks for one when it runs an image |
 | Administration | auth: users, roles, audit (`admin:*`, `/api/admin`); the console's pages | lists it as an app; its own pages for installs (`/portal`) |
@@ -50,7 +51,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 ## The manifest
 
 `defineApp` describes an app to Core: who it is (`id`, `name`, `description`, `version`) and what it needs
-(`access`, `permissions`, `roles`, `notifications`, `events`, `settings`, `database`). The Portal's part
+(`access`, `permissions`, `roles`, `notifications`, `events`, `settings`, `database`, `storage`). The Portal's part
 sits under `portal`: `icon`, `category`, and the environment variables admins enter when the Portal runs
 the app (`config`). The
 built manifest (`mosaik-app.json`) carries the same split, with the browser bundle in `portal.web`.

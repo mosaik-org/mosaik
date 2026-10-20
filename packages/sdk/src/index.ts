@@ -53,3 +53,10 @@ export {
   UpstreamError,
   UserId,
 } from "@mosaik/core"
+export {
+  StorageLimitReached,
+  StorageUnavailable,
+  StoredObject,
+  StoredObjectsPage,
+  storageKeyProblem,
+} from "@mosaik/platform/contract"

@@ -1,8 +1,20 @@
-import { AccessControl, BadRequest, Conflict, Fresh, NotFound, RequiredPermission } from "@mosaik/sdk"
+import {
+  AccessControl,
+  BadRequest,
+  Conflict,
+  Fresh,
+  NotFound,
+  RequiredPermission,
+  StorageLimitReached,
+  StorageUnavailable,
+} from "@mosaik/sdk"
 import { Schema } from "effect"
+import { Multipart } from "effect/http"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { sales } from "../manifest"
 import {
+  Attachment,
+  MAX_ATTACHMENT_BYTES,
   Order,
   OrderId,
   OrderOptions,
@@ -47,6 +59,32 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
       success: Order,
       error: [NotFound, Conflict],
     }).annotate(RequiredPermission, sales.perm("orders.refund")),
+    HttpApiEndpoint.get("attachments", "/:id/attachments", {
+      params: { id: OrderId },
+      success: Schema.Array(Attachment),
+      error: [NotFound, StorageUnavailable],
+    }),
+    /** A PDF or an image (`ATTACHMENT_TYPES`), sent as `multipart/form-data` (`uploadFile` in a page). */
+    HttpApiEndpoint.post("attach", "/:id/attachments", {
+      params: { id: OrderId },
+      payload: Schema.Struct({ file: Multipart.SingleFileSchema }).pipe(
+        HttpApiSchema.asMultipart({ maxFileSize: MAX_ATTACHMENT_BYTES }),
+      ),
+      success: Attachment,
+      error: [NotFound, BadRequest, StorageLimitReached, StorageUnavailable],
+    }).annotate(RequiredPermission, sales.perm("orders.edit")),
+    /** The file itself: a download, or shown in the browser with `?inline=true`. */
+    HttpApiEndpoint.get("attachment", "/:id/attachments/:name", {
+      params: { id: OrderId, name: Schema.String },
+      query: { inline: Schema.optional(Schema.Literals(["true", "false"])) },
+      success: Schema.Uint8Array.pipe(HttpApiSchema.asUint8Array()),
+      error: [NotFound, StorageUnavailable],
+    }),
+    HttpApiEndpoint.delete("detach", "/:id/attachments/:name", {
+      params: { id: OrderId, name: Schema.String },
+      success: HttpApiSchema.NoContent,
+      error: [NotFound, StorageUnavailable],
+    }).annotate(RequiredPermission, sales.perm("orders.edit")),
   )
   .prefix("/orders") {}
 

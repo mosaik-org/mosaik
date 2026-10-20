@@ -7,15 +7,17 @@ import { createSignal, Show } from "solid-js"
 import { type Order, Refund, StatusTransitions } from "../../api"
 import { sales } from "../../manifest"
 import { optionsQuery, salesApi } from "../queries"
+import { AttachmentsDialog } from "./Attachments"
 import { statusLabel } from "./StatusBadge"
 
-/** Row actions for an order; only shows what the principal may do. */
+/** Row actions for an order: its attachments for everyone, and what else the principal may do. */
 export const OrderActions = (props: { order: Order }) => {
   const can = useCan()
   const options = useQuery(optionsQuery)
   /** Above the largest refund in Sales' settings: finance handles it, the server refuses it. */
   const aboveLimit = () => props.order.amountCents > (options.data?.refundLimitCents ?? Number.POSITIVE_INFINITY)
   const [refunding, setRefunding] = createSignal(false)
+  const [attaching, setAttaching] = createSignal(false)
   const order = () => ({ params: { id: props.order.id } })
 
   // Both change what the orders list and the summary show: refetch everything of the app.
@@ -40,6 +42,7 @@ export const OrderActions = (props: { order: Order }) => {
   })
 
   const items = () => [
+    { value: "attachments", label: "Attachments…", onSelect: () => setAttaching(true) },
     ...(can(sales.perm("orders.edit"))
       ? StatusTransitions[props.order.status].map((status) => ({
           value: status,
@@ -70,6 +73,7 @@ export const OrderActions = (props: { order: Order }) => {
         )}
         items={items()}
       />
+      <AttachmentsDialog order={props.order} open={attaching()} onOpenChange={setAttaching} />
       <ConfirmDialog
         open={refunding()}
         onOpenChange={(open) => {

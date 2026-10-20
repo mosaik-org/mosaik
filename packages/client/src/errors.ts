@@ -18,6 +18,8 @@ export const errorMessage = (error: unknown): string => {
       return "You don't have permission to do this."
     case "ServiceUnavailable":
       return "The service is unavailable. Please try again shortly."
+    case "StorageLimitReached":
+      return "There is no room left for this file: the app has reached its storage limit."
   }
   if (Predicate.hasProperty(error, "message") && Predicate.isString(error.message) && error.message.length > 0) {
     return error.message

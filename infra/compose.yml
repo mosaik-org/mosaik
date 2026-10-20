@@ -108,7 +108,39 @@ services:
       # Databases for apps; image apps reach Postgres on the `mosaik-apps` network.
       POSTGRES_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
       APP_DB_SERVER_URL: postgres://postgres:5432
+      # Apps' files: SeaweedFS over S3 (see `seaweedfs`), and how much each app may store by default.
+      STORAGE_URL: http://seaweedfs:8333
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:?Set STORAGE_ACCESS_KEY_ID}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:?Set STORAGE_SECRET_ACCESS_KEY}
+      STORAGE_DEFAULT_LIMIT_GB: ${STORAGE_DEFAULT_LIMIT_GB:-5}
+    depends_on:
+      provision:
+        condition: service_completed_successfully
+      seaweedfs:
+        condition: service_healthy
     networks: [default, apps]
+
+  # Apps' files (the platform's storage), over S3 on 8333. Credentials come from the environment:
+  # the start script writes them into SeaweedFS's S3 configuration.
+  seaweedfs:
+    image: chrislusf/seaweedfs:4.48
+    restart: unless-stopped
+    environment:
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID:?Set STORAGE_ACCESS_KEY_ID}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY:?Set STORAGE_SECRET_ACCESS_KEY}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        printf '{"identities":[{"name":"mosaik","credentials":[{"accessKey":"%s","secretKey":"%s"}],"actions":["Admin","Read","Write","List","Tagging"]}]}'
+        "$$STORAGE_ACCESS_KEY_ID" "$$STORAGE_SECRET_ACCESS_KEY" > /tmp/s3.json
+        && exec weed server -dir=/data -s3 -s3.config=/tmp/s3.json
+    volumes:
+      - files:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8333"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
 
   portal:
     <<: *service
@@ -149,6 +181,8 @@ services:
 
 volumes:
   pgdata:
+  # Apps' files: back it up with Postgres (their metadata is in the platform's database).
+  files:
 
 networks:
   default: {}

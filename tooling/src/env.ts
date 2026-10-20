@@ -18,6 +18,10 @@ const DEV_DEFAULTS = {
   SMTP_URL: "smtp://localhost:1025",
   MAIL_FROM: "Mosaik <mosaik@mosaik.local>",
   MAIL_ALLOWED_DOMAINS: "*",
+  // SeaweedFS from `bun infra:up`, holding apps' files.
+  STORAGE_URL: "http://localhost:8333",
+  STORAGE_ACCESS_KEY_ID: "mosaik",
+  STORAGE_SECRET_ACCESS_KEY: "dev-storage-secret",
 } as const
 
 export const env = (name: keyof typeof DEV_DEFAULTS): string => process.env[name] || DEV_DEFAULTS[name]
@@ -236,6 +240,10 @@ export const planServices = (
         // Databases for apps; the ones it hands out are for containers, which reach Postgres through the host.
         POSTGRES_URL: env("POSTGRES_URL"),
         APP_DB_SERVER_URL: fromContainers(env("POSTGRES_URL"), { credentials: false }),
+        STORAGE_URL: env("STORAGE_URL"),
+        STORAGE_ACCESS_KEY_ID: env("STORAGE_ACCESS_KEY_ID"),
+        STORAGE_SECRET_ACCESS_KEY: env("STORAGE_SECRET_ACCESS_KEY"),
+        ...pick("STORAGE_DEFAULT_LIMIT_GB"),
       },
     },
     ...(headless ? [] : [portalPlan]),

@@ -1,8 +1,17 @@
-import { Conflict, CurrentPrincipal } from "@mosaik/sdk"
-import { Audiences, Audit, Notify, Settings } from "@mosaik/sdk/server"
+import { BadRequest, Conflict, CurrentPrincipal, type StoredObject, storageKeyProblem } from "@mosaik/sdk"
+import { Audiences, Audit, Notify, Settings, Storage } from "@mosaik/sdk/server"
 import { DateTime, Effect, Layer } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
-import { ORDERS_DEFAULTS, type Order, OrderOptions, SalesApi, SUMMARY_DEFAULTS } from "../api"
+import {
+  ATTACHMENT_TYPES,
+  Attachment,
+  ORDERS_DEFAULTS,
+  type Order,
+  type OrderId,
+  OrderOptions,
+  SalesApi,
+  SUMMARY_DEFAULTS,
+} from "../api"
 import { sales } from "../manifest"
 import { money } from "./money"
 import { Orders } from "./Orders"
@@ -39,6 +48,27 @@ const StatsHandlers = HttpApiBuilder.group(
   }),
 )
 
+/** Where an order's attachments are kept in Sales' storage. */
+const folder = (id: OrderId) => `orders/${id}/`
+
+/** What cannot be in an attachment's name: control characters and path separators. */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: control characters are what it replaces
+const UNSAFE_IN_NAMES = /[\u0000-\u001f\u007f/\\]/g
+
+/** A file's name as an attachment: one path segment, no control characters, at most 200 characters. */
+const attachmentName = (name: string) => {
+  const cleaned = name.replace(UNSAFE_IN_NAMES, "_").trim().slice(-200)
+  return storageKeyProblem(cleaned) === undefined ? cleaned : "file"
+}
+
+const toAttachment = (id: OrderId, object: StoredObject) =>
+  new Attachment({
+    name: object.key.slice(folder(id).length),
+    size: object.size,
+    contentType: object.contentType,
+    uploadedAt: object.updatedAt,
+  })
+
 const OrdersHandlers = HttpApiBuilder.group(
   SalesApi,
   "orders",
@@ -48,6 +78,7 @@ const OrdersHandlers = HttpApiBuilder.group(
     const notify = yield* Notify
     // Read on every request: owners change them while Sales runs.
     const settings = yield* Settings.for(sales)
+    const storage = yield* Storage
 
     return handlers.handleAll({
       list: ({ query }) => orders.list({ ...ORDERS_DEFAULTS, ...query }),
@@ -101,6 +132,39 @@ const OrdersHandlers = HttpApiBuilder.group(
           })
           .pipe(Effect.ignore)
         return order
+      }),
+
+      attachments: Effect.fn(function* ({ params }) {
+        yield* orders.get(params.id)
+        const page = yield* storage.list({ prefix: folder(params.id), limit: 1000 })
+        return page.objects.map((object) => toAttachment(params.id, object))
+      }),
+
+      // Sales decides what it takes: the platform stores any file, and only counts.
+      attach: Effect.fn(function* ({ params, payload: { file } }) {
+        const order = yield* orders.get(params.id)
+        if (!(ATTACHMENT_TYPES as ReadonlyArray<string>).includes(file.contentType)) {
+          return yield* new BadRequest({ message: "Attach a PDF or an image (PNG, JPEG or WebP)" })
+        }
+        const name = attachmentName(file.name)
+        const stored = yield* storage.put(`${folder(params.id)}${name}`, file)
+        yield* audit.record({ action: "orders.attach", target: order.number, details: { name, size: stored.size } })
+        return toAttachment(params.id, stored)
+      }),
+
+      // Served by the SDK: a download, or an image or PDF shown in place, never run as Sales' page.
+      attachment: ({ params, query }) =>
+        storage.respond(`${folder(params.id)}${params.name}`, {
+          inline: query.inline === "true",
+          filename: params.name,
+        }),
+
+      detach: Effect.fn(function* ({ params }) {
+        const order = yield* orders.get(params.id)
+        const key = `${folder(params.id)}${params.name}`
+        yield* storage.head(key)
+        yield* storage.delete(key)
+        yield* audit.record({ action: "orders.detach", target: order.number, details: { name: params.name } })
       }),
     })
   }),

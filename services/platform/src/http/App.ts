@@ -11,6 +11,7 @@ import { NotificationsClient } from "../clients"
 import { appSubscriber, Events } from "../Events"
 import { Registry } from "../Registry"
 import { SettingsStore } from "../Settings"
+import { AppStorage } from "../Storage"
 
 /**
  * The platform API apps call. The calling app's identity comes from its key, never
@@ -26,6 +27,7 @@ export const AppHandlers = HttpApiBuilder.group(
     const apps = yield* Apps
     const events = yield* Events
     const settings = yield* SettingsStore
+    const storage = yield* AppStorage
 
     /** The calling app's registered manifest: it decides which events the app gets. */
     const manifest = Effect.fn(function* (id: string) {
@@ -101,6 +103,16 @@ export const AppHandlers = HttpApiBuilder.group(
             return yield* settings.snapshot(app.id, query.after, Duration.seconds(Math.max(0, query.wait ?? 0)))
           }).pipe(Effect.withSpan("Platform.settings")),
         ),
+
+      storedObject: Effect.fn("Platform.storedObject")(function* ({ query }) {
+        return yield* storage.head((yield* CurrentApp).id, query.key)
+      }),
+      deleteStoredObject: Effect.fn("Platform.deleteStoredObject")(function* ({ query }) {
+        yield* storage.remove((yield* CurrentApp).id, query.key)
+      }),
+      storedObjects: Effect.fn("Platform.storedObjects")(function* ({ query }) {
+        return yield* storage.list((yield* CurrentApp).id, query)
+      }),
     })
   }),
 )

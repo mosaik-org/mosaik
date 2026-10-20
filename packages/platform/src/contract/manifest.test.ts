@@ -32,6 +32,7 @@ describe("toAppManifest", () => {
       platform: PLATFORM_MAJOR,
       access: "crm:view",
       database: true,
+      storage: false,
       notifications: [expect.objectContaining({ key: "crm:deal.won", defaultChannels: ["inApp"] })],
     })
     expect(manifest.permissions.map((permission) => permission.key)).toEqual(["crm:view", "crm:access.manage"])
