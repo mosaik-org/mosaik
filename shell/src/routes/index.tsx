@@ -32,11 +32,14 @@ const styles = {
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
   sectionHeader: css({ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "3" }),
   sectionTitle: css({ fontSize: "md", fontWeight: "semibold" }),
-  grid: css({ display: "grid", gap: "3", gridTemplateColumns: { base: "1fr", sm: "repeat(2, 1fr)" } }),
-  tile: css({
-    flexDirection: "row",
-    alignItems: "center",
+  // Equal columns whatever the tiles say: a long description is truncated, it does not widen its column.
+  grid: css({
+    display: "grid",
     gap: "3",
+    gridTemplateColumns: { base: "minmax(0, 1fr)", sm: "repeat(2, minmax(0, 1fr))" },
+  }),
+  tileLink: css({ display: "block", minW: "0" }),
+  tile: css({
     height: "full",
     transition: "border-color 0.15s",
     _hover: { borderColor: "accent.solid.bg" },
@@ -83,31 +86,40 @@ const styles = {
 }
 
 const AppTile = (props: { app: AnyApp }) => (
-  <Link to={appHref(props.app)}>
+  <Link to={appHref(props.app)} class={styles.tileLink}>
     <Card.Root class={styles.tile}>
-      <Card.Body gap="4">
+      <Card.Body flexDirection="row" alignItems="center" gap="3">
         <div class={styles.icon}>
           <AppIcon name={props.app.portal.icon} size={20} />
         </div>
         <div class={styles.tileText}>
           <span class={styles.name}>{props.app.name}</span>
-          <span class={styles.description}>{props.app.description}</span>
+          <span class={styles.description} title={props.app.description}>
+            {props.app.description}
+          </span>
         </div>
       </Card.Body>
     </Card.Root>
   </Link>
 )
 
-const AppSection = (props: { title: string; apps: ReadonlyArray<AnyApp>; aside?: JSX.Element }) => (
+/** A titled part of the page. Both columns are made of these, so their titles and contents line up. */
+const Section = (props: { title: string; aside?: JSX.Element; children: JSX.Element }) => (
   <section class={styles.section} aria-label={props.title}>
     <div class={styles.sectionHeader}>
       <h2 class={styles.sectionTitle}>{props.title}</h2>
       {props.aside}
     </div>
+    {props.children}
+  </section>
+)
+
+const AppSection = (props: { title: string; apps: ReadonlyArray<AnyApp>; aside?: JSX.Element }) => (
+  <Section title={props.title} aside={props.aside}>
     <div class={styles.grid}>
       <For each={props.apps}>{(app) => <AppTile app={app} />}</For>
     </div>
-  </section>
+  </Section>
 )
 
 const AllAppsLink = () => (
@@ -165,36 +177,38 @@ const Personal = (props: { user: string }) => {
       </div>
 
       <div class={styles.column}>
-        <Card.Root>
-          <Card.Header flexDirection="row" alignItems="center" justifyContent="space-between" p="4" pb="2">
-            <Card.Title>Unread notifications</Card.Title>
+        <Section
+          title="Unread notifications"
+          aside={
             <Link to="/notifications" class={styles.more}>
               All <ArrowRight size={14} />
             </Link>
-          </Card.Header>
-          <NotificationList
-            items={unread.data?.items ?? []}
-            onOpen={inbox.open}
-            empty={<div class={styles.muted}>You are all caught up.</div>}
-          />
-        </Card.Root>
-        <Show when={pages.length > 0}>
+          }
+        >
           <Card.Root>
-            <Card.Header p="4" pb="2">
-              <Card.Title>Recent pages</Card.Title>
-            </Card.Header>
-            <nav class={styles.pages} aria-label="Recent pages">
-              <For each={pages.slice(0, 6)}>
-                {(page) => (
-                  <Link to={page.path} class={styles.page}>
-                    <FileText size={14} />
-                    <span class={css({ truncate: true })}>{page.title}</span>
-                    <span class={styles.pageApp}>{pageApp(page.app)}</span>
-                  </Link>
-                )}
-              </For>
-            </nav>
+            <NotificationList
+              items={unread.data?.items ?? []}
+              onOpen={inbox.open}
+              empty={<div class={styles.muted}>You are all caught up.</div>}
+            />
           </Card.Root>
+        </Section>
+        <Show when={pages.length > 0}>
+          <Section title="Recent pages">
+            <Card.Root>
+              <nav class={styles.pages} aria-label="Recent pages">
+                <For each={pages.slice(0, 6)}>
+                  {(page) => (
+                    <Link to={page.path} class={styles.page}>
+                      <FileText size={14} />
+                      <span class={css({ truncate: true })}>{page.title}</span>
+                      <span class={styles.pageApp}>{pageApp(page.app)}</span>
+                    </Link>
+                  )}
+                </For>
+              </nav>
+            </Card.Root>
+          </Section>
         </Show>
       </div>
     </div>
