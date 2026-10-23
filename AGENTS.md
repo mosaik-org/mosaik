@@ -51,6 +51,9 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 - **Early development (0.0.0):** no backward-compatibility shims. Migrations may be rewritten; say so and
   tell the user to reset their development databases.
 - **User-visible behavior changes** come with their documentation (README or `docs/`).
+- **Converting an existing app or dashboard to Mosaik:** follow
+  [`.claude/skills/convert-to-mosaik/SKILL.md`](.claude/skills/convert-to-mosaik/SKILL.md): understand what the
+  original does and rebuild it on the SDK, never translate its code line by line.
 
 ## Commits
 
