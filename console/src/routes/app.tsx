@@ -3,7 +3,7 @@ import { sessionQueryOptions, signOut, useLiveAccess, usePrincipal } from "@mosa
 import { canUseConsole, consoleNav } from "@mosaik/console"
 import { Button, EmptyState, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { CommandProvider } from "@mosaik/web-kit"
+import { CommandProvider, PageMain } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/solid-router"
 import Lock from "lucide-solid/icons/lock"
@@ -50,7 +50,6 @@ const styles = {
     "&[data-status=active]": { color: "fg.default", fontWeight: "medium" },
   }),
   user: css({ display: "flex", alignItems: "center", gap: "3", fontSize: "sm" }),
-  main: css({ maxWidth: "7xl", mx: "auto", px: { base: "4", md: "6" }, py: "6" }),
 }
 
 function ConsoleLayout() {
@@ -91,7 +90,7 @@ function ConsoleLayout() {
             </Button>
           </div>
         </header>
-        <main class={styles.main}>
+        <PageMain>
           <Show
             when={canUseConsole(principal())}
             fallback={
@@ -104,7 +103,7 @@ function ConsoleLayout() {
           >
             <Outlet />
           </Show>
-        </main>
+        </PageMain>
       </div>
     </CommandProvider>
   )

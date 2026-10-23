@@ -31,7 +31,8 @@ export default defineWebApp({
     createRoute({
       getParentRoute: () => parent,
       path: "orders",
-      staticData: { title: "Orders", keywords: ["refunds", "customers", "export"] },
+      // A table: it takes the whole width of the screen.
+      staticData: { title: "Orders", keywords: ["refunds", "customers", "export"], layout: "wide" },
       validateSearch: searchValidator(OrdersSearch),
       search: { middlewares: [stripSearchParams<OrdersSearch>(ORDERS_DEFAULTS)] },
       component: lazyRouteComponent(() => import("./pages/orders")),

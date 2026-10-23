@@ -10,6 +10,7 @@ export {
   defineSearchProvider,
   type NavTabItem,
   NavTabs,
+  type PageLayout,
   type SearchProvider,
   type SearchProviderLoader,
   type SearchResult,

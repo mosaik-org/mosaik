@@ -280,6 +280,11 @@ backend, so it registers the new bundle: reload the page to see a change.
   `noValidate` leaves the checks to the Schema, so people read its messages instead of the browser's.
 - **Frame.** `AppLayout` shows the app's name and icon from the manifest, its sub-navigation (items with a
   `permission` are hidden from people without it) and the page.
+- **Width.** A page says how much of the screen it takes in its route: `staticData: { layout: "wide" }`.
+  `contained` (the default) is a centered column, for forms, settings and text; `wide` takes the whole
+  width with the usual padding, for tables and dashboards (Sales' orders); `full` goes edge to edge,
+  without padding, filling the height, for maps, boards and editors. The deepest route that declares a
+  layout wins, so a layout route can set it for all its pages.
 - **State in the URL.** Filters, sorting and pagination live in typed search params: the route validates
   them with `searchValidator(Schema)`, ideally the same Schema as the API query. An installed app's page
   reads and writes them with `const [search, setSearch] = useSearchParams(Schema)`, since its routes are

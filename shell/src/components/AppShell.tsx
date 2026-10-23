@@ -1,7 +1,7 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { useCommandPalette } from "@mosaik/web-kit"
+import { PageMain, useCommandPalette } from "@mosaik/web-kit"
 import { Link } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
 import Search from "lucide-solid/icons/search"
@@ -93,7 +93,6 @@ const styles = {
     _hover: { borderColor: "gray.outline.border" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
   }),
-  main: css({ px: { base: "4", md: "8" }, py: "6", maxWidth: "7xl", width: "full", mx: "auto" }),
 }
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)
@@ -155,7 +154,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
           </Show>
           <UserMenu />
         </header>
-        <main class={styles.main}>{props.children}</main>
+        <PageMain>{props.children}</PageMain>
       </div>
     </div>
   )
