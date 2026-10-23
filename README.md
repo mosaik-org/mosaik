@@ -170,3 +170,8 @@ docs/             Architecture, building apps, operating Mosaik
   like a team's app in its own repository.
 - Core (its services and the shared packages) never depends on the Portal.
 - The Portal (its service, the shell, built-in apps) uses Core only through its contracts and the SDK.
+
+## License
+
+MIT: see [LICENSE](LICENSE). `@mosaik/mosaik-ui` started from Park UI and draws icons from Lucide; their
+notices are in [its LICENSE](packages/mosaik-ui/LICENSE).

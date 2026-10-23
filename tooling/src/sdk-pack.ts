@@ -178,6 +178,7 @@ export const packSdk = async (): Promise<SdkIndex> => {
 
   const facade = packages.get(FACADE)
   if (facade === undefined) throw new Error(`${FACADE} not found`)
+  await Bun.write(join(STAGE, "LICENSE"), Bun.file(join(ROOT, "LICENSE")))
   await Bun.write(
     join(STAGE, "package.json"),
     `${JSON.stringify(
@@ -186,6 +187,7 @@ export const packSdk = async (): Promise<SdkIndex> => {
         version: PLATFORM_VERSION,
         type: "module",
         description: "The Mosaik SDK: everything an app builds on.",
+        license: "MIT",
         exports: facade.exports,
         // The components are the app's own dependency, at the version the SDK was built with.
         dependencies: Object.fromEntries(
