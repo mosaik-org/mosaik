@@ -465,6 +465,38 @@ export const EventHandlers = Events.handlers(crm, Effect.gen(function* () {
 - A newly subscribed app starts with events from then on; one away for longer than the retention gets its
   `missed` handler.
 
+## Testing
+
+`@mosaik/sdk/testing` tests an app's backend without a server or the platform (`bun run test`,
+`*.test.ts`; the boundary check keeps it out of everything else):
+
+```ts
+const app = AppTest.layer({ app: sales, api: SalesApi, handlers: ApiHandlers.pipe(Layer.provide(InMemoryOrders(orders))) })
+
+layer(app)("Sales", (it) => {
+  it.effect("refunds above the limit go to finance", () => Effect.gen(function* () {
+    const api = yield* AppTest.client(SalesApi)
+    yield* (yield* TestSettings.for(sales)).set("refundLimit", 100)
+    const error = yield* Effect.flip(api.as(refunder, (client) => client.orders.refund({ params, payload })))
+    expect(error._tag).toBe("Conflict")
+  }))
+})
+```
+
+- **Calling the API as someone:** `AppTest.user({ grants })` or `AppTest.visitor`. Requests go through the
+  app's real access control, with tokens signed for the test: `RequiredPermission`, the app's access
+  permission, `Forbidden` and `Unauthorized` are as in production.
+- **The platform's services stand in** and record what the app did: `TestAudit` (entries, with who),
+  `TestNotify` and `TestMessages` (what was sent), `TestSettings` (set values the app reads at once;
+  `TestSettings.for(app).set(name, value)` is typed), `TestStorage` (the files, and a limit to test running
+  out of room), `TestEvents` (deliver a platform event to the app's handlers, given as `events`).
+- **The app's own services:** give the handlers stand-ins of your own, as Sales does for its database
+  (`server/Orders.memory.ts`). Keep the API's rules (permissions, settings, what is audited) in the handlers,
+  so tests run them for real, and data rules in the service.
+- **One layer, one app:** the tests of a `layer(...)` share the app's state, as requests share a running
+  app; reset what a test changes (`TestSettings.reset`), or provide `AppTest.layer` per test.
+- `examples/sales/server/http.test.ts` tests refunds, notifications and exports this way.
+
 ## Connectors
 
 `@mosaik/sdk/connectors` has server-side clients for external systems. Build one with `Connector.make`:

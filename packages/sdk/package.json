@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server.ts",
+    "./testing": "./src/testing.ts",
     "./connectors": "./src/connectors/index.ts",
     "./connectors/jira": "./src/connectors/jira.ts",
     "./connectors/jira/model": "./src/connectors/jira-model.ts",
@@ -42,6 +43,7 @@
     "@mosaik/server": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
     "@mosaik/table": "workspace:*",
+    "@mosaik/testing": "workspace:*",
     "@mosaik/web-kit": "workspace:*"
   },
   "devDependencies": {

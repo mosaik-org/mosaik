@@ -1,5 +1,5 @@
 /**
- * `bun examples:verify [id...]` — typechecks and builds every example the way a team's app gets
+ * `bun examples:verify [id...]` — typechecks, tests and builds every example the way a team's app gets
  * the SDK: copied out of the repository, with `@mosaik/sdk` and `@mosaik/mosaik-ui` installed from the packed
  * tarballs instead of linked from the workspace. That catches what the workspace hides: a file missing
  * from the tarball, an import the SDK does not export, a dependency only the monorepo has.
@@ -37,7 +37,10 @@ for (const example of examples) {
   const dir = await mkdtemp(join(tmpdir(), `mosaik-verify-${id}-`))
   await cp(example.dir, dir, { recursive: true, filter: (path) => !LOCAL.has(path.split("/").at(-1) ?? "") })
   const manifestPath = join(dir, "package.json")
-  const manifest = (await Bun.file(manifestPath).json()) as { dependencies?: Record<string, string> }
+  const manifest = (await Bun.file(manifestPath).json()) as {
+    dependencies?: Record<string, string>
+    scripts?: Record<string, string>
+  }
   for (const name of Object.keys(manifest.dependencies ?? {})) {
     if (name.startsWith("@mosaik/") && name !== "@mosaik/sdk" && name !== "@mosaik/mosaik-ui") {
       throw new Error(`${id} depends on ${name}`)
@@ -54,6 +57,8 @@ for (const example of examples) {
     ["install", ["bun", "install"]],
     ["typecheck", ["bunx", "tsc", "--noEmit"]],
     ["build", ["bun", "run", "build"]],
+    // Its tests, with the testing kit as a team's app gets it.
+    ...(manifest.scripts?.test === undefined ? [] : [["test", ["bun", "run", "test"]] as const]),
   ]
   let ok = true
   for (const [name, cmd] of steps) {
@@ -65,7 +70,9 @@ for (const example of examples) {
     }
   }
   if (ok) {
-    console.log(`✓ ${id}: installs from the tarballs, typechecks and builds`)
+    console.log(
+      `✓ ${id}: installs from the tarballs, typechecks${manifest.scripts?.test === undefined ? "" : ", passes its tests"} and builds`,
+    )
     await rm(dir, { recursive: true, force: true })
   } else failed++
 }

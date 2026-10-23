@@ -28,6 +28,7 @@ export const appFiles = (t: AppTemplate): Record<string, string> => ({
       build: "panda codegen --silent && bun --bun vite build && bun scripts/manifest.ts",
       start: "bun server/main.ts",
       typecheck: "tsc --noEmit",
+      test: "vitest run --passWithNoTests",
       image: `bun run build && docker build -t ${t.id}:latest .`,
     },
     dependencies: t.dependencies,
@@ -52,7 +53,16 @@ export const appFiles = (t: AppTemplate): Record<string, string> => ({
       noEmit: true,
       types: ["bun", "vite/client"],
     },
-    include: ["manifest.ts", "api", "server", "web", "scripts", "vite.config.ts", "panda.config.ts"],
+    include: [
+      "manifest.ts",
+      "api",
+      "server",
+      "web",
+      "scripts",
+      "vite.config.ts",
+      "vitest.config.ts",
+      "panda.config.ts",
+    ],
   }),
 
   ".gitignore": "node_modules\ndist\nmosaik-app.json\n.env\nstyled-system\n",
@@ -285,6 +295,15 @@ export default function Home() {
 @layer reset, base, tokens, recipes, utilities;
 `,
 
+  "vitest.config.ts": `import { defineConfig } from "vitest/config"
+
+/**
+ * \`bun run test\`: the app's tests, with the SDK's testing kit (\`@mosaik/sdk/testing\`). The SDK ships
+ * TypeScript sources, which Node (running the tests) will not load from node_modules: Vitest compiles
+ * it with the tests instead.
+ */
+export default defineConfig({ test: { server: { deps: { inline: [/node_modules\\/@mosaik\\/sdk\\//] } } } })
+`,
   "vite.config.ts": `import { mosaikApp } from "@mosaik/sdk/build/vite"
 import { defineConfig } from "vite"
 
@@ -357,6 +376,22 @@ either way it talks to the platform only through the platform API with its key.
 2. In the platform (\`bun dev\`): Portal → Apps (/portal/apps) → Install app → *Hosted elsewhere*, URL \`http://localhost:4300\`.
    Put the key it shows in \`.env\`.
 3. \`bun run dev\`, then open the platform. Reload the page after changing \`web/\`.
+
+## Test
+
+\`bun run test\` runs \`*.test.ts\`. \`@mosaik/sdk/testing\` calls the API in memory as chosen people, through its
+real access control, with the platform's services standing in and recording what the app did (export the
+handlers' layer from a module of \`server/\` to test it):
+
+\`\`\`ts
+layer(AppTest.layer({ app, api: Api, handlers: Handlers }))("${t.name}", (it) => {
+  it.effect("needs its permission", () => Effect.gen(function* () {
+    const api = yield* AppTest.client(Api)
+    const visitor = yield* Effect.flip(api.as(AppTest.visitor, (client) => client.hello.get()))
+    expect(visitor._tag).toBe("Unauthorized")
+  }))
+})
+\`\`\`
 
 ## Platform events
 

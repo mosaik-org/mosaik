@@ -43,6 +43,30 @@ const disposition = (kind: "inline" | "attachment", filename: string) => {
 }
 
 /**
+ * A stored file as an HTTP response that cannot run as the app: a download, unless it is an image
+ * or a PDF asked for `inline`; never another type than the one stored. What `respond` sends (and
+ * the testing kit's storage, so tests see the same headers).
+ */
+export const fileResponse = (file: StoredFile, options: RespondOptions = {}): HttpServerResponse.HttpServerResponse => {
+  const { object, body } = file
+  const inline = options.inline === true && INLINE_TYPES.has(object.contentType)
+  const filename = options.filename ?? object.key.split("/").at(-1) ?? object.key
+  return HttpServerResponse.fromWeb(
+    new Response(body, {
+      headers: {
+        "content-type": object.contentType,
+        "content-length": String(object.size),
+        "content-disposition": disposition(inline ? "inline" : "attachment", filename),
+        "x-content-type-options": "nosniff",
+        // No scripts in the app's origin (a PDF viewer cannot run in a sandbox, and has its own).
+        ...(object.contentType === "application/pdf" ? {} : { "content-security-policy": "sandbox" }),
+        "cache-control": "private, no-cache",
+      },
+    }),
+  )
+}
+
+/**
  * The app's files, stored by the platform (declare `storage: true` in the manifest). Keys are the
  * app's own paths (`orders/123/invoice.pdf`); what each one may hold, and who may read it, is the
  * app's to decide: the platform only keeps every app within the limit an admin gave it.
@@ -177,25 +201,7 @@ export class Storage extends Context.Service<
 
           list: (options = {}) => call(client.app.storedObjects({ query: options })),
 
-          respond: Effect.fn("Storage.respond")(function* (name, options = {}) {
-            const { object, body } = yield* get(name)
-            const inline = options.inline === true && INLINE_TYPES.has(object.contentType)
-            const filename = options.filename ?? name.split("/").at(-1) ?? name
-            return HttpServerResponse.fromWeb(
-              new Response(body, {
-                headers: {
-                  "content-type": object.contentType,
-                  "content-length": String(object.size),
-                  "content-disposition": disposition(inline ? "inline" : "attachment", filename),
-                  // Never another type than the one stored, never scripts in the app's origin
-                  // (a PDF viewer cannot run in a sandbox, and has its own).
-                  "x-content-type-options": "nosniff",
-                  ...(object.contentType === "application/pdf" ? {} : { "content-security-policy": "sandbox" }),
-                  "cache-control": "private, no-cache",
-                },
-              }),
-            )
-          }),
+          respond: (name, options) => Effect.map(get(name), (file) => fileResponse(file, options)),
         })
       }),
     )

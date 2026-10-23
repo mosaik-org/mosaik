@@ -137,11 +137,13 @@
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
+        "@effect/vitest": "^4.0.5",
         "@pandacss/dev": "^2.2.0",
         "@types/bun": "^1.4.3",
         "postcss": "^8.5.0",
         "typescript": "^7.0.2",
         "vite": "^8.3.4",
+        "vitest": "^5.0.5",
       },
     },
     "packages/app-kit": {
@@ -323,6 +325,7 @@
         "@mosaik/server": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
         "@mosaik/table": "workspace:*",
+        "@mosaik/testing": "workspace:*",
         "@mosaik/web-kit": "workspace:*",
       },
       "devDependencies": {
@@ -363,6 +366,19 @@
         "@tanstack/solid-table": "^9.3.1",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
+      },
+    },
+    "packages/testing": {
+      "name": "@mosaik/testing",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/auth": "workspace:*",
+        "@mosaik/core": "workspace:*",
+        "@mosaik/notifications": "workspace:*",
+        "@mosaik/platform": "workspace:*",
+        "@mosaik/server": "workspace:*",
+        "effect": "^4.0.5",
+        "jose": "^6.1.0",
       },
     },
     "packages/web-kit": {
@@ -713,6 +729,8 @@
     "@mosaik/styled-system": ["@mosaik/styled-system@workspace:packages/styled-system"],
 
     "@mosaik/table": ["@mosaik/table@workspace:packages/table"],
+
+    "@mosaik/testing": ["@mosaik/testing@workspace:packages/testing"],
 
     "@mosaik/tooling": ["@mosaik/tooling@workspace:tooling"],
 

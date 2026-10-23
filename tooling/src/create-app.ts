@@ -140,11 +140,13 @@ const files = appFiles({
     "solid-js": pick("solid-js"),
   },
   devDependencies: {
+    "@effect/vitest": pick("@effect/vitest"),
     "@pandacss/dev": pick("@pandacss/dev"),
     "@types/bun": pick("@types/bun"),
     postcss: pick("postcss"),
     typescript: pick("typescript"),
     vite: pick("vite"),
+    vitest: pick("vitest"),
   },
 })
 

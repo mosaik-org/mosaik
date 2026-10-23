@@ -7,7 +7,8 @@
     "dev": "bun scripts/dev.ts",
     "build": "panda codegen --silent && bun --bun vite build && bun scripts/manifest.ts",
     "start": "bun server/main.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@mosaik/mosaik-ui": "workspace:*",
@@ -19,10 +20,12 @@
     "solid-js": "^1.9.17"
   },
   "devDependencies": {
+    "@effect/vitest": "^4.0.5",
     "@pandacss/dev": "^2.2.0",
     "@types/bun": "^1.4.3",
     "postcss": "^8.5.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   }
 }

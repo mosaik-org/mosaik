@@ -14,7 +14,8 @@
  *    app that imports neither of the Portal's entry points needs nothing of the Portal.
  * 8. The Portal (its service, its package, the shell, built-in apps) uses Core only through its
  *    contracts and the SDK, never the code of Core's services.
- * 9. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
+ * 9. The testing kit (`@mosaik/sdk/testing`) is for tests (`*.test.ts`), never the code that ships.
+ * 10. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
  *    directory, so it can move to a repository of its own.
  */
 import { dirname, relative, resolve, sep } from "node:path"
@@ -45,6 +46,8 @@ const SERVER_ONLY = [
   /^@mosaik\/sdk\/(server|build\/.+)$/,
   /^@mosaik\/sdk\/connectors(?!\/[^/]+\/model$)(\/|$)/,
   /^@mosaik\/portal\/build(\/|$)/,
+  // Tests only (see the rule below); they run on the server side.
+  /^@mosaik\/(sdk\/)?testing$/,
   /^@effect\/(sql-pg|platform-bun)/,
   /^effect\/sql/,
   /^bun$/,
@@ -168,6 +171,12 @@ const rules: ReadonlyArray<Rule> = [
       const resolved = target(specifier, file)
       return resolved !== null && exampleOf(`${resolved}/`) !== exampleOf(file)
     },
+  },
+  {
+    name: "the testing kit is for tests",
+    files: (path) =>
+      !/\.test\.tsx?$/.test(path) && !path.startsWith("packages/testing/") && path !== "packages/sdk/src/testing.ts",
+    forbidden: (specifier) => /^@mosaik\/(sdk\/)?testing$/.test(specifier),
   },
   // Core and the Portal, in both directions: what keeps Core usable without the Portal.
   {

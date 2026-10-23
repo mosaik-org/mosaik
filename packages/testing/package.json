@@ -1,0 +1,21 @@
+{
+  "name": "@mosaik/testing",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/notifications": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "effect": "^4.0.5",
+    "jose": "^6.1.0"
+  }
+}

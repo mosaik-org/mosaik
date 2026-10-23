@@ -104,8 +104,14 @@ const OrdersHandlers = HttpApiBuilder.group(
       }),
 
       refund: Effect.fn(function* ({ params, payload }) {
-        const largest = yield* settings.get("refundLimit")
-        const order = yield* orders.refund(params.id, payload.reason, Math.round(largest * 100))
+        // A rule of Sales' own, read at every refund: owners change the limit while Sales runs.
+        const largestCents = Math.round((yield* settings.get("refundLimit")) * 100)
+        if ((yield* orders.get(params.id)).amountCents > largestCents) {
+          return yield* new Conflict({
+            message: `Refunds above ${money.format(largestCents / 100)} are handled by finance (Sales' settings)`,
+          })
+        }
+        const order = yield* orders.refund(params.id, payload.reason)
         yield* audit.record({
           action: "orders.refund",
           target: order.number,
@@ -170,4 +176,7 @@ const OrdersHandlers = HttpApiBuilder.group(
   }),
 )
 
-export const Handlers = Layer.mergeAll(StatsHandlers, OrdersHandlers).pipe(Layer.provide(Orders.layer))
+/** The API's handlers, for any `Orders`: Postgres in production, in memory in tests. */
+export const ApiHandlers = Layer.mergeAll(StatsHandlers, OrdersHandlers)
+
+export const Handlers = ApiHandlers.pipe(Layer.provide(Orders.layer))
