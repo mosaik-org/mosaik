@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@mosaik/core": "workspace:*",
-    "effect": "^4.0.5",
+    "effect": "^4.1.2",
     "nodemailer": "^10.1.2"
   },
   "exports": {

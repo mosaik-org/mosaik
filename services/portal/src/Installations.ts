@@ -1,6 +1,6 @@
 import { PgClient } from "@effect/sql-pg"
 import { DatabaseMode, RegistryCredential } from "@mosaik/portal/contract"
-import { Context, Effect, Layer, Option, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, Option, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
 
 const InstallationRow = Schema.Struct({
@@ -138,8 +138,8 @@ export class Installations extends Context.Service<
             .withTransaction(
               Effect.gen(function* () {
                 yield* sql`DELETE FROM install_config WHERE app_id = ${id}`
-                if (rows.length > 0) {
-                  yield* sql`INSERT INTO install_config ${sql.insert(rows.map((row) => ({ appId: id, ...row })))}`
+                if (Arr.isReadonlyArrayNonEmpty(rows)) {
+                  yield* sql`INSERT INTO install_config ${sql.insert(Arr.map(rows, (row) => ({ appId: id, ...row })))}`
                 }
               }),
             )

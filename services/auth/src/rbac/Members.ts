@@ -8,7 +8,7 @@ import {
   PrincipalUser,
   type UserId,
 } from "@mosaik/core"
-import { Context, Effect, Layer, Option, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, Option, Schema } from "effect"
 import { SqlClient, SqlSchema } from "effect/sql"
 import { rolesGranting } from "./Access"
 import { Registry } from "./Registry"
@@ -145,9 +145,9 @@ export class Members extends Context.Service<
           yield* sql
             .withTransaction(
               Effect.gen(function* () {
-                if (added.length > 0) {
+                if (Arr.isReadonlyArrayNonEmpty(added)) {
                   yield* sql`
-                    INSERT INTO user_roles ${sql.insert(added.map((roleId) => ({ userId: user, roleId })))}
+                    INSERT INTO user_roles ${sql.insert(Arr.map(added, (roleId) => ({ userId: user, roleId })))}
                     ON CONFLICT DO NOTHING
                   `
                 }

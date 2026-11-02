@@ -7,7 +7,7 @@ import {
   DeliveryRecord,
   type DeliveryStatus,
 } from "@mosaik/notifications/contract"
-import { Context, Duration, Effect, Layer, Option, Queue, Schema } from "effect"
+import { Array as Arr, Context, Duration, Effect, Layer, Option, Queue, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
 import type { ChannelName, OutgoingDelivery } from "./channels/Channel"
 
@@ -200,10 +200,10 @@ export class Outbox extends Context.Service<
                   const existing = yield* duplicateOf(message.source, message.idempotencyKey ?? "")
                   return Option.getOrThrow(existing)
                 }
-                if (message.recipients.length > 0) {
+                if (Arr.isReadonlyArrayNonEmpty(message.recipients)) {
                   yield* sql`
                     INSERT INTO deliveries ${sql.insert(
-                      message.recipients.map((r) => ({
+                      Arr.map(message.recipients, (r) => ({
                         messageId: id,
                         channel: r.channel,
                         recipient: r.address,
@@ -215,9 +215,9 @@ export class Outbox extends Context.Service<
                   `
                 }
                 const inbox = [...new Set(message.inbox)]
-                if (inbox.length > 0) {
+                if (Arr.isReadonlyArrayNonEmpty(inbox)) {
                   yield* sql`
-                    INSERT INTO inbox ${sql.insert(inbox.map((userId) => ({ messageId: id, userId })))}
+                    INSERT INTO inbox ${sql.insert(Arr.map(inbox, (userId) => ({ messageId: id, userId })))}
                     ON CONFLICT DO NOTHING
                   `
                 }

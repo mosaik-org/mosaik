@@ -13,10 +13,10 @@
     "@mosaik/db": "workspace:*",
     "@mosaik/platform": "workspace:*",
     "@mosaik/server": "workspace:*",
-    "@effect/platform-bun": "^4.0.5",
-    "@effect/sql-pg": "^4.0.5",
+    "@effect/platform-bun": "^4.1.2",
+    "@effect/sql-pg": "^4.1.2",
     "better-auth": "^1.7.10",
-    "effect": "^4.0.5",
+    "effect": "^4.1.2",
     "jose": "^6.1.0",
     "pg": "^8.23.1"
   },

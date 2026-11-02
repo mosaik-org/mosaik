@@ -6,7 +6,7 @@
       "name": "mosaik",
       "devDependencies": {
         "@biomejs/biome": "^2.5.15",
-        "@effect/vitest": "^4.0.5",
+        "@effect/vitest": "^4.1.2",
         "@types/bun": "^1.4.3",
         "typescript": "^7.0.2",
         "vitest": "^5.0.5",
@@ -34,7 +34,7 @@
         "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -54,7 +54,7 @@
         "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -72,7 +72,7 @@
         "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -95,12 +95,12 @@
         "@mosaik/sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
-        "@effect/vitest": "^4.0.5",
+        "@effect/vitest": "^4.1.2",
         "@pandacss/dev": "^2.2.0",
         "@types/bun": "^1.4.3",
         "postcss": "^8.5.0",
@@ -115,7 +115,7 @@
       "dependencies": {
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/sdk": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
@@ -132,12 +132,12 @@
         "@mosaik/sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
-        "@effect/vitest": "^4.0.5",
+        "@effect/vitest": "^4.1.2",
         "@pandacss/dev": "^2.2.0",
         "@types/bun": "^1.4.3",
         "postcss": "^8.5.0",
@@ -155,7 +155,7 @@
         "@mosaik/styled-system": "workspace:*",
         "@pandacss/preset-base": "^2.2.0",
         "@pandacss/preset-panda": "^2.2.0",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "vite-plugin-solid": "^2.11.14",
       },
       "devDependencies": {
@@ -176,7 +176,7 @@
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "jose": "^6.1.0",
         "solid-js": "^1.9.17",
       },
@@ -198,7 +198,7 @@
       "dependencies": {
         "@mosaik/core": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "solid-js": "^1.9.17",
       },
     },
@@ -207,7 +207,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@mosaik/core": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "nodemailer": "^10.1.2",
       },
     },
@@ -226,7 +226,7 @@
         "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -235,15 +235,15 @@
       "name": "@mosaik/core",
       "version": "0.0.0",
       "dependencies": {
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
     "packages/db": {
       "name": "@mosaik/db",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/sql-pg": "^4.0.5",
-        "effect": "^4.0.5",
+        "@effect/sql-pg": "^4.1.2",
+        "effect": "^4.1.2",
       },
     },
     "packages/mosaik-ui": {
@@ -277,7 +277,7 @@
       "dependencies": {
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
     "packages/platform": {
@@ -287,7 +287,7 @@
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/notifications": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
     "packages/portal": {
@@ -298,7 +298,7 @@
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "solid-js": "^1.9.17",
         "vite-plugin-solid": "^2.11.14",
       },
@@ -337,12 +337,12 @@
       "name": "@mosaik/server",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/notifications": "workspace:*",
         "@mosaik/platform": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
     "packages/styled-system": {
@@ -377,7 +377,7 @@
         "@mosaik/notifications": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "jose": "^6.1.0",
       },
     },
@@ -394,7 +394,7 @@
         "@mosaik/table": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -403,15 +403,15 @@
       "name": "@mosaik/auth-service",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
-        "@effect/sql-pg": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
+        "@effect/sql-pg": "^4.1.2",
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
         "better-auth": "^1.7.10",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "jose": "^6.1.0",
         "pg": "^8.23.1",
       },
@@ -426,7 +426,7 @@
         "@mosaik/auth": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
     "services/mcp": {
@@ -437,7 +437,7 @@
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "jose": "^6.1.0",
       },
     },
@@ -445,15 +445,15 @@
       "name": "@mosaik/notifications-service",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
-        "@effect/sql-pg": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
+        "@effect/sql-pg": "^4.1.2",
         "@mosaik/auth": "workspace:*",
         "@mosaik/connectors": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
         "@mosaik/notifications": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "pg": "^8.23.1",
       },
       "devDependencies": {
@@ -464,15 +464,15 @@
       "name": "@mosaik/platform-service",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
-        "@effect/sql-pg": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
+        "@effect/sql-pg": "^4.1.2",
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
         "@mosaik/notifications": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "pg": "^8.23.1",
       },
       "devDependencies": {
@@ -483,15 +483,15 @@
       "name": "@mosaik/portal-service",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
-        "@effect/sql-pg": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
+        "@effect/sql-pg": "^4.1.2",
         "@mosaik/auth": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/portal": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "pg": "^8.23.1",
       },
       "devDependencies": {
@@ -518,7 +518,7 @@
         "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
         "lucide-solid": "^1.57.0",
         "solid-js": "^1.9.17",
       },
@@ -540,12 +540,12 @@
       "name": "@mosaik/tooling",
       "version": "0.0.0",
       "dependencies": {
-        "@effect/platform-bun": "^4.0.5",
-        "@effect/sql-pg": "^4.0.5",
+        "@effect/platform-bun": "^4.1.2",
+        "@effect/sql-pg": "^4.1.2",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
         "@mosaik/platform": "workspace:*",
-        "effect": "^4.0.5",
+        "effect": "^4.1.2",
       },
     },
   },
@@ -648,13 +648,13 @@
 
     "@csstools/css-tokenizer": ["@csstools/css-tokenizer@4.0.2", "", {}, "sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw=="],
 
-    "@effect/platform-bun": ["@effect/platform-bun@4.0.5", "", { "dependencies": { "@effect/platform-node-shared": "^4.0.5" }, "peerDependencies": { "effect": "^4.0.5" } }, "sha512-tB/GapZ/bVoCbwRgnojGP4TwopvkMoFoSCipXT1sf0guvG/2oRVhWzJW/1vkrYFEdLM7XyRnVVLrSJyqdok7DA=="],
+    "@effect/platform-bun": ["@effect/platform-bun@4.1.2", "", { "dependencies": { "@effect/platform-node-shared": "4.1.2" }, "peerDependencies": { "effect": "^4.1.2" } }, "sha512-waEAa84CITqjctgw9VdhlL9PyXRHICG3KAWTFRDPUE2XL/pfMPhO7V9oFdfx22dbAhhUzV+MHs0d9hnmy/DQ7w=="],
 
-    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.0.5", "", { "dependencies": { "@types/ws": "^8.18.2", "ws": "^8.22.0" }, "peerDependencies": { "effect": "^4.0.5" } }, "sha512-a8rCdEkfZBGe9C6bsIjxVZuRp73svIyK5IHwHdDAVsvZXjrbkxusfI+rZ8WlX31RP1mKizwI/E72GQTNfdMWHw=="],
+    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.1.2", "", { "dependencies": { "@types/ws": "^8.18.2", "ws": "^8.22.1" }, "peerDependencies": { "effect": "^4.1.2" } }, "sha512-wSwl9A/G1hcVvF8nLI+YfB3EyOIDvWS6+lsTZBkmgDnPBL7m8YWZF+1HD+mdEsb52SUGfukip46Q3gRwSdk3QA=="],
 
-    "@effect/sql-pg": ["@effect/sql-pg@4.0.5", "", { "peerDependencies": { "effect": "^4.0.5" } }, "sha512-F9tG76H+aryhYcp5pvgd+MwWrNltv3XAuLcZSBsOOX6q+PEl+IM4zkQKzx0TF9OsEMH/SQ+3gZRdYWOsDF+vJQ=="],
+    "@effect/sql-pg": ["@effect/sql-pg@4.1.2", "", { "peerDependencies": { "effect": "^4.1.2" } }, "sha512-0UehR7B5W8dC+dX6fDeWStLbVbBb2M4pk4HBATEeH0cmV4Odl2lckTg0jFmLuadekTLa4OyB+bZQo1yTG1y2Mw=="],
 
-    "@effect/vitest": ["@effect/vitest@4.0.5", "", { "peerDependencies": { "effect": "^4.0.5", "vitest": ">=5.0.0 <6.0.0" } }, "sha512-q64paZ/i4V2NiRhTyqCmT2KiDbFjlxc2EZrZca8GGt+Nf8844946HyJM5bPk/q+YeRkFSxIrlCs+J+LSfky/wA=="],
+    "@effect/vitest": ["@effect/vitest@4.1.2", "", { "peerDependencies": { "effect": "^4.1.2", "vitest": ">=5.0.0 <6.0.0" } }, "sha512-JJPwAHkJHxvM/woW9mMW/khjasAHcmwWdOMAgMy16rfqsxcVhFDnrRsvN9VI2+kMv8zDCCyBE2q1n5hzZlfE0w=="],
 
     "@emnapi/core": ["@emnapi/core@1.11.3", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.3", "tslib": "^2.4.0" } }, "sha512-zLpS5asjEb7lq8jYLq37N6XKaE41DIexlY1rF/z4/tIl3wo13Sqm28fRyfIsKZD+NZ8mM5RoKkpW/rBcuoSZSg=="],
 
@@ -1188,7 +1188,7 @@
 
     "echarts": ["echarts@6.1.0", "", { "dependencies": { "tslib": "2.3.0", "zrender": "6.1.0" } }, "sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA=="],
 
-    "effect": ["effect@4.0.5", "", {}, "sha512-BY4/28NlpOd99yzmV741xbVGmp+1U7tks4oB7F/Png64bTa5tm5eCA6W0RiXsnuLDDoJpjfVSo4Dnq4BZb/89Q=="],
+    "effect": ["effect@4.1.2", "", {}, "sha512-d3Oah1WyKxFLFh19yWheS5IXIVaITzxZ71JkE1rkUozq/6EcJSU5nPk5bF2QrSygZ3SQoiNQB8TsxFriyMeMaQ=="],
 
     "electron-to-chromium": ["electron-to-chromium@1.5.458", "", {}, "sha512-/hIH2gRSmxrf4/X4Nw/t/Wc8PVS22l8/3HnWjWTWsTOM5dsnMUPZF/+u+yr3LqweNuTBJE1rq6qAQzKkZVwMfA=="],
 
@@ -1432,7 +1432,7 @@
 
     "why-is-node-running": ["why-is-node-running@3.2.1", "", { "bin": { "why-is-node-running": "cli.js" } }, "sha512-Tb2FUhB4vUsGQlfSquQLYkApkuPAFQXGFzxWKHHumVz2dK+X1RUm/HnID4+TfIGYJ1kTcwOaCk/buYCEJr6YjQ=="],
 
-    "ws": ["ws@8.22.0", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg=="],
+    "ws": ["ws@8.22.1", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g=="],
 
     "xml-name-validator": ["xml-name-validator@5.0.0", "", {}, "sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg=="],
 

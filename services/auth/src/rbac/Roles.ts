@@ -1,6 +1,6 @@
 import { type CreateRole, Role, type UpdateRole } from "@mosaik/auth/contract"
 import { BadRequest, BuiltInRoles, Conflict, NotFound } from "@mosaik/core"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, Schema } from "effect"
 import { SqlClient, SqlSchema, type Statement } from "effect/sql"
 
 /**
@@ -96,8 +96,8 @@ export class Roles extends Context.Service<
             .withTransaction(
               Effect.gen(function* () {
                 yield* sql`DELETE FROM role_grants WHERE role_id = ${id}`
-                if (unique.length > 0) {
-                  yield* sql`INSERT INTO role_grants ${sql.insert(unique.map((grantKey) => ({ roleId: id, grantKey })))}`
+                if (Arr.isReadonlyArrayNonEmpty(unique)) {
+                  yield* sql`INSERT INTO role_grants ${sql.insert(Arr.map(unique, (grantKey) => ({ roleId: id, grantKey })))}`
                 }
               }),
             )

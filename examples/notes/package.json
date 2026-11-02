@@ -12,7 +12,7 @@
   "dependencies": {
     "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/sdk": "workspace:*",
-    "effect": "^4.0.5",
+    "effect": "^4.1.2",
     "solid-js": "^1.9.17"
   },
   "devDependencies": {

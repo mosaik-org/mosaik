@@ -19,7 +19,7 @@
     "@mosaik/styled-system": "workspace:*",
     "@pandacss/preset-base": "^2.2.0",
     "@pandacss/preset-panda": "^2.2.0",
-    "effect": "^4.0.5",
+    "effect": "^4.1.2",
     "vite-plugin-solid": "^2.11.14"
   },
   "peerDependencies": {

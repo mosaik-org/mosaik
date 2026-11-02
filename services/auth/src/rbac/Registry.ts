@@ -1,6 +1,6 @@
 import { CatalogApp, CatalogPermission, RegisteredApp } from "@mosaik/auth/contract"
 import { BadRequest, type ManifestPayload, ownerPermission, ownerRoleId } from "@mosaik/core"
-import { Context, Effect, Layer, type Option, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, type Option, Schema } from "effect"
 import { SqlClient, SqlSchema } from "effect/sql"
 
 const CatalogRow = Schema.Struct({
@@ -57,7 +57,10 @@ export const grantChanges = (
     const gone = [...have].filter((grantKey) => !want.has(grantKey))
     if (gone.length > 0) removed.set(role.id, gone)
   }
-  return { added, removed: removed as ReadonlyMap<string, ReadonlyArray<string>> }
+  return {
+    added: added as ReadonlyArray<{ readonly roleId: string; readonly grantKey: string }>,
+    removed: removed as ReadonlyMap<string, ReadonlyArray<string>>,
+  }
 }
 
 export class Registry extends Context.Service<
@@ -189,7 +192,7 @@ export class Registry extends Context.Service<
           SELECT role_id, grant_key FROM role_grants WHERE role_id IN ${sql.in(ids)}
         `
         const changes = grantChanges(manifest.roles, current)
-        if (changes.added.length > 0) {
+        if (Arr.isReadonlyArrayNonEmpty(changes.added)) {
           yield* sql`INSERT INTO role_grants ${sql.insert(changes.added)} ON CONFLICT DO NOTHING`
         }
         for (const [roleId, keys] of changes.removed) {

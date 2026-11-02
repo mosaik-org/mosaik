@@ -1,7 +1,7 @@
 import { PgClient } from "@effect/sql-pg"
 import { BadRequest } from "@mosaik/core"
 import { RoutingRule } from "@mosaik/notifications/contract"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
 
 const KEY = /^[a-z][a-z0-9-]*:[a-z][a-z0-9.-]*$/
@@ -89,8 +89,8 @@ export class Routes extends Context.Service<
             .withTransaction(
               Effect.gen(function* () {
                 yield* sql`DELETE FROM routes WHERE key = ${key}`
-                if (unique.length > 0) {
-                  yield* sql`INSERT INTO routes ${sql.insert(unique.map((targetId) => ({ key, targetId })))}`
+                if (Arr.isReadonlyArrayNonEmpty(unique)) {
+                  yield* sql`INSERT INTO routes ${sql.insert(Arr.map(unique, (targetId) => ({ key, targetId })))}`
                 }
               }),
             )

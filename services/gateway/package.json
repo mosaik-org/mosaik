@@ -11,6 +11,6 @@
     "@mosaik/auth": "workspace:*",
     "@mosaik/platform": "workspace:*",
     "@mosaik/server": "workspace:*",
-    "effect": "^4.0.5"
+    "effect": "^4.1.2"
   }
 }

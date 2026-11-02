@@ -9,6 +9,7 @@ import {
   SourceEvent,
 } from "@mosaik/platform/contract"
 import {
+  Array as Arr,
   Context,
   DateTime,
   Duration,
@@ -215,13 +216,13 @@ export class Events extends Context.Service<
 
       return Events.of({
         record: (events) =>
-          events.length === 0
+          !Arr.isReadonlyArrayNonEmpty(events)
             ? Effect.void
             : sql
                 .withTransaction(
                   Effect.gen(function* () {
                     yield* sql`SELECT pg_advisory_xact_lock(${RECORD_LOCK})`
-                    const rows = events.map((event) => {
+                    const rows = Arr.map(events, (event) => {
                       const encoded = encodeSource(event)
                       return {
                         id: event.id,

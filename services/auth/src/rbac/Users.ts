@@ -1,6 +1,6 @@
 import { AdminUser, type CreateUser } from "@mosaik/auth/contract"
 import { BadRequest, BuiltInRoles, type Conflict, NotFound, PrincipalUser, UserId } from "@mosaik/core"
-import { Context, Effect, Layer, Redacted, Schema } from "effect"
+import { Array as Arr, Context, Effect, Layer, Redacted, Schema } from "effect"
 import { SqlClient, SqlSchema, type Statement } from "effect/sql"
 import { BetterAuth } from "../BetterAuth"
 
@@ -109,8 +109,8 @@ export class Users extends Context.Service<
           .withTransaction(
             Effect.gen(function* () {
               yield* sql`DELETE FROM user_roles WHERE user_id = ${id}`
-              if (roles.length > 0) {
-                yield* sql`INSERT INTO user_roles ${sql.insert(roles.map((roleId) => ({ userId: id, roleId })))}`
+              if (Arr.isReadonlyArrayNonEmpty(roles)) {
+                yield* sql`INSERT INTO user_roles ${sql.insert(Arr.map(roles, (roleId) => ({ userId: id, roleId })))}`
               }
             }),
           )
