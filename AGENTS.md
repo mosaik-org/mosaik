@@ -40,7 +40,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 
 ## Working rules
 
-- **The dev stack may already be running in the user's terminal.** Check the ports (3000, 4000–4003,
+- **The dev stack may already be running in the user's terminal.** Check the ports (3000, 4000–4004,
   4100+, 4300+, 5173) before starting one; never stop theirs. Verify through HTTP, the database or a browser
   script, not its logs.
 - **Verify before saying done:** `bun check`, plus the build and the running app for what you changed.

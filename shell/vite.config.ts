@@ -122,6 +122,9 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": { target: process.env.GATEWAY_URL ?? "http://localhost:3000", changeOrigin: false },
+      // The MCP server for AI clients, and the OAuth metadata they find it with.
+      "^/mcp$": { target: process.env.GATEWAY_URL ?? "http://localhost:3000", changeOrigin: false },
+      "^/\\.well-known/oauth-": { target: process.env.GATEWAY_URL ?? "http://localhost:3000", changeOrigin: false },
       // Installed apps' browser bundles.
       "^/apps/": { target: process.env.GATEWAY_URL ?? "http://localhost:3000", changeOrigin: false },
     },

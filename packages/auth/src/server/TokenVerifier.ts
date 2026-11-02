@@ -3,7 +3,25 @@ import { Config, Context, Effect, Layer, Schema } from "effect"
 import { createRemoteJWKSet, type JWTVerifyGetKey, jwtVerify } from "jose"
 import { JWKS_PATH, TOKEN_ALGORITHM, TOKEN_ISSUER, TokenClaims } from "../contract/token"
 
-const decodeClaims = Schema.decodeUnknownEffect(TokenClaims)
+/**
+ * The claims of a token signed by the auth service for `audience`, decoded with `schema`; fails
+ * with `Unauthorized` when the token is forged, expired, for another audience or malformed.
+ */
+export const verifyToken = <S extends Schema.Decoder<unknown>>(
+  getKey: JWTVerifyGetKey,
+  audience: string,
+  schema: S,
+): ((token: string) => Effect.Effect<S["Type"], Unauthorized, S["DecodingServices"]>) => {
+  const invalid = () => new Unauthorized({ message: "Invalid or expired token" })
+  const decode = Schema.decodeUnknownEffect(schema)
+  return Effect.fn("verifyToken")(function* (token: string) {
+    const { payload } = yield* Effect.tryPromise({
+      try: () => jwtVerify(token, getKey, { issuer: TOKEN_ISSUER, audience, algorithms: [TOKEN_ALGORITHM] }),
+      catch: invalid,
+    })
+    return yield* decode(payload).pipe(Effect.mapError(invalid))
+  })
+}
 
 /** Verifies internal tokens issued for this service (`audience`) and turns them into principals. */
 export class TokenVerifier extends Context.Service<
@@ -11,21 +29,9 @@ export class TokenVerifier extends Context.Service<
   { verify(token: string): Effect.Effect<Principal, Unauthorized> }
 >()("@mosaik/auth/TokenVerifier") {
   static make(getKey: JWTVerifyGetKey, audience: string): TokenVerifier["Service"] {
-    const invalid = () => new Unauthorized({ message: "Invalid or expired token" })
+    const claims = verifyToken(getKey, audience, TokenClaims)
     return TokenVerifier.of({
-      verify: Effect.fn("TokenVerifier.verify")(function* (token: string) {
-        const { payload } = yield* Effect.tryPromise({
-          try: () =>
-            jwtVerify(token, getKey, {
-              issuer: TOKEN_ISSUER,
-              audience,
-              algorithms: [TOKEN_ALGORITHM],
-            }),
-          catch: invalid,
-        })
-        const claims = yield* decodeClaims(payload).pipe(Effect.mapError(invalid))
-        return new Principal(claims)
-      }),
+      verify: (token) => Effect.map(claims(token), (claims) => new Principal(claims)),
     })
   }
 

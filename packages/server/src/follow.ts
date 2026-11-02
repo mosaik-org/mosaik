@@ -3,7 +3,7 @@ import { Data, Duration, Effect, Redacted, Schedule, type Schema, Stream } from 
 import { Sse } from "effect/encoding"
 import { HttpClient, HttpClientRequest } from "effect/http"
 
-/** The streams the gateway follows send a heartbeat every 20 seconds; silence this long means the connection is dead. */
+/** The streams services follow send a heartbeat every 20 seconds; silence this long means the connection is dead. */
 const STREAM_IDLE = Duration.seconds(45)
 
 class StreamError extends Data.TaggedError("StreamError")<{ readonly message: string }> {}

@@ -1,7 +1,7 @@
 import { AppRoute, ROUTES_STREAM_PATH } from "@mosaik/platform/contract"
+import { followEventStream } from "@mosaik/server"
 import { Config, Context, Deferred, Duration, Effect, Layer, Ref, Schema } from "effect"
 import { FetchHttpClient } from "effect/http"
-import { followEventStream } from "./follow"
 
 const PREFIX = "UPSTREAM_"
 

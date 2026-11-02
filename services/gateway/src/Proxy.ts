@@ -1,7 +1,8 @@
+import { AGENT_RESOURCE_PATH } from "@mosaik/auth/contract"
 import { Effect, Layer } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
 import { Tokens } from "./Tokens"
-import { Upstreams } from "./Upstreams"
+import { type Route, Upstreams } from "./Upstreams"
 
 /** Hop-by-hop headers are connection-specific and must not be forwarded. */
 const HOP_BY_HOP = [
@@ -23,28 +24,35 @@ const notFound = (service: string) =>
   HttpServerResponse.jsonUnsafe({ _tag: "NotFound", resource: "service", id: service }, { status: 404 })
 
 /**
+ * What a forwarded request carries:
+ * - `token`: a short-lived signed token for the upstream, in place of the session cookie;
+ * - `cookie`: the session cookie itself (the auth service, which reads it with Better Auth);
+ * - `bearer`: the caller's own `Authorization` (AI clients' access tokens), never the cookie;
+ * - `none`: no credentials at all (browser bundles, public metadata).
+ */
+type Credentials = "token" | "cookie" | "bearer" | "none"
+
+/**
  * `/api/<service>/*` → upstream service. Cookies never leave the gateway (except to
  * the auth service); every other upstream receives a short-lived signed token, issued
- * for that service only. `/apps/<id>/*` → the app's browser bundle.
+ * for that service only. `/apps/<id>/*` → the app's browser bundle. `/mcp` → the MCP server,
+ * with the AI client's own token, and the OAuth metadata AI clients discover it with.
  */
 export const ProxyRoute = HttpRouter.use(
   Effect.fn(function* (router) {
     const upstreams = yield* Upstreams
     const tokens = yield* Tokens
 
-    /**
-     * Forwards a request to the service named by the second path segment.
-     * `api`: with a token for that service. `assets`: an app's static browser bundle, without credentials.
-     */
-    const forward = (kind: "api" | "assets") =>
-      Effect.fn("Gateway.proxy")(function* (request: HttpServerRequest.HttpServerRequest) {
+    /** Forwards a request to `service`'s upstream, with `credentials`. */
+    const forward = (
+      request: HttpServerRequest.HttpServerRequest,
+      service: string,
+      route: Route,
+      credentials: Credentials,
+    ) =>
+      Effect.gen(function* () {
         const incoming = yield* HttpServerRequest.toWeb(request).pipe(Effect.orDie)
         const url = new URL(incoming.url)
-        const service = url.pathname.split("/")[2] ?? ""
-        const route = yield* upstreams.resolve(service)
-        // Only apps (not platform services) have browser bundles.
-        if (route === undefined || (kind === "assets" && route.scope === null)) return notFound(service)
-        const upstream = route.url
 
         const headers = new Headers(incoming.headers)
         for (const name of HOP_BY_HOP) headers.delete(name)
@@ -52,26 +60,25 @@ export const ProxyRoute = HttpRouter.use(
         headers.set("x-forwarded-proto", url.protocol.slice(0, -1))
         if (request.remoteAddress._tag === "Some") headers.set("x-forwarded-for", request.remoteAddress.value)
 
-        if (kind === "assets") {
-          headers.delete("cookie")
-          headers.delete("authorization")
-        } else if (!COOKIE_SERVICES.has(service)) {
+        if (credentials !== "cookie") headers.delete("cookie")
+        if (credentials === "none") headers.delete("authorization")
+        if (credentials === "token") {
           const token = yield* tokens.forCookie(
             incoming.headers.get("cookie") ?? undefined,
             route.audience,
             route.scope,
           )
-          headers.delete("cookie")
           headers.set("authorization", `Bearer ${token}`)
         }
 
-        yield* Effect.annotateCurrentSpan({ "mosaik.service": service, "mosaik.proxy": kind })
+        const bodiless = incoming.method === "GET" || incoming.method === "HEAD"
+        yield* Effect.annotateCurrentSpan({ "mosaik.service": service, "mosaik.credentials": credentials })
         const response = yield* Effect.tryPromise({
           try: (signal) =>
-            fetch(new URL(url.pathname + url.search, upstream), {
-              method: kind === "assets" ? "GET" : incoming.method,
+            fetch(new URL(url.pathname + url.search, route.url), {
+              method: incoming.method,
               headers,
-              ...(kind === "assets" ? {} : { body: incoming.body }),
+              ...(bodiless ? {} : { body: incoming.body }),
               redirect: "manual",
               signal,
               // Pass compressed bodies through untouched (content-encoding is preserved).
@@ -92,8 +99,30 @@ export const ProxyRoute = HttpRouter.use(
         return HttpServerResponse.fromWeb(response)
       })
 
-    yield* router.add("*", "/api/*", forward("api"))
-    yield* router.add("GET", "/apps/*", forward("assets"))
+    /** `/<kind>/<service>/*`: the service named by the second path segment. */
+    const byPath = (kind: "api" | "assets") =>
+      Effect.fn("Gateway.proxy")(function* (request: HttpServerRequest.HttpServerRequest) {
+        const service = new URL(request.url, "http://gateway").pathname.split("/")[2] ?? ""
+        const route = yield* upstreams.resolve(service)
+        // Only apps (not platform services) have browser bundles.
+        if (route === undefined || (kind === "assets" && route.scope === null)) return notFound(service)
+        if (kind === "assets") return yield* forward(request, service, route, "none")
+        return yield* forward(request, service, route, COOKIE_SERVICES.has(service) ? "cookie" : "token")
+      })
+
+    /** A fixed platform service. */
+    const to = (service: string, credentials: Credentials) =>
+      Effect.fn("Gateway.proxy")(function* (request: HttpServerRequest.HttpServerRequest) {
+        const route = yield* upstreams.resolve(service)
+        if (route === undefined || route.scope !== null) return notFound(service)
+        return yield* forward(request, service, route, credentials)
+      })
+
+    yield* router.add("*", "/api/*", byPath("api"))
+    yield* router.add("GET", "/apps/*", byPath("assets"))
+    yield* router.add("*", AGENT_RESOURCE_PATH, to("mcp", "bearer"))
+    yield* router.add("GET", "/.well-known/oauth-protected-resource/*", to("mcp", "none"))
+    yield* router.add("GET", "/.well-known/oauth-authorization-server", to("auth", "none"))
   }),
 )
 

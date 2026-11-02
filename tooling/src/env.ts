@@ -33,6 +33,7 @@ export const PORTS = {
   notifications: 4001,
   platform: 4002,
   portal: 4003,
+  mcp: 4004,
   firstApp: 4100,
   firstExample: 4300,
 } as const
@@ -41,6 +42,7 @@ export const AUTH_URL = `http://localhost:${PORTS.auth}`
 export const NOTIFICATIONS_URL = `http://localhost:${PORTS.notifications}`
 export const PLATFORM_URL = `http://localhost:${PORTS.platform}`
 export const PORTAL_URL = `http://localhost:${PORTS.portal}`
+export const MCP_URL = `http://localhost:${PORTS.mcp}`
 
 /** Services connect to their own database on this server; credentials are derived per service. */
 const database = (serviceId: string): Record<string, string> => {
@@ -88,7 +90,7 @@ export interface PlanOptions {
 }
 
 /**
- * What `bun dev` runs: Core's services (auth, notifications, platform), the Portal, every
+ * What `bun dev` runs: Core's services (auth, notifications, platform, mcp), the Portal, every
  * built-in app's backend, the examples, the gateway and Vite.
  */
 export const planServices = (
@@ -161,6 +163,7 @@ export const planServices = (
     UPSTREAM_ADMIN: AUTH_URL,
     UPSTREAM_NOTIFICATIONS: NOTIFICATIONS_URL,
     UPSTREAM_PLATFORM: PLATFORM_URL,
+    UPSTREAM_MCP: MCP_URL,
     ...(headless ? {} : { UPSTREAM_PORTAL: PORTAL_URL }),
   }
   const configuredApps = [...appPlans, ...examplePlans]
@@ -245,6 +248,13 @@ export const planServices = (
         STORAGE_SECRET_ACCESS_KEY: env("STORAGE_SECRET_ACCESS_KEY"),
         ...pick("STORAGE_DEFAULT_LIMIT_GB"),
       },
+    },
+    {
+      name: "mcp",
+      cwd: `${root}/services/mcp`,
+      cmd: ["bun", "--watch", "src/main.ts"],
+      port: PORTS.mcp,
+      env: { ...shared(), PORT: String(PORTS.mcp), PUBLIC_URL: coreUrl, ...pick("MCP_CALLS_PER_MINUTE") },
     },
     ...(headless ? [] : [portalPlan]),
     ...appPlans,

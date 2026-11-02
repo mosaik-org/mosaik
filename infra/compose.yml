@@ -3,7 +3,7 @@
 #
 #   docker compose -f infra/compose.yml --env-file .env up -d --build
 #
-# Core is auth, notifications, platform and the gateway; the Portal is the `portal` service and
+# Core is auth, notifications, platform, mcp and the gateway; the Portal is the `portal` service and
 # the shell the gateway serves. Without the Portal (standalone apps only), remove `portal` and
 # UPSTREAM_PORTAL, and serve Core's console instead of the shell (STATIC_DIR=/app/console/dist).
 #
@@ -159,6 +159,16 @@ services:
       - "${DOCKER_GID:-999}"
     networks: [default, apps]
 
+  # The MCP server for people's AI clients. It calls apps directly, as the gateway does.
+  mcp:
+    <<: *service
+    command: ["bun", "services/mcp/src/main.ts"]
+    networks: [default, apps]
+    environment:
+      <<: *env
+      PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
+      MCP_CALLS_PER_MINUTE: ${MCP_CALLS_PER_MINUTE:-120}
+
   status:
     <<: *service
     command: ["bun", "apps/status/server/main.ts"]
@@ -177,6 +187,7 @@ services:
       UPSTREAM_ADMIN: http://auth:3000
       UPSTREAM_NOTIFICATIONS: http://notifications:3000
       UPSTREAM_PLATFORM: http://platform:3000
+      UPSTREAM_MCP: http://mcp:3000
       UPSTREAM_PORTAL: http://portal:3000
 
 volumes:

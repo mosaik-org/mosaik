@@ -1,8 +1,8 @@
 import { ACCESS_STREAM_PATH, AccessChange, SESSION_COOKIE_NAMES } from "@mosaik/auth/contract"
 import { InternalClient } from "@mosaik/auth/server"
+import { followEventStream } from "@mosaik/server"
 import { Cache, Clock, Config, Context, Duration, Effect, Exit, Layer } from "effect"
 import { FetchHttpClient } from "effect/http"
-import { followEventStream } from "./follow"
 
 /** Refresh tokens a little before they expire, so upstreams never see an expired one. */
 const EXPIRY_MARGIN_MS = 10_000
