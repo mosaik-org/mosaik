@@ -1,3 +1,4 @@
+import { assistant } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
 import { managesAnyApp, reviewsQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
@@ -15,6 +16,7 @@ import LayoutGrid from "lucide-solid/icons/layout-grid"
 import Pin from "lucide-solid/icons/pin"
 import PinOff from "lucide-solid/icons/pin-off"
 import Settings2 from "lucide-solid/icons/settings-2"
+import Sparkles from "lucide-solid/icons/sparkles"
 import { For, type JSX, Show } from "solid-js"
 import { appHref } from "../apps"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
@@ -155,6 +157,11 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
     ...reviewsQuery(principal().user?.id ?? "", { status: "pending" }),
     enabled: reviewing(),
   }))
+  // The assistant, once an admin set up a model (the same query as the shell's button).
+  const assistantStatus = useQuery(() => ({
+    ...assistant.assistant.status.query(),
+    enabled: principal().isAuthenticated,
+  }))
   const few = () => apps.accessible().length <= FEW_APPS
   const others = () => (few() ? apps.accessible().filter((app) => !apps.isPinned(app.id)) : apps.recent())
 
@@ -173,6 +180,9 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
       <div class={styles.section}>
         <NavLink to="/" exact icon={<LayoutDashboard size={18} />} label="Overview" onNavigate={props.onNavigate} />
         <NavLink to="/directory" icon={<LayoutGrid size={18} />} label="All apps" onNavigate={props.onNavigate} />
+        <Show when={principal().isAuthenticated && assistantStatus.data?.enabled === true}>
+          <NavLink to="/assistant" icon={<Sparkles size={18} />} label="Assistant" onNavigate={props.onNavigate} />
+        </Show>
         <Show when={reviewing()}>
           <NavLink
             to="/access-requests"

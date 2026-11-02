@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as appRouteImport } from './routes/app'
 import { Route as indexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './../../packages/console/src/routes/admin/route'
+import { Route as assistantRouteRouteImport } from './routes/assistant/route'
 import { Route as PortalRouteRouteImport } from './../../apps/portal/web/routes/route'
 import { Route as StatusRouteRouteImport } from './../../apps/status/web/routes/route'
 import { Route as AccessRequestsIndexRouteImport } from './../../packages/console/src/routes/access-requests/index'
@@ -22,6 +23,8 @@ import { Route as AdminDeliveriesRouteImport } from './../../packages/console/sr
 import { Route as AdminNotificationsRouteImport } from './../../packages/console/src/routes/admin/notifications'
 import { Route as AdminRolesRouteImport } from './../../packages/console/src/routes/admin/roles'
 import { Route as AdminUsersRouteImport } from './../../packages/console/src/routes/admin/users'
+import { Route as assistantIndexRouteImport } from './routes/assistant/index'
+import { Route as assistantConversationRouteImport } from './routes/assistant/$conversation'
 import { Route as directoryIndexRouteImport } from './routes/directory/index'
 import { Route as directoryAppRouteImport } from './routes/directory/app'
 import { Route as ManageIndexRouteImport } from './../../packages/console/src/routes/manage/index'
@@ -45,6 +48,11 @@ const indexRoute = indexRouteImport.update({
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => appRoute,
+} as any)
+const assistantRouteRoute = assistantRouteRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
   getParentRoute: () => appRoute,
 } as any)
 const PortalRouteRoute = PortalRouteRouteImport.update({
@@ -96,6 +104,16 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const assistantIndexRoute = assistantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => assistantRouteRoute,
+} as any)
+const assistantConversationRoute = assistantConversationRouteImport.update({
+  id: '/$conversation',
+  path: '/$conversation',
+  getParentRoute: () => assistantRouteRoute,
 } as any)
 const directoryIndexRoute = directoryIndexRouteImport.update({
   id: '/directory/',
@@ -151,6 +169,7 @@ const StatusIndexRoute = StatusIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof indexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/assistant': typeof assistantRouteRouteWithChildren
   '/portal': typeof PortalRouteRouteWithChildren
   '/status': typeof StatusRouteRouteWithChildren
   '/admin/agents': typeof AdminAgentsRoute
@@ -159,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/assistant/$conversation': typeof assistantConversationRoute
   '/directory/$app': typeof directoryAppRoute
   '/manage/$app': typeof ManageAppRoute
   '/notifications/settings': typeof notificationsSettingsRoute
@@ -166,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/portal/usage': typeof PortalUsageRoute
   '/access-requests/': typeof AccessRequestsIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/assistant/': typeof assistantIndexRoute
   '/directory/': typeof directoryIndexRoute
   '/manage/': typeof ManageIndexRoute
   '/notifications/': typeof notificationsIndexRoute
@@ -180,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/assistant/$conversation': typeof assistantConversationRoute
   '/directory/$app': typeof directoryAppRoute
   '/manage/$app': typeof ManageAppRoute
   '/notifications/settings': typeof notificationsSettingsRoute
@@ -187,6 +209,7 @@ export interface FileRoutesByTo {
   '/portal/usage': typeof PortalUsageRoute
   '/access-requests': typeof AccessRequestsIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/assistant': typeof assistantIndexRoute
   '/directory': typeof directoryIndexRoute
   '/manage': typeof ManageIndexRoute
   '/notifications': typeof notificationsIndexRoute
@@ -197,6 +220,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof appRouteWithChildren
   '/_app/admin': typeof AdminRouteRouteWithChildren
+  '/_app/assistant': typeof assistantRouteRouteWithChildren
   '/_app/portal': typeof PortalRouteRouteWithChildren
   '/_app/status': typeof StatusRouteRouteWithChildren
   '/_app/': typeof indexRoute
@@ -206,6 +230,7 @@ export interface FileRoutesById {
   '/_app/admin/notifications': typeof AdminNotificationsRoute
   '/_app/admin/roles': typeof AdminRolesRoute
   '/_app/admin/users': typeof AdminUsersRoute
+  '/_app/assistant/$conversation': typeof assistantConversationRoute
   '/_app/directory/$app': typeof directoryAppRoute
   '/_app/manage/$app': typeof ManageAppRoute
   '/_app/notifications/settings': typeof notificationsSettingsRoute
@@ -213,6 +238,7 @@ export interface FileRoutesById {
   '/_app/portal/usage': typeof PortalUsageRoute
   '/_app/access-requests/': typeof AccessRequestsIndexRoute
   '/_app/admin/': typeof AdminIndexRoute
+  '/_app/assistant/': typeof assistantIndexRoute
   '/_app/directory/': typeof directoryIndexRoute
   '/_app/manage/': typeof ManageIndexRoute
   '/_app/notifications/': typeof notificationsIndexRoute
@@ -224,6 +250,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/assistant'
     | '/portal'
     | '/status'
     | '/admin/agents'
@@ -232,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/admin/roles'
     | '/admin/users'
+    | '/assistant/$conversation'
     | '/directory/$app'
     | '/manage/$app'
     | '/notifications/settings'
@@ -239,6 +267,7 @@ export interface FileRouteTypes {
     | '/portal/usage'
     | '/access-requests/'
     | '/admin/'
+    | '/assistant/'
     | '/directory/'
     | '/manage/'
     | '/notifications/'
@@ -253,6 +282,7 @@ export interface FileRouteTypes {
     | '/admin/notifications'
     | '/admin/roles'
     | '/admin/users'
+    | '/assistant/$conversation'
     | '/directory/$app'
     | '/manage/$app'
     | '/notifications/settings'
@@ -260,6 +290,7 @@ export interface FileRouteTypes {
     | '/portal/usage'
     | '/access-requests'
     | '/admin'
+    | '/assistant'
     | '/directory'
     | '/manage'
     | '/notifications'
@@ -269,6 +300,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_app'
     | '/_app/admin'
+    | '/_app/assistant'
     | '/_app/portal'
     | '/_app/status'
     | '/_app/'
@@ -278,6 +310,7 @@ export interface FileRouteTypes {
     | '/_app/admin/notifications'
     | '/_app/admin/roles'
     | '/_app/admin/users'
+    | '/_app/assistant/$conversation'
     | '/_app/directory/$app'
     | '/_app/manage/$app'
     | '/_app/notifications/settings'
@@ -285,6 +318,7 @@ export interface FileRouteTypes {
     | '/_app/portal/usage'
     | '/_app/access-requests/'
     | '/_app/admin/'
+    | '/_app/assistant/'
     | '/_app/directory/'
     | '/_app/manage/'
     | '/_app/notifications/'
@@ -317,6 +351,13 @@ declare module '@tanstack/solid-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof appRoute
+    }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof assistantRouteRouteImport
       parentRoute: typeof appRoute
     }
     '/_app/portal': {
@@ -388,6 +429,20 @@ declare module '@tanstack/solid-router' {
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/_app/assistant/': {
+      id: '/_app/assistant/'
+      path: '/'
+      fullPath: '/assistant/'
+      preLoaderRoute: typeof assistantIndexRouteImport
+      parentRoute: typeof assistantRouteRoute
+    }
+    '/_app/assistant/$conversation': {
+      id: '/_app/assistant/$conversation'
+      path: '/$conversation'
+      fullPath: '/assistant/$conversation'
+      preLoaderRoute: typeof assistantConversationRouteImport
+      parentRoute: typeof assistantRouteRoute
     }
     '/_app/directory/': {
       id: '/_app/directory/'
@@ -486,6 +541,20 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface assistantRouteRouteChildren {
+  assistantConversationRoute: typeof assistantConversationRoute
+  assistantIndexRoute: typeof assistantIndexRoute
+}
+
+const assistantRouteRouteChildren: assistantRouteRouteChildren = {
+  assistantConversationRoute: assistantConversationRoute,
+  assistantIndexRoute: assistantIndexRoute,
+}
+
+const assistantRouteRouteWithChildren = assistantRouteRoute._addFileChildren(
+  assistantRouteRouteChildren,
+)
+
 interface PortalRouteRouteChildren {
   PortalAppsRoute: typeof PortalAppsRoute
   PortalUsageRoute: typeof PortalUsageRoute
@@ -516,6 +585,7 @@ const StatusRouteRouteWithChildren = StatusRouteRoute._addFileChildren(
 
 interface appRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  assistantRouteRoute: typeof assistantRouteRouteWithChildren
   PortalRouteRoute: typeof PortalRouteRouteWithChildren
   StatusRouteRoute: typeof StatusRouteRouteWithChildren
   indexRoute: typeof indexRoute
@@ -530,6 +600,7 @@ interface appRouteChildren {
 
 const appRouteChildren: appRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  assistantRouteRoute: assistantRouteRouteWithChildren,
   PortalRouteRoute: PortalRouteRouteWithChildren,
   StatusRouteRoute: StatusRouteRouteWithChildren,
   indexRoute: indexRoute,

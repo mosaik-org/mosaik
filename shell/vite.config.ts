@@ -108,6 +108,10 @@ export default defineConfig({
           index("index.tsx"),
           route("/directory", [index("directory/index.tsx"), route("/$app", "directory/app.tsx")]),
           route("/notifications", [index("notifications/index.tsx"), route("/settings", "notifications/settings.tsx")]),
+          route("/assistant", "assistant/route.tsx", [
+            index("assistant/index.tsx"),
+            route("/$conversation", "assistant/$conversation.tsx"),
+          ]),
           ...consoleRoutes,
           ...appRoutes,
         ]),

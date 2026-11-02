@@ -1,10 +1,10 @@
-import { AssistantPanel, assistant } from "@mosaik/assistant/web"
+import { AssistantPanel, assistant, panelOpen, setPanelOpen } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/styled-system/css"
-import { PageMain, useCommandPalette } from "@mosaik/web-kit"
+import { css, cx } from "@mosaik/styled-system/css"
+import { PageMain, useCommandPalette, usePageLayout } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
-import { Link, useRouterState } from "@tanstack/solid-router"
+import { Link, useNavigate, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
 import Search from "lucide-solid/icons/search"
 import Sparkles from "lucide-solid/icons/sparkles"
@@ -20,6 +20,8 @@ const styles = {
     gridTemplateColumns: { base: "1fr", md: "240px 1fr" },
     minHeight: "100dvh",
   }),
+  // A page with the `full` layout gets exactly the window's height, which it fills and scrolls inside.
+  shellFull: css({ height: "100dvh", gridTemplateRows: "minmax(0, 1fr)", overflow: "hidden" }),
   // With the assistant open, a third column on wide screens.
   shellWithAssistant: css({ gridTemplateColumns: { base: "1fr", md: "240px 1fr", lg: "240px 1fr 400px" } }),
   assistant: css({
@@ -151,18 +153,21 @@ const usePageContext = () => {
 
 export const AppShell = (props: { children: JSX.Element }) => {
   const [drawerOpen, setDrawerOpen] = createSignal(false)
-  const [assistantOpen, setAssistantOpen] = createSignal(false)
   const principal = usePrincipal()
   const status = useQuery(() => ({ ...assistant.assistant.status.query(), enabled: principal().isAuthenticated }))
+  const router = useRouterState()
+  const navigate = useNavigate()
   const assistantReady = () => principal().isAuthenticated && status.data?.enabled === true
+  const assistantOpen = () => panelOpen() && assistantReady()
   const context = usePageContext()
+  const layout = usePageLayout()
 
   onMount(() => {
     // Ctrl/⌘+J opens and closes the assistant.
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "j" && assistantReady()) {
         event.preventDefault()
-        setAssistantOpen((open) => !open)
+        setPanelOpen((open) => !open)
       }
     }
     window.addEventListener("keydown", onKeyDown)
@@ -170,7 +175,9 @@ export const AppShell = (props: { children: JSX.Element }) => {
   })
 
   return (
-    <div class={`${styles.shell} ${assistantOpen() ? styles.shellWithAssistant : ""}`}>
+    <div
+      class={cx(styles.shell, assistantOpen() && styles.shellWithAssistant, layout() === "full" && styles.shellFull)}
+    >
       <aside class={styles.aside}>
         <Brand />
         <Sidebar />
@@ -186,7 +193,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
         </div>
       </Show>
 
-      <div class={css({ display: "flex", flexDirection: "column", minWidth: "0" })}>
+      <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
         <header class={styles.header}>
           <div class={css({ hideFrom: "md" })}>
             <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
@@ -200,7 +207,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
               variant={assistantOpen() ? "subtle" : "plain"}
               aria-label="Assistant (Ctrl+J)"
               aria-pressed={assistantOpen()}
-              onClick={() => setAssistantOpen((open) => !open)}
+              onClick={() => setPanelOpen((open) => !open)}
             >
               <Sparkles size={18} />
             </IconButton>
@@ -214,9 +221,21 @@ export const AppShell = (props: { children: JSX.Element }) => {
         <PageMain>{props.children}</PageMain>
       </div>
 
-      <Show when={assistantOpen() && assistantReady()}>
+      <Show when={assistantOpen()}>
         <aside class={styles.assistant}>
-          <AssistantPanel context={context} onClose={() => setAssistantOpen(false)} />
+          <AssistantPanel
+            context={context}
+            onClose={() => setPanelOpen(false)}
+            onExpand={(conversation) => {
+              const from = router().location.href
+              setPanelOpen(false)
+              void navigate(
+                conversation === null
+                  ? { to: "/assistant", search: { from } }
+                  : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
+              )
+            }}
+          />
         </aside>
       </Show>
     </div>

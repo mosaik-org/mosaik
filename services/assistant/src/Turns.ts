@@ -108,7 +108,7 @@ export class Turns extends Context.Service<
     readonly send: (
       principal: Principal,
       conversation: string,
-      message: { readonly text: string; readonly context: PageContext },
+      message: { readonly text: string; readonly context: PageContext | null },
     ) => Effect.Effect<Stream.Stream<TurnEvent>, NotFound | Conflict | BadRequest>
     readonly decide: (
       principal: Principal,

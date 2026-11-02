@@ -213,8 +213,11 @@ offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
 
 ## The assistant
 
-The assistant is a chat in the shell (the sparkles button, or Ctrl/⌘+J) with an AI that uses apps'
-tools as the person, the same tools AI clients get through the MCP server. It is off until an admin
+The assistant is a chat in the shell with an AI that uses apps' tools as the person, the same tools
+AI clients get through the MCP server. It opens beside any page (the sparkles button, or Ctrl/⌘+J),
+where it knows which page the person is on, and on a page of its own (`/assistant`, "Assistant" in the
+sidebar) for longer conversations, with the person's conversations listed; a conversation moves
+between the two. It is off until an admin
 chooses a model: it sends people's questions, and what apps answer them, to that model's provider.
 
 - **The model**, in the `assistant` service's environment: `ASSISTANT_PROVIDER` and `ASSISTANT_MODEL`,

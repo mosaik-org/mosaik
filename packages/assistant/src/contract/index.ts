@@ -114,7 +114,8 @@ export class AssistantStatus extends Schema.Class<AssistantStatus>("@mosaik/assi
 
 export const SendMessage = Schema.Struct({
   text: Schema.String.check(Schema.isTrimmed(), Schema.isMinLength(1), Schema.isMaxLength(10_000)),
-  context: PageContext,
+  /** Where the person is; `null` from the assistant's own page, which is about no other page. */
+  context: Schema.NullOr(PageContext),
 })
 
 export const Decision = Schema.Struct({
