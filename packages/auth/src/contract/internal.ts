@@ -128,6 +128,19 @@ export class InternalGroup extends HttpApiGroup.make("internal")
       }),
       success: IssuedToken,
     }),
+    /**
+     * A token for an app, for the person of an AI client's connection: what the MCP server calls
+     * the app with. Fails when the connection was revoked or the session behind it ended.
+     */
+    HttpApiEndpoint.post("issueAgentToken", "/agent-token", {
+      payload: Schema.Struct({
+        connection: Schema.String,
+        /** The app the token is for (its `aud`); only its grants are kept. */
+        audience: Schema.String,
+      }),
+      success: IssuedToken,
+      error: Unauthorized,
+    }),
     /** Server-Sent Events of {@link AccessChange}s, for the gateway's token cache. */
     HttpApiEndpoint.get("accessStream", "/access/stream", {
       success: Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/event-stream" })),

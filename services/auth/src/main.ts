@@ -6,10 +6,13 @@ import { Layer } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessFeed } from "./AccessFeed"
 import { AuthConfig } from "./AuthConfig"
+import { AgentClients } from "./agents/AgentClients"
+import { AgentConnections } from "./agents/AgentConnections"
 import { BetterAuth } from "./BetterAuth"
 import { Bootstrap } from "./Bootstrap"
 import { EventRelay } from "./EventRelay"
 import { AdminHandlers } from "./http/Admin"
+import { AgentRoutes } from "./http/Agents"
 import { IdentityHandlers } from "./http/Identity"
 import { InternalHandlers } from "./http/Internal"
 import { OAuthRoutes } from "./http/OAuth"
@@ -32,7 +35,7 @@ const Persistence = Database.layer({ serviceId: "auth", migrations }).pipe(
   Layer.provide(AuthConfig.layer),
 )
 
-const Domain = Layer.mergeAll(Members.layer, OAuth.layer).pipe(
+const Domain = Layer.mergeAll(Members.layer, OAuth.layer, AgentConnections.layer, AgentClients.layer).pipe(
   Layer.provideMerge(
     Layer.mergeAll(
       Access.layer,
@@ -52,6 +55,7 @@ const Http = Layer.mergeAll(
   RawRoutes,
   SignInRoutes,
   OAuthRoutes,
+  AgentRoutes,
   HttpApiBuilder.layer(IdentityApi).pipe(Layer.provide(IdentityHandlers)),
   HttpApiBuilder.layer(InternalApi).pipe(Layer.provide(InternalHandlers)),
   HttpApiBuilder.layer(AdminApi, { openapiPath: `${admin.apiPrefix}/openapi.json` }).pipe(Layer.provide(AdminHandlers)),

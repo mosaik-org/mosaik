@@ -4,6 +4,7 @@ import { Live } from "@mosaik/server"
 import { Effect, Option } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessFeed } from "../AccessFeed"
+import { AgentConnections } from "../agents/AgentConnections"
 import { BetterAuth } from "../BetterAuth"
 import { Access } from "../rbac/Access"
 import { AuditLog } from "../rbac/AuditLog"
@@ -24,6 +25,7 @@ export const InternalHandlers = HttpApiBuilder.group(
     const users = yield* Users
     const members = yield* Members
     const feed = yield* AccessFeed
+    const agents = yield* AgentConnections
 
     return handlers.handleAll({
       issueToken: Effect.fn("Internal.issueToken")(function* ({ payload }) {
@@ -33,6 +35,7 @@ export const InternalHandlers = HttpApiBuilder.group(
         const grants = payload.scope === null ? principal.grants : scopeGrants(principal.grants, payload.scope)
         return yield* keys.sign({ user: principal.user, grants }, payload.audience)
       }),
+      issueAgentToken: ({ payload }) => agents.tokenForApp(payload.connection, payload.audience),
       // Within Bun's idle timeout (60 s), and often enough for the gateway to notice a dead connection.
       accessStream: () => Live.eventStream(AccessChange, feed.changes, { heartbeat: "20 seconds" }),
       registerApp: ({ payload }) => registry.register(payload).pipe(Effect.orDie),

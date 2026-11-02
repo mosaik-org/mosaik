@@ -1,4 +1,5 @@
 export * from "./admin"
+export * from "./agent"
 export * from "./identity"
 export * from "./internal"
 export * from "./oauth"

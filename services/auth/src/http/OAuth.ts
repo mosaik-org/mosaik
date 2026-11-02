@@ -5,13 +5,7 @@ import { HttpRouter, type HttpServerRequest, HttpServerResponse } from "effect/h
 import { BetterAuth } from "../BetterAuth"
 import { OAuth } from "../OAuth"
 import { PlatformClient } from "../PlatformClient"
-
-const json = (body: unknown, status = 200) =>
-  HttpServerResponse.jsonUnsafe(body, { status, headers: { "cache-control": "no-store" } })
-
-/** An OAuth error (RFC 6749 §5.2). */
-const oauthError = (error: string, description: string, status = 400) =>
-  json({ error, error_description: description }, status)
+import { oauthError, oauthJson } from "./oauthResponses"
 
 /**
  * Core's sign-in for standalone apps (OAuth 2.0 authorization code, see `@mosaik/auth/contract`).
@@ -105,7 +99,7 @@ export const OAuthRoutes = HttpRouter.use(
               : undefined
         if (result === undefined) return oauthError("unsupported_grant_type", "Use authorization_code or refresh_token")
         return yield* result.pipe(
-          Effect.map((tokens) => json(tokens)),
+          Effect.map((tokens) => oauthJson(tokens)),
           Effect.catchTag("InvalidGrant", (error) => Effect.succeed(oauthError("invalid_grant", error.reason))),
         )
       }),

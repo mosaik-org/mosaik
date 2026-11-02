@@ -1,5 +1,12 @@
 import { PgClient } from "@effect/sql-pg"
-import { IssuedToken, TOKEN_ALGORITHM, TOKEN_ISSUER, TOKEN_TTL_SECONDS, type TokenClaims } from "@mosaik/auth/contract"
+import {
+  type AgentTokenClaims,
+  IssuedToken,
+  TOKEN_ALGORITHM,
+  TOKEN_ISSUER,
+  TOKEN_TTL_SECONDS,
+  type TokenClaims,
+} from "@mosaik/auth/contract"
 import { TokenVerifier } from "@mosaik/auth/server"
 import { Clock, Context, Effect, Layer, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
@@ -20,8 +27,11 @@ export class SigningKeys extends Context.Service<
   SigningKeys,
   {
     readonly jwks: JSONWebKeySet
-    /** Signs a token for one service (`audience`). */
-    sign(claims: TokenClaims, audience: string): Effect.Effect<IssuedToken>
+    /**
+     * Signs a token for one service (`audience`), valid for `ttlSeconds` (internal tokens'
+     * {@link TOKEN_TTL_SECONDS} by default).
+     */
+    sign(claims: TokenClaims | AgentTokenClaims, audience: string, ttlSeconds?: number): Effect.Effect<IssuedToken>
   }
 >()("@mosaik/auth-service/SigningKeys") {
   static readonly layer = Layer.effect(
@@ -64,7 +74,11 @@ export class SigningKeys extends Context.Service<
 
       return SigningKeys.of({
         jwks,
-        sign: Effect.fn("SigningKeys.sign")(function* (claims: TokenClaims, audience: string) {
+        sign: Effect.fn("SigningKeys.sign")(function* (
+          claims: TokenClaims | AgentTokenClaims,
+          audience: string,
+          ttlSeconds = TOKEN_TTL_SECONDS,
+        ) {
           const now = yield* Clock.currentTimeMillis
           const issuedAt = Math.floor(now / 1000)
           const token = yield* Effect.promise(() =>
@@ -74,12 +88,12 @@ export class SigningKeys extends Context.Service<
               .setAudience(audience)
               .setSubject(claims.user?.id ?? "anonymous")
               .setIssuedAt(issuedAt)
-              .setExpirationTime(issuedAt + TOKEN_TTL_SECONDS)
+              .setExpirationTime(issuedAt + ttlSeconds)
               .sign(privateKey),
           )
           return new IssuedToken({
             token,
-            expiresAt: (issuedAt + TOKEN_TTL_SECONDS) * 1000,
+            expiresAt: (issuedAt + ttlSeconds) * 1000,
             userId: claims.user?.id ?? null,
           })
         }),
