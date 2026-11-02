@@ -467,7 +467,7 @@ export const EventHandlers = Events.handlers(crm, Effect.gen(function* () {
 
 ## AI clients
 
-People can connect an AI client (Claude, Cursor and others) to Mosaik's MCP server and use apps
+People can connect an AI client (any client of the Model Context Protocol) to Mosaik's MCP server and use apps
 through it, as themselves. An app decides which endpoints it offers, with `AgentTool` on its contract:
 
 ```ts
@@ -489,7 +489,7 @@ HttpApiEndpoint.post("refund", "/:id/refund", { params: { id: OrderId }, payload
 - **Calls are ordinary requests.** The MCP server calls the app's backend with a token for the person,
   as the gateway does: the same permission checks, validation and rules. Handlers change nothing for AI
   clients. `principal.agent` names the client (`null` otherwise), and `Audit.record` records it, so the
-  audit log shows "Ada (via Claude)".
+  audit log shows "Ada (via <the client's name>)".
 - **What the AI gets back.** The response body as text; errors with their status and body, so a refusal
   like "Refunds above €500 are handled by finance" reaches the AI and it can explain it. Requests that do
   not match the contract are answered with a `BadRequest` saying what is wrong. Answers beyond 60,000

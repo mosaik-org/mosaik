@@ -20,7 +20,7 @@ export class Principal extends Schema.Class<Principal>("@mosaik/core/Principal")
   user: Schema.NullOr(PrincipalUser),
   grants: Schema.Array(Grant),
   /**
-   * The AI client acting for the user, by name (e.g. "Claude"), when the request comes from one
+   * The AI client acting for the user, by the name it gave, when the request comes from one
    * through Mosaik's MCP server; `null` otherwise. The audit log records it with what it does.
    */
   agent: Schema.NullOr(Schema.String).pipe(Schema.withConstructorDefault(Effect.succeed(null))),

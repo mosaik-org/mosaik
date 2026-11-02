@@ -4,7 +4,7 @@ import { pkceChallenge } from "./AgentConnections"
 
 describe("isAllowedRedirect", () => {
   it("allows https, http on this computer, and apps' own schemes", () => {
-    expect(isAllowedRedirect("https://claude.ai/api/mcp/auth_callback")).toBe(true)
+    expect(isAllowedRedirect("https://assistant.example.com/api/mcp/auth_callback")).toBe(true)
     expect(isAllowedRedirect("http://localhost:33418/callback")).toBe(true)
     expect(isAllowedRedirect("http://127.0.0.1:5000/cb")).toBe(true)
     expect(isAllowedRedirect("http://[::1]:5000/cb")).toBe(true)
@@ -15,17 +15,17 @@ describe("isAllowedRedirect", () => {
     expect(isAllowedRedirect("http://evil.example/cb")).toBe(false)
     expect(isAllowedRedirect("javascript:alert(1)")).toBe(false)
     expect(isAllowedRedirect("data:text/html,hi")).toBe(false)
-    expect(isAllowedRedirect("https://claude.ai/cb#x")).toBe(false)
-    expect(isAllowedRedirect("https://user:pass@claude.ai/cb")).toBe(false)
+    expect(isAllowedRedirect("https://assistant.example.com/cb#x")).toBe(false)
+    expect(isAllowedRedirect("https://user:pass@assistant.example.com/cb")).toBe(false)
     expect(isAllowedRedirect("not a url")).toBe(false)
   })
 })
 
 describe("matchesRedirect", () => {
   it("matches exactly", () => {
-    expect(matchesRedirect("https://claude.ai/cb", ["https://claude.ai/cb"])).toBe(true)
-    expect(matchesRedirect("https://claude.ai/cb2", ["https://claude.ai/cb"])).toBe(false)
-    expect(matchesRedirect("https://claude.ai:8443/cb", ["https://claude.ai/cb"])).toBe(false)
+    expect(matchesRedirect("https://assistant.example.com/cb", ["https://assistant.example.com/cb"])).toBe(true)
+    expect(matchesRedirect("https://assistant.example.com/cb2", ["https://assistant.example.com/cb"])).toBe(false)
+    expect(matchesRedirect("https://assistant.example.com:8443/cb", ["https://assistant.example.com/cb"])).toBe(false)
   })
 
   it("lets local clients pick any port, nothing else", () => {
@@ -38,9 +38,9 @@ describe("matchesRedirect", () => {
 
 describe("isMetadataDocumentId", () => {
   it("is an https address with a path", () => {
-    expect(isMetadataDocumentId("https://claude.ai/oauth/claude-code-client-metadata")).toBe(true)
-    expect(isMetadataDocumentId("https://claude.ai/")).toBe(false)
-    expect(isMetadataDocumentId("http://claude.ai/client.json")).toBe(false)
+    expect(isMetadataDocumentId("https://assistant.example.com/oauth/client-metadata")).toBe(true)
+    expect(isMetadataDocumentId("https://assistant.example.com/")).toBe(false)
+    expect(isMetadataDocumentId("http://assistant.example.com/client.json")).toBe(false)
     expect(isMetadataDocumentId("mosaik-Ab3")).toBe(false)
   })
 })

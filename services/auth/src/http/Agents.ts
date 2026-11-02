@@ -178,7 +178,7 @@ ${hidden}
       return pages.page({
         title: "AI clients",
         body: `<h1>AI clients</h1>
-<p>AI clients (Claude, Cursor and others) can use ${escapeHtml(brand)}'s apps as you, through this MCP server:</p>
+<p>AI clients (any client of the Model Context Protocol) can use ${escapeHtml(brand)}'s apps as you, through this MCP server:</p>
 <p><code>${escapeHtml(resource)}</code></p>
 <p class="hint">Add it to the client; it asks you to sign in and allow it. Signed in as ${escapeHtml(email)}.</p>
 ${

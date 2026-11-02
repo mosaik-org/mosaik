@@ -12,7 +12,7 @@ import { administration } from "../../api"
 export const Route = createFileRoute("/_app/admin/agents")({
   staticData: {
     title: "AI clients",
-    keywords: ["mcp", "ai", "assistant", "claude", "connections"],
+    keywords: ["mcp", "ai", "assistant", "connections"],
     permission: admin.perm("users.manage"),
   },
   component: Agents,

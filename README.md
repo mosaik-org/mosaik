@@ -19,8 +19,8 @@ Mosaik comes in two layers ([Architecture](docs/architecture.md)):
 
 - **For people using it:** one sign-in (email/password or Microsoft Entra ID), the apps they use pinned
   in the sidebar, a directory of every app with a way to request access, one inbox for notifications,
-  a command palette (Ctrl/⌘+K) that searches pages and data across apps, and their AI client (Claude,
-  Cursor, …) using apps as them through Mosaik's MCP server.
+  a command palette (Ctrl/⌘+K) that searches pages and data across apps, and their AI client (any client
+  of the Model Context Protocol) using apps as them through Mosaik's MCP server.
 - **For app teams:** an SDK that handles authentication, permissions, roles, audit, notifications, e-mail,
   Slack and Teams messages, platform events, databases and a consistent UI kit. An app is a manifest,
   an API contract, a backend and pages, mounted in the Portal or standalone with the same code.

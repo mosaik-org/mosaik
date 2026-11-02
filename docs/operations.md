@@ -187,7 +187,7 @@ deliveries. Webhook URLs are never shown again after they are saved.
 
 ## AI clients (MCP)
 
-People can use apps from their AI client (Claude, Cursor, any client of the Model Context Protocol)
+People can use apps from their AI client (any client of the Model Context Protocol)
 through Mosaik's MCP server, the `mcp` service. It is on whenever Core runs; it offers only what apps
 offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
 
@@ -203,7 +203,7 @@ offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
 - **How long.** A connection lasts as long as the Core session it was allowed in: signing out of Core
   disconnects the person's AI clients too. People disconnect a client on their *AI clients* page; admins
   see and disconnect everyone's under Administration → *AI clients* (`users.manage`, audited).
-- **Audit.** What a client does is recorded as its person's, with the client's name ("via Claude").
+- **Audit.** What a client does is recorded as its person's, with the client's name ("via <the client's name>").
 - **Limits.** Each connection may make `MCP_CALLS_PER_MINUTE` calls a minute (120). Answers are cut
   at 60,000 characters.
 - **Network.** The `mcp` service calls apps' backends directly, like the gateway, so it needs the same

@@ -16,11 +16,11 @@ This work is analysis and design more than typing: reading an unfamiliar codebas
 really does, and redesigning it for a different platform. Smaller models tend to fall back on translating
 code line by line, which is exactly what this skill exists to prevent.
 
-Check which model you are running as (your system prompt says). Unless it is **Claude Opus 5.5 or newer**
-(a later Opus, or a model at least as capable), stop before starting and tell the user, in a sentence or
-two, that conversions should run on Opus 5.5 or newer and why; ask them to switch (in Claude Code:
-`/model`, then choose Opus) and start again. If they choose to continue anyway, that is their decision:
-go ahead, and mention the risk once in your final report.
+Check which model you are running as (your system prompt says). Unless it is its provider's most
+capable current model (the largest tier, not a smaller, faster or older one), stop before starting and
+tell the user, in a sentence or two, that conversions should run on the most capable model available and
+why; ask them to switch models in their agent and start again. If they choose to continue anyway, that is
+their decision: go ahead, and mention the risk once in your final report.
 
 ## The principle: rebuild, don't translate
 
