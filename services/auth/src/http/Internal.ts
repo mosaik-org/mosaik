@@ -36,6 +36,15 @@ export const InternalHandlers = HttpApiBuilder.group(
         return yield* keys.sign({ user: principal.user, grants }, payload.audience)
       }),
       issueAgentToken: ({ payload }) => agents.tokenForApp(payload.connection, payload.audience),
+      issueUserToken: Effect.fn("Internal.issueUserToken")(function* ({ payload }) {
+        const [user] = yield* users.lookup([payload.user])
+        if (user === undefined) return yield* new NotFound({ resource: "user", id: payload.user })
+        const principal = yield* access.principalFor(Option.some(user))
+        return yield* keys.sign(
+          { user, grants: scopeGrants(principal.grants, payload.audience), agent: payload.agent },
+          payload.audience,
+        )
+      }),
       // Within Bun's idle timeout (60 s), and often enough for the gateway to notice a dead connection.
       accessStream: () => Live.eventStream(AccessChange, feed.changes, { heartbeat: "20 seconds" }),
       registerApp: ({ payload }) => registry.register(payload).pipe(Effect.orDie),

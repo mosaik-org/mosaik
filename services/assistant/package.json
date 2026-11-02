@@ -1,0 +1,29 @@
+{
+  "name": "@mosaik/assistant-service",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun src/main.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^5.0.130",
+    "@ai-sdk/anthropic": "^4.0.94",
+    "@ai-sdk/openai-compatible": "^3.0.82",
+    "@effect/sql-pg": "^4.1.2",
+    "@mosaik/assistant": "workspace:*",
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/db": "workspace:*",
+    "@mosaik/platform": "workspace:*",
+    "@mosaik/server": "workspace:*",
+    "@mosaik/tools": "workspace:*",
+    "ai": "^7.0.159",
+    "effect": "^4.1.2",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * Creates a role + database for the services (Core's auth, notifications and platform, and the Portal) and every built-in app whose
+ * Creates a role + database for the services (Core's auth, notifications, platform and assistant, and the Portal) and every built-in app whose
  * manifest sets `database: true`, plus the examples' in development. Idempotent; run by `bun dev` and by the compose
  * `provision` job.
  *
@@ -18,6 +18,7 @@ export const provisionAll = async (options: { readonly examples?: boolean } = {}
     "auth",
     "notifications",
     "platform",
+    "assistant",
     "portal",
     ...apps.filter((d) => d.manifest.database).map((d) => d.manifest.id),
   ]

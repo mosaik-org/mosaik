@@ -36,7 +36,7 @@ export class StatsGroup extends HttpApiGroup.make("stats").add(
   }).annotate(AgentTool, {
     title: "Sales summary",
     description:
-      "Revenue, order counts and revenue per day over the last `days` days (30 by default). Amounts are in cents.",
+      "Revenue, order counts and revenue per day over the last `days` days (30 by default). Amounts are in euro cents.",
   }),
 ) {}
 
@@ -47,12 +47,12 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
       description:
         "Orders, newest first unless sorted otherwise, a page at a time (`pageSize` up to 100, `page` from 0). " +
         "`search` matches the order number or the customer; `status` keeps one status. `total` is the number " +
-        "of matching orders. Amounts are in cents.",
+        "of matching orders. Amounts are in euro cents.",
     }),
     /** What the pages show and offer, from Sales' settings. */
     HttpApiEndpoint.get("options", "/options", { success: OrderOptions }).annotate(AgentTool, {
       title: "Order rules",
-      description: "Sales' current rules: the largest refund allowed (in cents), and whether exports are on.",
+      description: "Sales' current rules: the largest refund allowed (in euro cents), and whether exports are on.",
     }),
     /** Refused while exports are off in Sales' settings. */
     HttpApiEndpoint.get("export", "/export.csv", {

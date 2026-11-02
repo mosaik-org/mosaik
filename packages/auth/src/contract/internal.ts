@@ -143,6 +143,21 @@ export class InternalGroup extends HttpApiGroup.make("internal")
       success: IssuedToken,
       error: Unauthorized,
     }),
+    /**
+     * A token for an app, for a person a Core service acts for at their request (the assistant),
+     * with their current grants and `agent` naming who acts. Fails when the person is gone.
+     */
+    HttpApiEndpoint.post("issueUserToken", "/user-token", {
+      payload: Schema.Struct({
+        user: UserId,
+        /** The app the token is for (its `aud`); only its grants are kept. */
+        audience: Schema.String,
+        /** Who acts for the person (`Principal.agent`), recorded in the audit log. */
+        agent: Schema.String,
+      }),
+      success: IssuedToken,
+      error: NotFound,
+    }),
     /** Server-Sent Events of {@link AccessChange}s, for the gateway's token cache. */
     HttpApiEndpoint.get("accessStream", "/access/stream", {
       success: Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/event-stream" })),

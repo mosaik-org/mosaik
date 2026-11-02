@@ -34,6 +34,7 @@ export const PORTS = {
   platform: 4002,
   portal: 4003,
   mcp: 4004,
+  assistant: 4005,
   firstApp: 4100,
   firstExample: 4300,
 } as const
@@ -43,6 +44,7 @@ export const NOTIFICATIONS_URL = `http://localhost:${PORTS.notifications}`
 export const PLATFORM_URL = `http://localhost:${PORTS.platform}`
 export const PORTAL_URL = `http://localhost:${PORTS.portal}`
 export const MCP_URL = `http://localhost:${PORTS.mcp}`
+export const ASSISTANT_URL = `http://localhost:${PORTS.assistant}`
 
 /** Services connect to their own database on this server; credentials are derived per service. */
 const database = (serviceId: string): Record<string, string> => {
@@ -90,7 +92,7 @@ export interface PlanOptions {
 }
 
 /**
- * What `bun dev` runs: Core's services (auth, notifications, platform, mcp), the Portal, every
+ * What `bun dev` runs: Core's services (auth, notifications, platform, mcp, assistant), the Portal, every
  * built-in app's backend, the examples, the gateway and Vite.
  */
 export const planServices = (
@@ -164,6 +166,7 @@ export const planServices = (
     UPSTREAM_NOTIFICATIONS: NOTIFICATIONS_URL,
     UPSTREAM_PLATFORM: PLATFORM_URL,
     UPSTREAM_MCP: MCP_URL,
+    UPSTREAM_ASSISTANT: ASSISTANT_URL,
     ...(headless ? {} : { UPSTREAM_PORTAL: PORTAL_URL }),
   }
   const configuredApps = [...appPlans, ...examplePlans]
@@ -255,6 +258,31 @@ export const planServices = (
       cmd: ["bun", "--watch", "src/main.ts"],
       port: PORTS.mcp,
       env: { ...shared(), PORT: String(PORTS.mcp), PUBLIC_URL: coreUrl, ...pick("TOOL_CALLS_PER_MINUTE") },
+    },
+    {
+      name: "assistant",
+      cwd: `${root}/services/assistant`,
+      cmd: ["bun", "--watch", "src/main.ts"],
+      port: PORTS.assistant,
+      env: {
+        ...shared(),
+        PORT: String(PORTS.assistant),
+        ...database("assistant"),
+        // Off unless a provider is set (in `.env`): the model and its credentials.
+        ...pick(
+          "ASSISTANT_PROVIDER",
+          "ASSISTANT_MODEL",
+          "OPENCODE_API_KEY",
+          "OPENCODE_BASE_URL",
+          "ANTHROPIC_API_KEY",
+          "AWS_REGION",
+          "AWS_ACCESS_KEY_ID",
+          "AWS_SECRET_ACCESS_KEY",
+          "AWS_SESSION_TOKEN",
+          "AWS_BEARER_TOKEN_BEDROCK",
+          "TOOL_CALLS_PER_MINUTE",
+        ),
+      },
     },
     ...(headless ? [] : [portalPlan]),
     ...appPlans,

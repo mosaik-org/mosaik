@@ -3,7 +3,7 @@
 #
 #   docker compose -f infra/compose.yml --env-file .env up -d --build
 #
-# Core is auth, notifications, platform, mcp and the gateway; the Portal is the `portal` service and
+# Core is auth, notifications, platform, mcp, assistant and the gateway; the Portal is the `portal` service and
 # the shell the gateway serves. Without the Portal (standalone apps only), remove `portal` and
 # UPSTREAM_PORTAL, and serve Core's console instead of the shell (STATIC_DIR=/app/console/dist).
 #
@@ -169,6 +169,23 @@ services:
       PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
       TOOL_CALLS_PER_MINUTE: ${TOOL_CALLS_PER_MINUTE:-120}
 
+  # The assistant in the UI. Off without ASSISTANT_PROVIDER; it calls apps directly, as the gateway does.
+  assistant:
+    <<: *service
+    command: ["bun", "services/assistant/src/main.ts"]
+    networks: [default, apps]
+    environment:
+      <<: *env
+      ASSISTANT_PROVIDER: ${ASSISTANT_PROVIDER:-}
+      ASSISTANT_MODEL: ${ASSISTANT_MODEL:-}
+      OPENCODE_API_KEY: ${OPENCODE_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK:-}
+      TOOL_CALLS_PER_MINUTE: ${TOOL_CALLS_PER_MINUTE:-120}
+
   status:
     <<: *service
     command: ["bun", "apps/status/server/main.ts"]
@@ -188,6 +205,7 @@ services:
       UPSTREAM_NOTIFICATIONS: http://notifications:3000
       UPSTREAM_PLATFORM: http://platform:3000
       UPSTREAM_MCP: http://mcp:3000
+      UPSTREAM_ASSISTANT: http://assistant:3000
       UPSTREAM_PORTAL: http://portal:3000
 
 volumes:
