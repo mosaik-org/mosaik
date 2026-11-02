@@ -19,5 +19,7 @@ export const SESSION_COOKIE_NAMES = [`${COOKIE_PREFIX}.session_token`, `__Secure
 export const TokenClaims = Schema.Struct({
   user: Schema.NullOr(PrincipalUser),
   grants: Principal.fields.grants,
+  /** The AI client acting for the user (`Principal.agent`): only in tokens the MCP server calls apps with. */
+  agent: Schema.optionalKey(Schema.String),
 })
 export type TokenClaims = typeof TokenClaims.Type

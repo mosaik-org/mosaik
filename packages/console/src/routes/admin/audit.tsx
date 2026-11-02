@@ -33,7 +33,14 @@ const columns = column.columns([
     cell: (info) => <span class={css({ fontFamily: "mono", fontSize: "xs" })}>{info.getValue()}</span>,
   }),
   column.accessor("target", { header: "Target", enableSorting: false, cell: (info) => info.getValue() ?? "—" }),
-  column.accessor("actorEmail", { header: "By", enableSorting: false, cell: (info) => info.getValue() ?? "system" }),
+  column.accessor("actorEmail", {
+    header: "By",
+    enableSorting: false,
+    cell: (info) => {
+      const agent = info.row.original.agent
+      return `${info.getValue() ?? "system"}${agent === null ? "" : ` (via ${agent})`}`
+    },
+  }),
   column.accessor("details", {
     header: "Details",
     enableSorting: false,

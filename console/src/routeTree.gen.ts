@@ -14,6 +14,7 @@ import { Route as indexRouteImport } from './routes/index'
 import { Route as AdminRouteRouteImport } from './../../packages/console/src/routes/admin/route'
 import { Route as AccessRequestsIndexRouteImport } from './../../packages/console/src/routes/access-requests/index'
 import { Route as AdminIndexRouteImport } from './../../packages/console/src/routes/admin/index'
+import { Route as AdminAgentsRouteImport } from './../../packages/console/src/routes/admin/agents'
 import { Route as AdminAuditRouteImport } from './../../packages/console/src/routes/admin/audit'
 import { Route as AdminDeliveriesRouteImport } from './../../packages/console/src/routes/admin/deliveries'
 import { Route as AdminNotificationsRouteImport } from './../../packages/console/src/routes/admin/notifications'
@@ -44,6 +45,11 @@ const AccessRequestsIndexRoute = AccessRequestsIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAgentsRoute = AdminAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -85,6 +91,7 @@ const ManageAppRoute = ManageAppRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof indexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/admin/agents': typeof AdminAgentsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof indexRoute
+  '/admin/agents': typeof AdminAgentsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/_app': typeof appRouteWithChildren
   '/_app/admin': typeof AdminRouteRouteWithChildren
   '/_app/': typeof indexRoute
+  '/_app/admin/agents': typeof AdminAgentsRoute
   '/_app/admin/audit': typeof AdminAuditRoute
   '/_app/admin/deliveries': typeof AdminDeliveriesRoute
   '/_app/admin/notifications': typeof AdminNotificationsRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/agents'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin/agents'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_app/admin'
     | '/_app/'
+    | '/_app/admin/agents'
     | '/_app/admin/audit'
     | '/_app/admin/deliveries'
     | '/_app/admin/notifications'
@@ -203,6 +215,13 @@ declare module '@tanstack/solid-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_app/admin/agents': {
+      id: '/_app/admin/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminAgentsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/_app/admin/audit': {
@@ -258,6 +277,7 @@ declare module '@tanstack/solid-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminAgentsRoute: typeof AdminAgentsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminDeliveriesRoute: typeof AdminDeliveriesRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
@@ -267,6 +287,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAgentsRoute: AdminAgentsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminDeliveriesRoute: AdminDeliveriesRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,

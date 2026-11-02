@@ -31,6 +31,7 @@ export class Audit extends Context.Service<Audit, { record(entry: AuditEntry): E
             action: entry.action,
             target: entry.target ?? null,
             actor: Option.match(principal, { onNone: () => null, onSome: (p) => p.user }),
+            agent: Option.match(principal, { onNone: () => null, onSome: (p) => p.agent }),
             details: entry.details ?? {},
           })
           yield* client.app.audit({ payload }).pipe(

@@ -36,5 +36,8 @@ export const AGENT_TOKEN_PATH = "/api/auth/agents/token"
 export const AGENT_REGISTER_PATH = "/api/auth/agents/register"
 export const AGENT_REVOKE_PATH = "/api/auth/agents/revoke"
 
+/** Core's page where people see the AI clients they connected, and disconnect them. */
+export const AGENT_CONNECTIONS_PATH = "/api/auth/agents/connections"
+
 /** How long an AI client's access token lasts; it refreshes it while the connection lasts. */
 export const AGENT_TOKEN_TTL_SECONDS = 600

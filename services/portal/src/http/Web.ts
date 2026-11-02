@@ -18,7 +18,14 @@ const makeAudit = Effect.gen(function* () {
       const principal = yield* CurrentPrincipal
       yield* auth.internal
         .recordAudit({
-          payload: new AuditEventInput({ app: portalApp.id, action, target, actor: principal.user, details }),
+          payload: new AuditEventInput({
+            app: portalApp.id,
+            action,
+            target,
+            actor: principal.user,
+            agent: principal.agent,
+            details,
+          }),
         })
         .pipe(
           Effect.retry({ schedule: Schedule.exponential("200 millis"), times: 3 }),

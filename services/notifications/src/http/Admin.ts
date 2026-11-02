@@ -37,6 +37,7 @@ export const AdminHandlers = HttpApiBuilder.group(
               action,
               target,
               actor: principal.user,
+              agent: principal.agent,
               details,
             }),
           })

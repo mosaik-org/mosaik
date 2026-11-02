@@ -1,13 +1,28 @@
 import { createHash, randomBytes } from "node:crypto"
 import { PgClient } from "@effect/sql-pg"
-import { AGENT_AUDIENCE, AGENT_TOKEN_TTL_SECONDS, type IssuedToken, type OAuthTokens } from "@mosaik/auth/contract"
-import { scopeGrants, Unauthorized, UserId } from "@mosaik/core"
-import { Context, Duration, Effect, Layer, Option } from "effect"
+import {
+  AGENT_AUDIENCE,
+  AGENT_TOKEN_TTL_SECONDS,
+  AgentConnection,
+  type IssuedToken,
+  type OAuthTokens,
+} from "@mosaik/auth/contract"
+import { Principal, scopeGrants, Unauthorized, UserId } from "@mosaik/core"
+import { Context, DateTime, Duration, Effect, Layer, Option } from "effect"
 import { InvalidGrant } from "../OAuth"
 import { Access } from "../rbac/Access"
 import { Users } from "../rbac/Users"
 import { SigningKeys } from "../SigningKeys"
 import type { AgentClient } from "./AgentClients"
+
+interface ConnectionRow {
+  readonly id: string
+  readonly userId: string
+  readonly clientName: string
+  readonly clientId: string
+  readonly createdAt: Date
+  readonly lastUsedAt: Date
+}
 
 /** How long an authorization code can be exchanged. */
 const CODE_TTL = Duration.minutes(1)
@@ -50,6 +65,10 @@ export class AgentConnections extends Context.Service<
     readonly revokeToken: (clientId: string, refreshToken: string) => Effect.Effect<void>
     /** Whether the person already allowed the client (in a connection that still lasts). */
     readonly allowed: (userId: string, clientId: string) => Effect.Effect<boolean>
+    /** Connections that last, newest first: someone's, or everyone's (`None`). */
+    readonly list: (userId: Option.Option<string>) => Effect.Effect<ReadonlyArray<AgentConnection>>
+    /** Ends a connection (only the person's own, with `userId`): the one it was, if any. */
+    readonly disconnect: (id: string, userId: Option.Option<string>) => Effect.Effect<Option.Option<AgentConnection>>
     /** A token for an app, as the connection's person, with their current grants. */
     readonly tokenForApp: (connection: string, app: string) => Effect.Effect<IssuedToken, Unauthorized>
   }
@@ -62,16 +81,44 @@ export class AgentConnections extends Context.Service<
       const access = yield* Access
       const users = yield* Users
 
-      /** The connection's person, while its session lasts. */
+      /** Only `userId`'s connections, or everyone's. */
+      const ownedBy = (userId: Option.Option<string>) =>
+        Option.match(userId, { onNone: () => sql.literal("true"), onSome: (id) => sql`c.user_id = ${id}` })
+
+      const toConnections = Effect.fn(function* (rows: ReadonlyArray<ConnectionRow>) {
+        const people = new Map(
+          (yield* users.lookup([...new Set(rows.map((row) => UserId.make(row.userId)))])).map((user) => [
+            user.id as string,
+            user,
+          ]),
+        )
+        return rows.flatMap((row) => {
+          const user = people.get(row.userId)
+          if (user === undefined) return []
+          return [
+            new AgentConnection({
+              id: row.id,
+              user,
+              client: row.clientName,
+              clientId: row.clientId,
+              createdAt: DateTime.fromDateUnsafe(row.createdAt),
+              lastUsedAt: DateTime.fromDateUnsafe(row.lastUsedAt),
+            }),
+          ]
+        })
+      })
+
+      /** The connection's person (acting through its client), while its session lasts. */
       const principalOf = Effect.fn(function* (connection: string) {
-        const [row] = yield* sql<{ userId: string }>`
-          SELECT c.user_id FROM agent_connections c JOIN session s ON s.id = c.session_id
+        const [row] = yield* sql<{ userId: string; clientName: string }>`
+          SELECT c.user_id, c.client_name FROM agent_connections c JOIN session s ON s.id = c.session_id
           WHERE c.id = ${connection} AND s."expiresAt" > now()
         `.pipe(Effect.orDie)
         if (row === undefined) return Option.none()
         const [user] = yield* users.lookup([UserId.make(row.userId)])
         if (user === undefined) return Option.none()
-        return Option.some(yield* access.principalFor(Option.some(user)))
+        const principal = yield* access.principalFor(Option.some(user))
+        return Option.some(new Principal({ ...principal, agent: row.clientName }))
       })
 
       const tokens = Effect.fn("AgentConnections.tokens")(function* (connection: string, refreshToken: string) {
@@ -170,6 +217,24 @@ export class AgentConnections extends Context.Service<
             DELETE FROM agent_connections WHERE refresh_token_hash = ${hash(refreshToken)} AND client_id = ${clientId}
           `.pipe(Effect.asVoid, Effect.orDie),
 
+        list: Effect.fn("AgentConnections.list")(function* (userId) {
+          const rows = yield* sql<ConnectionRow>`
+            SELECT c.id, c.user_id, c.client_name, c.client_id, c.created_at, c.last_used_at
+            FROM agent_connections c JOIN session s ON s.id = c.session_id
+            WHERE s."expiresAt" > now() AND ${ownedBy(userId)}
+            ORDER BY c.created_at DESC
+          `.pipe(Effect.orDie)
+          return yield* toConnections(rows)
+        }),
+
+        disconnect: Effect.fn("AgentConnections.disconnect")(function* (id, userId) {
+          const rows = yield* sql<ConnectionRow>`
+            DELETE FROM agent_connections c WHERE id = ${id} AND ${ownedBy(userId)}
+            RETURNING c.id, c.user_id, c.client_name, c.client_id, c.created_at, c.last_used_at
+          `.pipe(Effect.orDie)
+          return Option.fromUndefinedOr((yield* toConnections(rows))[0])
+        }),
+
         allowed: (userId, clientId) =>
           sql<{ found: number }>`
             SELECT 1 AS found FROM agent_connections c JOIN session s ON s.id = c.session_id
@@ -190,7 +255,14 @@ export class AgentConnections extends Context.Service<
             UPDATE agent_connections SET last_used_at = now()
             WHERE id = ${connection} AND last_used_at < now() - interval '1 minute'
           `.pipe(Effect.orDie)
-          return yield* keys.sign({ user: principal.value.user, grants: scopeGrants(principal.value.grants, app) }, app)
+          return yield* keys.sign(
+            {
+              user: principal.value.user,
+              grants: scopeGrants(principal.value.grants, app),
+              agent: principal.value.agent ?? undefined,
+            },
+            app,
+          )
         }),
       })
     }),

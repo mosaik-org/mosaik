@@ -16,6 +16,7 @@ import { Route as PortalRouteRouteImport } from './../../apps/portal/web/routes/
 import { Route as StatusRouteRouteImport } from './../../apps/status/web/routes/route'
 import { Route as AccessRequestsIndexRouteImport } from './../../packages/console/src/routes/access-requests/index'
 import { Route as AdminIndexRouteImport } from './../../packages/console/src/routes/admin/index'
+import { Route as AdminAgentsRouteImport } from './../../packages/console/src/routes/admin/agents'
 import { Route as AdminAuditRouteImport } from './../../packages/console/src/routes/admin/audit'
 import { Route as AdminDeliveriesRouteImport } from './../../packages/console/src/routes/admin/deliveries'
 import { Route as AdminNotificationsRouteImport } from './../../packages/console/src/routes/admin/notifications'
@@ -64,6 +65,11 @@ const AccessRequestsIndexRoute = AccessRequestsIndexRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAgentsRoute = AdminAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/portal': typeof PortalRouteRouteWithChildren
   '/status': typeof StatusRouteRouteWithChildren
+  '/admin/agents': typeof AdminAgentsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof indexRoute
+  '/admin/agents': typeof AdminAgentsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/deliveries': typeof AdminDeliveriesRoute
   '/admin/notifications': typeof AdminNotificationsRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/_app/portal': typeof PortalRouteRouteWithChildren
   '/_app/status': typeof StatusRouteRouteWithChildren
   '/_app/': typeof indexRoute
+  '/_app/admin/agents': typeof AdminAgentsRoute
   '/_app/admin/audit': typeof AdminAuditRoute
   '/_app/admin/deliveries': typeof AdminDeliveriesRoute
   '/_app/admin/notifications': typeof AdminNotificationsRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/portal'
     | '/status'
+    | '/admin/agents'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin/agents'
     | '/admin/audit'
     | '/admin/deliveries'
     | '/admin/notifications'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/_app/portal'
     | '/_app/status'
     | '/_app/'
+    | '/_app/admin/agents'
     | '/_app/admin/audit'
     | '/_app/admin/deliveries'
     | '/_app/admin/notifications'
@@ -333,6 +345,13 @@ declare module '@tanstack/solid-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/_app/admin/agents': {
+      id: '/_app/admin/agents'
+      path: '/agents'
+      fullPath: '/admin/agents'
+      preLoaderRoute: typeof AdminAgentsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/_app/admin/audit': {
@@ -444,6 +463,7 @@ declare module '@tanstack/solid-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminAgentsRoute: typeof AdminAgentsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminDeliveriesRoute: typeof AdminDeliveriesRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
@@ -453,6 +473,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAgentsRoute: AdminAgentsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminDeliveriesRoute: AdminDeliveriesRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,

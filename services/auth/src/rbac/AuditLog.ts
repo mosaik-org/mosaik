@@ -36,7 +36,7 @@ export class AuditLog extends Context.Service<
         }),
         Result: AuditRow,
         execute: ({ app, before, limit }) => sql`
-          SELECT id, at, app, action, target, actor_id, actor_email, details
+          SELECT id, at, app, action, target, actor_id, actor_email, agent, details
           FROM audit_log
           WHERE ${sql.and([
             app === undefined ? sql.literal("true") : sql`app = ${app}`,
@@ -56,6 +56,7 @@ export class AuditLog extends Context.Service<
               target: event.target,
               actorId: event.actor?.id ?? null,
               actorEmail: event.actor?.email ?? null,
+              agent: event.agent,
               details: sql.json(event.details),
             })}
           `.pipe(Effect.orDie)

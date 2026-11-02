@@ -2,7 +2,7 @@ import { admin } from "@mosaik/auth/contract"
 import { AppLayout } from "@mosaik/web-kit"
 import { createFileRoute } from "@tanstack/solid-router"
 
-/** Core's administration: users, roles, notification channels and the audit log. */
+/** Core's administration: users, roles, notification channels, the audit log and AI clients. */
 export const Route = createFileRoute("/_app/admin")({
   component: () => (
     <AppLayout
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_app/admin")({
         { to: "/admin/notifications", label: "Notifications", permission: admin.perm("notifications.view") },
         { to: "/admin/deliveries", label: "Deliveries", permission: admin.perm("notifications.view") },
         { to: "/admin/audit", label: "Audit log", permission: admin.perm("audit.view") },
+        { to: "/admin/agents", label: "AI clients", permission: admin.perm("users.manage") },
       ]}
     />
   ),

@@ -10,7 +10,8 @@ import { SqlClient } from "effect/sql"
  * - `agent_connections`: an AI client someone allowed, with its refresh token. Like standalone
  *   apps' refresh tokens, it lasts as long as the Core session it was allowed in.
  *
- * Only hashes of codes and tokens are stored.
+ * Only hashes of codes and tokens are stored. The audit log records which AI client, if any, did
+ * what it records.
  */
 export default Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient
@@ -50,4 +51,5 @@ export default Effect.gen(function* () {
   `
   yield* sql`CREATE INDEX agent_connections_user_idx ON agent_connections (user_id, client_id)`
   yield* sql`CREATE INDEX agent_connections_session_idx ON agent_connections (session_id)`
+  yield* sql`ALTER TABLE audit_log ADD COLUMN agent text`
 })

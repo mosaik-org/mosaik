@@ -31,7 +31,8 @@ export class TokenVerifier extends Context.Service<
   static make(getKey: JWTVerifyGetKey, audience: string): TokenVerifier["Service"] {
     const claims = verifyToken(getKey, audience, TokenClaims)
     return TokenVerifier.of({
-      verify: (token) => Effect.map(claims(token), (claims) => new Principal(claims)),
+      verify: (token) =>
+        Effect.map(claims(token), ({ user, grants, agent }) => new Principal({ user, grants, agent: agent ?? null })),
     })
   }
 

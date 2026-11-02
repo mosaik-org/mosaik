@@ -1,4 +1,4 @@
-import { signInUrl } from "@mosaik/auth/contract"
+import { AGENT_CONNECTIONS_PATH, signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { toast } from "@mosaik/client"
 import { ActionMenu, Avatar, Button } from "@mosaik/mosaik-ui"
@@ -6,6 +6,7 @@ import { css } from "@mosaik/styled-system/css"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
+import Bot from "lucide-solid/icons/bot"
 import LogOut from "lucide-solid/icons/log-out"
 import { Show } from "solid-js"
 
@@ -70,6 +71,13 @@ export const UserMenu = () => {
               label: "Notification settings",
               icon: <Bell size={16} />,
               onSelect: () => void navigate({ to: "/notifications/settings" }),
+            },
+            {
+              value: "agents",
+              label: "AI clients",
+              icon: <Bot size={16} />,
+              // Core's own page, outside the shell.
+              onSelect: () => location.assign(AGENT_CONNECTIONS_PATH),
             },
             { value: "logout", label: "Sign out", icon: <LogOut size={16} />, onSelect: () => void logout() },
           ]}

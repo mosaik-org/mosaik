@@ -52,6 +52,8 @@ export class AuditRequest extends Schema.Class<AuditRequest>("@mosaik/platform/A
   action: Schema.String,
   target: Schema.NullOr(Schema.String),
   actor: Schema.NullOr(PrincipalUser),
+  /** The AI client the actor used (`Principal.agent`), if any. */
+  agent: Schema.NullOr(Schema.String),
   details: Schema.Record(Schema.String, Schema.Json),
 }) {}
 

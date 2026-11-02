@@ -1,4 +1,4 @@
-import { signInUrl } from "@mosaik/auth/contract"
+import { AGENT_CONNECTIONS_PATH, signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, signOut, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
 import { canUseConsole, consoleNav } from "@mosaik/console"
 import { Button, EmptyState, ThemeToggle } from "@mosaik/mosaik-ui"
@@ -84,6 +84,10 @@ function ConsoleLayout() {
           </nav>
           <div class={styles.user}>
             <span>{principal().user?.name}</span>
+            {/* Core's own page, outside the console. */}
+            <a href={AGENT_CONNECTIONS_PATH} class={css({ color: "fg.muted", _hover: { color: "fg.default" } })}>
+              AI clients
+            </a>
             <ThemeToggle />
             <Button size="sm" variant="outline" onClick={() => void leave()}>
               Sign out

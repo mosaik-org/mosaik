@@ -1,5 +1,6 @@
 import {
   AGENT_AUTHORIZE_PATH,
+  AGENT_CONNECTIONS_PATH,
   AGENT_REGISTER_PATH,
   AGENT_RESOURCE_PATH,
   AGENT_REVOKE_PATH,
@@ -8,7 +9,7 @@ import {
   signInUrl,
 } from "@mosaik/auth/contract"
 import { CorePages, escapeHtml, formOf } from "@mosaik/server"
-import { Effect, Option } from "effect"
+import { DateTime, Effect, Option } from "effect"
 import { HttpRouter, type HttpServerRequest, HttpServerResponse } from "effect/http"
 import { AuthConfig } from "../AuthConfig"
 import { type AgentClient, AgentClients, matchesRedirect } from "../agents/AgentClients"
@@ -57,7 +58,8 @@ const canonical = (uri: string) => (URL.canParse(uri) ? new URL(uri).href.replac
  * - `authorize`: sends people to Core's sign-in if needed, asks them once per client whether to
  *   allow it, and returns to the client with a one-time code;
  * - `token`: the code (with its PKCE verifier) or a refresh token for an access token;
- * - `revoke`: ends a connection (RFC 7009).
+ * - `revoke`: ends a connection (RFC 7009);
+ * - `connections`: the page where people see the AI clients they connected, and disconnect them.
  */
 export const AgentRoutes = HttpRouter.use(
   Effect.fn(function* (router) {
@@ -91,7 +93,7 @@ export const AgentRoutes = HttpRouter.use(
           title: `Allow ${client.name}`,
           body: `<h1>Allow ${name} to use ${escapeHtml(brand)}?</h1>
 <p>${name} (${identity}) will be able to do everything you can do in ${escapeHtml(brand)}'s apps, as you: see and change their data, with your permissions. What it does is recorded in the audit log as yours.</p>
-<p class="hint">Signed in as ${escapeHtml(email)}. It keeps access until you sign out of ${escapeHtml(brand)} or disconnect it. After you allow it, you return to ${escapeHtml(new URL(redirectUri).host || redirectUri)}.</p>
+<p class="hint">Signed in as ${escapeHtml(email)}. It keeps access until you sign out of ${escapeHtml(brand)} or <a href="${AGENT_CONNECTIONS_PATH}">disconnect it</a>. After you allow it, you return to ${escapeHtml(new URL(redirectUri).host || redirectUri)}.</p>
 <form method="post" action="${AGENT_AUTHORIZE_PATH}">
 ${hidden}
 <button type="submit" name="decision" value="allow">Allow</button>
@@ -158,6 +160,59 @@ ${hidden}
       })
       return back(redirectUri, issuer, { code, state })
     })
+
+    const when = (at: DateTime.Utc) => `${DateTime.formatIso(at).slice(0, 16).replace("T", " ")} UTC`
+
+    const connectionsPage = Effect.fn("Agents.connectionsPage")(function* (userId: string, email: string) {
+      const connected = yield* connections.list(Option.some(userId))
+      const rows = connected
+        .map(
+          (connection) => `<tr>
+  <td>${escapeHtml(connection.client)}</td>
+  <td>${when(connection.createdAt)}</td>
+  <td>${when(connection.lastUsedAt)}</td>
+  <td><form method="post" action="${AGENT_CONNECTIONS_PATH}"><input type="hidden" name="connection" value="${escapeHtml(connection.id)}"><button type="submit" class="secondary">Disconnect</button></form></td>
+</tr>`,
+        )
+        .join("\n")
+      return pages.page({
+        title: "AI clients",
+        body: `<h1>AI clients</h1>
+<p>AI clients (Claude, Cursor and others) can use ${escapeHtml(brand)}'s apps as you, through this MCP server:</p>
+<p><code>${escapeHtml(resource)}</code></p>
+<p class="hint">Add it to the client; it asks you to sign in and allow it. Signed in as ${escapeHtml(email)}.</p>
+${
+  connected.length === 0
+    ? "<p>No AI client is connected.</p>"
+    : `<table><thead><tr><th>Client</th><th>Connected</th><th>Last used</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+}`,
+      })
+    })
+
+    yield* router.add(
+      "GET",
+      AGENT_CONNECTIONS_PATH,
+      Effect.fn(function* (request: HttpServerRequest.HttpServerRequest) {
+        const session = yield* auth.getSession(new Headers(request.headers)).pipe(Effect.orDie)
+        if (Option.isNone(session)) return HttpServerResponse.redirect(signInUrl(AGENT_CONNECTIONS_PATH))
+        return yield* connectionsPage(session.value.user.id, session.value.user.email)
+      }),
+    )
+
+    yield* router.add(
+      "POST",
+      AGENT_CONNECTIONS_PATH,
+      Effect.fn("Agents.disconnect")(function* (request: HttpServerRequest.HttpServerRequest) {
+        const origin = request.headers.origin
+        if (origin !== undefined && origin !== issuer) return problem("This form was sent from another site.")
+        const session = yield* auth.getSession(new Headers(request.headers)).pipe(Effect.orDie)
+        if (Option.isNone(session)) return HttpServerResponse.redirect(signInUrl(AGENT_CONNECTIONS_PATH))
+        const params = yield* formOf(request)
+        // Only the person's own connections.
+        yield* connections.disconnect(params.get("connection") ?? "", Option.some(session.value.user.id))
+        return HttpServerResponse.redirect(AGENT_CONNECTIONS_PATH, { status: 303 })
+      }),
+    )
 
     yield* router.add(
       "GET",

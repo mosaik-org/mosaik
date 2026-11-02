@@ -1,4 +1,4 @@
-import { CustomRoleId, Grant, PermissionKey, RoleId, UserId } from "@mosaik/core"
+import { CustomRoleId, Grant, PermissionKey, PrincipalUser, RoleId, UserId } from "@mosaik/core"
 import { Schema } from "effect"
 
 export class AdminUser extends Schema.Class<AdminUser>("@mosaik/auth/admin/AdminUser")({
@@ -69,7 +69,21 @@ export class AuditRecord extends Schema.Class<AuditRecord>("@mosaik/auth/admin/A
   target: Schema.NullOr(Schema.String),
   actorId: Schema.NullOr(Schema.String),
   actorEmail: Schema.NullOr(Schema.String),
+  /** The AI client the actor used, if any. */
+  agent: Schema.NullOr(Schema.String),
   details: Schema.Record(Schema.String, Schema.Json),
+}) {}
+
+/** An AI client someone connected to Mosaik's MCP server (see `@mosaik/auth/contract`'s agent paths). */
+export class AgentConnection extends Schema.Class<AgentConnection>("@mosaik/auth/admin/AgentConnection")({
+  id: Schema.String,
+  user: PrincipalUser,
+  /** The client's name, as it registered or published it. */
+  client: Schema.String,
+  /** Its client id: the address of its metadata document, or the id it registered under. */
+  clientId: Schema.String,
+  createdAt: Schema.DateTimeUtc,
+  lastUsedAt: Schema.DateTimeUtc,
 }) {}
 
 export class AuditPage extends Schema.Class<AuditPage>("@mosaik/auth/admin/AuditPage")({

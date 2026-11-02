@@ -1,7 +1,7 @@
 import { AccessControl, BadRequest, Conflict, NotFound, RequiredPermission, RoleId, UserId } from "@mosaik/core"
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
-import { AdminUser, AuditPage, CatalogApp, CreateRole, CreateUser, Role, UpdateRole } from "./domain"
+import { AdminUser, AgentConnection, AuditPage, CatalogApp, CreateRole, CreateUser, Role, UpdateRole } from "./domain"
 import { admin } from "./manifest"
 
 const userParams = { id: UserId }
@@ -74,8 +74,21 @@ export class AuditGroup extends HttpApiGroup.make("audit")
   .annotateEndpoints(RequiredPermission, admin.perm("audit.view"))
   .prefix("/audit") {}
 
+/** AI clients people connected to Mosaik's MCP server: who connected what, and disconnecting them. */
+export class AgentsGroup extends HttpApiGroup.make("agents")
+  .add(
+    HttpApiEndpoint.get("list", "/", { success: Schema.Array(AgentConnection) }),
+    HttpApiEndpoint.delete("disconnect", "/:id", {
+      params: { id: Schema.String },
+      success: HttpApiSchema.NoContent,
+      error: NotFound,
+    }),
+  )
+  .annotateEndpoints(RequiredPermission, admin.perm("users.manage"))
+  .prefix("/agents") {}
+
 /** Core's administration API, served by the auth service under `/api/admin`. */
 export class AdminApi extends HttpApi.make("admin")
-  .add(UsersGroup, RolesGroup, CatalogGroup, AuditGroup)
+  .add(UsersGroup, RolesGroup, CatalogGroup, AuditGroup, AgentsGroup)
   .prefix(admin.apiPrefix)
   .middleware(AccessControl) {}

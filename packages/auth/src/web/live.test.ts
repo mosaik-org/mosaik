@@ -22,7 +22,7 @@ class FakeEventSource {
 let grants: Array<string> = ["sales:view"]
 const session = vi.fn(async () =>
   Response.json({
-    principal: { user: { id: "u1", email: "ada@example.com", name: "Ada", image: null }, grants },
+    principal: { user: { id: "u1", email: "ada@example.com", name: "Ada", image: null }, grants, agent: null },
     providers: { password: true, microsoft: false },
   }),
 )

@@ -1,7 +1,7 @@
 import { defineApp } from "@mosaik/core"
 
 /**
- * Core's administration: users, roles, the audit log and notification channels. The auth
+ * Core's administration: users, roles, the audit log, notification channels and AI clients. The auth
  * service registers it and serves its API; the notifications service checks its
  * notification permissions (see `NotificationsAdmin` in @mosaik/notifications/contract).
  * The Portal shows it as the Administration app.
@@ -9,7 +9,7 @@ import { defineApp } from "@mosaik/core"
 export const admin = defineApp({
   id: "admin",
   name: "Administration",
-  description: "Users, roles, notifications and the audit log.",
+  description: "Users, roles, notifications, the audit log and AI clients.",
   access: "access",
   permissions: {
     access: { description: "Open the administration" },

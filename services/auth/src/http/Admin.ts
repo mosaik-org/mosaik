@@ -1,7 +1,8 @@
 import { AdminApi, AuditEventInput, admin } from "@mosaik/auth/contract"
-import { CurrentPrincipal } from "@mosaik/core"
-import { Effect, Layer, type Schema } from "effect"
+import { CurrentPrincipal, NotFound } from "@mosaik/core"
+import { Effect, Layer, Option, type Schema } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
+import { AgentConnections } from "../agents/AgentConnections"
 import { AuditLog } from "../rbac/AuditLog"
 import { Registry } from "../rbac/Registry"
 import { Roles } from "../rbac/Roles"
@@ -15,7 +16,9 @@ const recordAdminAction = Effect.fn("Admin.audit")(function* (
 ) {
   const audit = yield* AuditLog
   const principal = yield* CurrentPrincipal
-  yield* audit.record(new AuditEventInput({ app: admin.id, action, target, actor: principal.user, details }))
+  yield* audit.record(
+    new AuditEventInput({ app: admin.id, action, target, actor: principal.user, agent: principal.agent, details }),
+  )
 })
 
 const UsersHandlers = HttpApiBuilder.group(
@@ -97,4 +100,30 @@ const AuditHandlers = HttpApiBuilder.group(
   }),
 )
 
-export const AdminHandlers = Layer.mergeAll(UsersHandlers, RolesHandlers, CatalogHandlers, AuditHandlers)
+const AgentsHandlers = HttpApiBuilder.group(
+  AdminApi,
+  "agents",
+  Effect.fn(function* (handlers) {
+    const connections = yield* AgentConnections
+    return handlers
+      .handle("list", () => connections.list(Option.none()))
+      .handle(
+        "disconnect",
+        Effect.fn(function* ({ params }) {
+          const connection = yield* connections.disconnect(params.id, Option.none())
+          if (Option.isNone(connection)) return yield* new NotFound({ resource: "AI client connection", id: params.id })
+          yield* recordAdminAction("agents.disconnect", connection.value.user.email, {
+            client: connection.value.client,
+          })
+        }),
+      )
+  }),
+)
+
+export const AdminHandlers = Layer.mergeAll(
+  UsersHandlers,
+  RolesHandlers,
+  CatalogHandlers,
+  AuditHandlers,
+  AgentsHandlers,
+)

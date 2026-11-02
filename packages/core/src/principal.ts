@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import { Effect, Schema } from "effect"
 import { Grant, isGranted } from "./permission"
 
 export const UserId = Schema.String.pipe(Schema.brand("@mosaik/UserId"))
@@ -19,6 +19,11 @@ export class PrincipalUser extends Schema.Class<PrincipalUser>("@mosaik/core/Pri
 export class Principal extends Schema.Class<Principal>("@mosaik/core/Principal")({
   user: Schema.NullOr(PrincipalUser),
   grants: Schema.Array(Grant),
+  /**
+   * The AI client acting for the user, by name (e.g. "Claude"), when the request comes from one
+   * through Mosaik's MCP server; `null` otherwise. The audit log records it with what it does.
+   */
+  agent: Schema.NullOr(Schema.String).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
 }) {
   get isAuthenticated(): boolean {
     return this.user !== null
