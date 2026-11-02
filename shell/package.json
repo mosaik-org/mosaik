@@ -10,6 +10,7 @@
     "typecheck": "tsc -p . && tsc -p tsconfig.node.json"
   },
   "dependencies": {
+    "@mosaik/assistant": "workspace:*",
     "@mosaik/auth": "workspace:*",
     "@mosaik/builtin-status": "workspace:*",
     "@mosaik/charts": "workspace:*",

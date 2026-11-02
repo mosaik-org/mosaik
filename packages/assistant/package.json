@@ -4,13 +4,23 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./contract": "./src/contract/index.ts"
+    "./contract": "./src/contract/index.ts",
+    "./web": "./src/web/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
-    "effect": "^4.1.2"
+    "@mosaik/mosaik-ui": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/web-kit": "workspace:*",
+    "@tanstack/solid-query": "^5.104.3",
+    "dompurify": "^3.4.17",
+    "effect": "^4.1.2",
+    "lucide-solid": "^1.57.0",
+    "marked": "^18.1.2",
+    "solid-js": "^1.9.17"
   }
 }

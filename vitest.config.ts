@@ -35,6 +35,7 @@ export default defineConfig({
             "packages/web-kit/src/**/*.test.ts",
             "packages/client/src/**/*.test.ts",
             "packages/auth/src/web/**/*.test.ts",
+            "packages/assistant/src/web/**/*.test.ts",
             "packages/charts/src/**/*.test.ts",
           ],
         },

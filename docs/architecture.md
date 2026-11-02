@@ -41,6 +41,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 | App settings | platform: values, checks, audit, delivery to running apps; the console's Settings tab | — |
 | App files | platform: storage in SeaweedFS (S3), per-app limits; the console's Storage tab | — |
 | AI clients (MCP) | mcp: tools from apps' contracts, listed per person, calls as the person; auth: sign-in for AI clients, connections; the console's and account pages | — |
+| The assistant | assistant: conversations, the model (a provider admins choose), turns with approvals; its panel (`packages/assistant`) | mounts the panel in the shell |
 | App identity | platform: id, origin (configured or managed), key, status, address, registered manifest | creates the apps it installs |
 | Databases | platform: provisions an app's database on request | asks for one when it runs an image |
 | Administration | auth: users, roles, audit (`admin:*`, `/api/admin`); the console's pages | lists it as an app; its own pages for installs (`/portal`) |
@@ -75,6 +76,11 @@ Core stores the manifest an app registers and interprets only its own part. A st
   AI clients (`/api/auth/agents/*`, OAuth 2.1 with PKCE). The MCP server follows the platform's routes,
   reads each app's tools (`/.well-known/mosaik-tools.json`) and calls apps directly with a token for the
   person, which it asks the auth service for on every call (`/internal/agent-token`).
+- **Browser → the assistant:** `/api/assistant` through the gateway: conversations, and turns streamed as
+  Server-Sent Events. The assistant uses the same catalog of tools (`packages/tools`) and calls apps
+  with a token for the person that the auth service issues for each call (`/internal/user-token`), naming
+  the assistant as the agent. Only one module knows the AI library (the AI SDK, for now); conversations
+  are stored in the contract's own form, so another library or provider can continue them.
 - **Browser → Core:** auth (`/api/auth`, `/api/admin`), notifications (`/api/notifications`), the platform's
   access requests and app pages (`/api/platform`), all through the gateway.
 - **Browser → Portal:** catalog, pins and usage, categories, installs (`/api/portal`), through the gateway.
@@ -145,6 +151,8 @@ rewritten to relative paths, so an app sees one package and one version.
   it can mount.
 - A full OpenID Connect provider (ID tokens, userinfo) for clients other than Mosaik's SDKs. AI clients
   sign in with OAuth 2.1 (discovery, PKCE), for the MCP server only.
+- An admin page for the assistant (provider, model, budgets per person): it is configured through the
+  environment for now. Nor does it run scripts that chain many reads in one step ("code mode").
 - Narrower access for AI clients: a client may do everything its person can. Choosing fewer permissions
   per client, or tokens limited to some apps, would come on top of `principal.agent`.
 - An in-app inbox for standalone apps: their users get notifications by e-mail and Slack.

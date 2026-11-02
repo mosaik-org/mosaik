@@ -9,6 +9,7 @@
 - [Finding apps](#finding-apps)
 - [Notifications and channels](#notifications-and-channels)
 - [AI clients (MCP)](#ai-clients-mcp)
+- [The assistant](#the-assistant)
 
 ## Deployment
 
@@ -21,7 +22,7 @@ The image runs every service and built-in app (the examples are not deployed). O
 and it also serves the shell. For Entra ID, register the redirect URI
 `<PUBLIC_URL>/api/auth/callback/microsoft`. `.env.example` documents every setting.
 
-- **Core and the Portal.** Core is the `auth`, `notifications`, `platform`, `mcp` and `gateway` services and its
+- **Core and the Portal.** Core is the `auth`, `notifications`, `platform`, `mcp`, `assistant` and `gateway` services and its
   console; the Portal is the `portal` service and the shell. The gateway serves one of the two UIs at `/`
   (`STATIC_DIR`): the shell (`/app/shell/dist`), or without the Portal the console
   (`/app/console/dist`), then also leave out the `portal` service and `UPSTREAM_PORTAL`.
@@ -209,4 +210,29 @@ offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
 - **Network.** The `mcp` service calls apps' backends directly, like the gateway, so it needs the same
   networks (`apps`, for image apps). The auth service fetches clients' metadata documents over HTTPS
   (outbound access to the internet, 5 KB at most, never following redirects).
+
+## The assistant
+
+The assistant is a chat in the shell (the sparkles button, or Ctrl/⌘+J) with an AI that uses apps'
+tools as the person, the same tools AI clients get through the MCP server. It is off until an admin
+chooses a model: it sends people's questions, and what apps answer them, to that model's provider.
+
+- **The model**, in the `assistant` service's environment: `ASSISTANT_PROVIDER` and `ASSISTANT_MODEL`,
+  with the provider's credentials.
+  - `opencode`: OpenCode Zen, pay as you go, any of its text models (`OPENCODE_API_KEY`; `OPENCODE_BASE_URL`
+    defaults to its OpenAI-compatible endpoint).
+  - `opencode-go`: OpenCode Go, a subscription, with the same key. The assistant identifies itself
+    (`mosaik-assistant/1.0`) and names each conversation (`x-opencode-session`), as Go asks of clients.
+    OpenCode designed Go for coding agents and monitors its traffic, so check its terms fit your use.
+  - `anthropic`: the Anthropic API (`ANTHROPIC_API_KEY`).
+  - `bedrock`: Amazon Bedrock, any model with tool use (`AWS_REGION` and the usual AWS credentials).
+- **Changes need the person's approval.** Tools that only read run at once; every call that changes
+  something waits for the person to allow or deny it in the panel. Writing again denies the calls still
+  waiting.
+- **As the person.** Calls run with the person's current permissions, and the audit log records them as
+  the person's, "via <BRAND_NAME> assistant".
+- **History.** Conversations are kept, each visible only to its person, in the assistant's database
+  (`mosaik_assistant`).
+- **Limits.** A turn takes at most 20 model steps; each person may make `TOOL_CALLS_PER_MINUTE` tool calls
+  a minute (120); answers from apps are cut at 60,000 characters.
 

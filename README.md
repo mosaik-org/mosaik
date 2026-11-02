@@ -19,7 +19,8 @@ Mosaik comes in two layers ([Architecture](docs/architecture.md)):
 
 - **For people using it:** one sign-in (email/password or Microsoft Entra ID), the apps they use pinned
   in the sidebar, a directory of every app with a way to request access, one inbox for notifications,
-  a command palette (Ctrl/⌘+K) that searches pages and data across apps, and their AI client (any client
+  a command palette (Ctrl/⌘+K) that searches pages and data across apps, an assistant (Ctrl/⌘+J) that
+  looks things up and acts in apps for them once they allow it, and their AI client (any client
   of the Model Context Protocol) using apps as them through Mosaik's MCP server.
 - **For app teams:** an SDK that handles authentication, permissions, roles, audit, notifications, e-mail,
   Slack and Teams messages, platform events, databases and a consistent UI kit. An app is a manifest,
@@ -77,6 +78,7 @@ Browser ── shell (Portal) ──► Gateway (Core)
                                 ├─ /api/portal/*        → portal (catalog, pins and usage, installs)
                                 ├─ /api/<id>/*          → app <id> (route from the platform's registry)
                                 │    + Authorization: Bearer <token for that app only>
+                                ├─ /api/assistant/*     → assistant (conversations, turns streamed as events)
                                 └─ /mcp                 → mcp (AI clients, with their own access token)
 
 Apps ── /api/platform/v1 (app key) ──► platform ──► auth (permissions, roles, audit)
@@ -90,7 +92,7 @@ AI client ── /mcp ──► mcp ── tools from apps' contracts ──► 
           └─ sign-in ──► Core (OAuth 2.1 + PKCE: /api/auth/agents/*)
 ```
 
-**Core** (`services/auth`, `notifications`, `platform`, `mcp`, `gateway`):
+**Core** (`services/auth`, `notifications`, `platform`, `mcp`, `assistant`, `gateway`):
 
 - **Gateway.** The only public entry point.
   - It exchanges the session cookie for a short-lived (60 s) Ed25519-signed token carrying the user and
@@ -116,6 +118,9 @@ AI client ── /mcp ──► mcp ── tools from apps' contracts ──► 
   (`AgentTool` on their contracts), lists each person only those they may call, and calls apps as that
   person. AI clients sign in through the auth service (OAuth 2.1 with PKCE, once per client) and stay
   connected as long as the person's Core session; the audit log names the client.
+- **Assistant service.** The assistant in the shell: an AI, on a model admins choose (OpenCode Zen or Go,
+  Anthropic or Bedrock), using the same tools as the MCP server as the person, who allows every change in the panel.
+  Conversations are kept per person. Off until a model is configured.
 - **Apps.** Each backend checks tokens locally against the platform's JWKS (no call per request) and
   enforces each endpoint's permission. Every app serves its manifest at `/.well-known/mosaik-app.json`.
 
@@ -136,6 +141,7 @@ services/
   gateway/        Core: reverse proxy, session → token exchange, serves the built shell in production
   auth/           Core: Better Auth, roles and grants, app registry, audit log, admin API, OAuth for standalone apps and AI clients
   mcp/            Core: the MCP server for AI clients: apps' tools per person, calls as the person
+  assistant/      Core: the assistant: conversations, the model (one module), turns with approvals
   notifications/  Core: outbox, worker, channels (e-mail, Slack, Teams), inbox, settings, routing
   platform/       Core: app identities and keys, platform API, events, databases, access requests
   portal/         Portal: installing and running apps, catalog, pins, usage and categories
@@ -152,7 +158,8 @@ packages/         The SDK and shared code
   core            Manifests, permissions, roles, principal, errors, AccessControl contract
   auth            contract (tokens, internal, admin and OAuth APIs, AI clients' sign-in) · server (verification, middleware) · web (session, <Can>, live access)
   server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, tools for AI clients, observability
-  tools           Apps' tools for AI (Core): the catalog of what apps offer (AgentTool), calls to them as a person; used by mcp
+  tools           Apps' tools for AI (Core): the catalog of what apps offer (AgentTool), calls to them as a person; used by mcp and assistant
+  assistant       The assistant's contract (conversations, turn events) · web (the panel the shell mounts)
   notifications   contract (content, destinations, audiences, internal and browser APIs)
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
   portal          The Portal's package: contract (catalog, workspace, installs, permissions) · web (defineWebApp, what the shell mounts) · build (the mounted bundle, the shared-module list)

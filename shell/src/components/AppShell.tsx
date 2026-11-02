@@ -1,11 +1,15 @@
+import { AssistantPanel, assistant } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { PageMain, useCommandPalette } from "@mosaik/web-kit"
-import { Link } from "@tanstack/solid-router"
+import { useQuery } from "@tanstack/solid-query"
+import { Link, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
 import Search from "lucide-solid/icons/search"
-import { createSignal, type JSX, Show } from "solid-js"
+import Sparkles from "lucide-solid/icons/sparkles"
+import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
+import { appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
 import { Sidebar } from "./Sidebar"
 import { UserMenu } from "./UserMenu"
@@ -15,6 +19,20 @@ const styles = {
     display: "grid",
     gridTemplateColumns: { base: "1fr", md: "240px 1fr" },
     minHeight: "100dvh",
+  }),
+  // With the assistant open, a third column on wide screens.
+  shellWithAssistant: css({ gridTemplateColumns: { base: "1fr", md: "240px 1fr", lg: "240px 1fr 400px" } }),
+  assistant: css({
+    // Docked on wide screens; over the page on narrower ones.
+    position: { base: "fixed", lg: "sticky" },
+    inset: { base: "0", lg: "auto" },
+    top: { lg: "0" },
+    zIndex: { base: "overlay", lg: "auto" },
+    width: { base: "full", sm: "400px" },
+    left: { sm: "auto" },
+    height: "100dvh",
+    borderLeftWidth: "1px",
+    boxShadow: { base: "lg", lg: "none" },
   }),
   aside: css({
     hideBelow: "md",
@@ -118,12 +136,41 @@ const Brand = () => (
   </Link>
 )
 
+/** Where the person is, for the assistant: the app, the path and the page's title. */
+const usePageContext = () => {
+  const router = useRouterState()
+  return () => {
+    const { location, matches } = router()
+    return {
+      app: appForPath(location.pathname)?.id ?? null,
+      path: location.href,
+      title: matches.findLast((match) => match.staticData?.title !== undefined)?.staticData.title ?? null,
+    }
+  }
+}
+
 export const AppShell = (props: { children: JSX.Element }) => {
   const [drawerOpen, setDrawerOpen] = createSignal(false)
+  const [assistantOpen, setAssistantOpen] = createSignal(false)
   const principal = usePrincipal()
+  const status = useQuery(() => ({ ...assistant.assistant.status.query(), enabled: principal().isAuthenticated }))
+  const assistantReady = () => principal().isAuthenticated && status.data?.enabled === true
+  const context = usePageContext()
+
+  onMount(() => {
+    // Ctrl/⌘+J opens and closes the assistant.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "j" && assistantReady()) {
+        event.preventDefault()
+        setAssistantOpen((open) => !open)
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    onCleanup(() => window.removeEventListener("keydown", onKeyDown))
+  })
 
   return (
-    <div class={styles.shell}>
+    <div class={`${styles.shell} ${assistantOpen() ? styles.shellWithAssistant : ""}`}>
       <aside class={styles.aside}>
         <Brand />
         <Sidebar />
@@ -148,6 +195,16 @@ export const AppShell = (props: { children: JSX.Element }) => {
           </div>
           <SearchButton />
           <div class={css({ flex: "1" })} />
+          <Show when={assistantReady()}>
+            <IconButton
+              variant={assistantOpen() ? "subtle" : "plain"}
+              aria-label="Assistant (Ctrl+J)"
+              aria-pressed={assistantOpen()}
+              onClick={() => setAssistantOpen((open) => !open)}
+            >
+              <Sparkles size={18} />
+            </IconButton>
+          </Show>
           <ThemeToggle />
           <Show when={principal().isAuthenticated}>
             <NotificationBell />
@@ -156,6 +213,12 @@ export const AppShell = (props: { children: JSX.Element }) => {
         </header>
         <PageMain>{props.children}</PageMain>
       </div>
+
+      <Show when={assistantOpen() && assistantReady()}>
+        <aside class={styles.assistant}>
+          <AssistantPanel context={context} onClose={() => setAssistantOpen(false)} />
+        </aside>
+      </Show>
     </div>
   )
 }

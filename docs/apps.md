@@ -498,7 +498,9 @@ HttpApiEndpoint.post("refund", "/:id/refund", { params: { id: OrderId }, payload
   endpoint takes anything else, or when a tool's name would exceed 64 characters.
 
 Apps serve their tools at `/.well-known/mosaik-tools.json`; the MCP server reads them when apps are
-installed or change. Sales and Issues offer theirs.
+installed or change. The assistant in the shell offers the same tools, with the person's approval for
+every call that changes something (`principal.agent` is then "<brand> assistant"). Sales and Issues
+offer theirs.
 
 ## Testing
 
