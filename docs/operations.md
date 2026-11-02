@@ -8,6 +8,7 @@
 - [Access: roles, owners and requests](#access-roles-owners-and-requests)
 - [Finding apps](#finding-apps)
 - [Notifications and channels](#notifications-and-channels)
+- [AI clients (MCP)](#ai-clients-mcp)
 
 ## Deployment
 
@@ -20,7 +21,7 @@ The image runs every service and built-in app (the examples are not deployed). O
 and it also serves the shell. For Entra ID, register the redirect URI
 `<PUBLIC_URL>/api/auth/callback/microsoft`. `.env.example` documents every setting.
 
-- **Core and the Portal.** Core is the `auth`, `notifications`, `platform` and `gateway` services and its
+- **Core and the Portal.** Core is the `auth`, `notifications`, `platform`, `mcp` and `gateway` services and its
   console; the Portal is the `portal` service and the shell. The gateway serves one of the two UIs at `/`
   (`STATIC_DIR`): the shell (`/app/shell/dist`), or without the Portal the console
   (`/app/console/dist`), then also leave out the `portal` service and `UPSTREAM_PORTAL`.
@@ -183,3 +184,29 @@ channels (a Teams workflow webhook, a Slack incoming webhook, or a Slack channel
 send a test message to each, and route notification types and message kinds (`<app>:<name>`) to channels in
 addition to their recipients. **Administration → Deliveries** is the delivery log, with a retry for failed
 deliveries. Webhook URLs are never shown again after they are saved.
+
+## AI clients (MCP)
+
+People can use apps from their AI client (Claude, Cursor, any client of the Model Context Protocol)
+through Mosaik's MCP server, the `mcp` service. It is on whenever Core runs; it offers only what apps
+offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
+
+- **The address** to add to a client is `<PUBLIC_URL>/mcp`. People find it on their *AI clients* page
+  (`/api/auth/agents/connections`, in the shell's account menu and the console's header).
+- **Signing in.** The client finds Core's sign-in through standard OAuth metadata
+  (`/.well-known/oauth-protected-resource/mcp`, `/.well-known/oauth-authorization-server`, served through
+  the gateway). Clients identify themselves either by the address of a metadata document their vendor
+  publishes (the consent page shows its domain) or by registering on the spot (the consent page says
+  the name is unverified). The person signs in to Core if needed and allows the client once.
+- **What a client may do.** Everything its person can do, in every app that offers tools, with the
+  person's current permissions: each call gets a fresh token, so role changes apply at once.
+- **How long.** A connection lasts as long as the Core session it was allowed in: signing out of Core
+  disconnects the person's AI clients too. People disconnect a client on their *AI clients* page; admins
+  see and disconnect everyone's under Administration → *AI clients* (`users.manage`, audited).
+- **Audit.** What a client does is recorded as its person's, with the client's name ("via Claude").
+- **Limits.** Each connection may make `MCP_CALLS_PER_MINUTE` calls a minute (120). Answers are cut
+  at 60,000 characters.
+- **Network.** The `mcp` service calls apps' backends directly, like the gateway, so it needs the same
+  networks (`apps`, for image apps). The auth service fetches clients' metadata documents over HTTPS
+  (outbound access to the internet, 5 KB at most, never following redirects).
+

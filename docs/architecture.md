@@ -40,6 +40,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 | Platform events | platform: the log, delivery to apps and to services | consumes `user.deleted` like any client |
 | App settings | platform: values, checks, audit, delivery to running apps; the console's Settings tab | — |
 | App files | platform: storage in SeaweedFS (S3), per-app limits; the console's Storage tab | — |
+| AI clients (MCP) | mcp: tools from apps' contracts, listed per person, calls as the person; auth: sign-in for AI clients, connections; the console's and account pages | — |
 | App identity | platform: id, origin (configured or managed), key, status, address, registered manifest | creates the apps it installs |
 | Databases | platform: provisions an app's database on request | asks for one when it runs an image |
 | Administration | auth: users, roles, audit (`admin:*`, `/api/admin`); the console's pages | lists it as an app; its own pages for installs (`/portal`) |
@@ -70,6 +71,10 @@ Core stores the manifest an app registers and interprets only its own part. A st
   as the service `portal` (`/internal/events/services/portal`), and registers its own permissions
   (`portal:apps.manage`) with the auth service like an app's manifest.
 - **Auth → platform:** who an app is and where it may send people back to (`/internal/clients`).
+- **AI clients → Core:** the MCP server (`/mcp`), with an access token from the auth service's sign-in for
+  AI clients (`/api/auth/agents/*`, OAuth 2.1 with PKCE). The MCP server follows the platform's routes,
+  reads each app's tools (`/.well-known/mosaik-tools.json`) and calls apps directly with a token for the
+  person, which it asks the auth service for on every call (`/internal/agent-token`).
 - **Browser → Core:** auth (`/api/auth`, `/api/admin`), notifications (`/api/notifications`), the platform's
   access requests and app pages (`/api/platform`), all through the gateway.
 - **Browser → Portal:** catalog, pins and usage, categories, installs (`/api/portal`), through the gateway.
@@ -92,7 +97,8 @@ Core has two UIs of its own, so it is complete without the Portal:
 - **The account pages**, rendered by the services themselves and needing no build, are for everyone:
   *sign in* (`/api/auth/sign-in`, the only sign-in: e-mail and password, Microsoft through a
   server-side redirect), *request access to an app* (`/api/platform/request-access/<id>`) and
-  *notification settings* (`/api/notifications/preferences`, linked from every notification e-mail).
+  *notification settings* (`/api/notifications/preferences`, linked from every notification e-mail)
+  and *AI clients* (`/api/auth/agents/connections`), with the consent page AI clients sign in through.
   They show the company's name, logo and colour (`BRAND_NAME`, `BRAND_LOGO_URL`, `BRAND_COLOR`).
 
 The Portal's shell mounts the console's pages at the same paths (`/admin`, `/manage`, `/access-requests`)
@@ -137,7 +143,10 @@ rewritten to relative paths, so an app sees one package and one version.
 
 - Standalone apps in the Portal's directory: they are registered with Core but the shell lists only apps
   it can mount.
-- A full OpenID Connect provider (discovery, ID tokens, PKCE) for clients other than Mosaik's SDKs.
+- A full OpenID Connect provider (ID tokens, userinfo) for clients other than Mosaik's SDKs. AI clients
+  sign in with OAuth 2.1 (discovery, PKCE), for the MCP server only.
+- Narrower access for AI clients: a client may do everything its person can. Choosing fewer permissions
+  per client, or tokens limited to some apps, would come on top of `principal.agent`.
 - An in-app inbox for standalone apps: their users get notifications by e-mail and Slack.
 - A key per platform service: the services still share `INTERNAL_KEY`.
 - A styled login page in the shell: it signs in on Core's page too, so sign-in is built once. It could get one

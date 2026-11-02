@@ -1,5 +1,6 @@
 import {
   AccessControl,
+  AgentTool,
   BadRequest,
   Conflict,
   Fresh,
@@ -32,14 +33,27 @@ export class StatsGroup extends HttpApiGroup.make("stats").add(
   HttpApiEndpoint.get("summary", "/summary", {
     query: SummarySearch.fields,
     success: Fresh(SalesSummary),
+  }).annotate(AgentTool, {
+    title: "Sales summary",
+    description:
+      "Revenue, order counts and revenue per day over the last `days` days (30 by default). Amounts are in cents.",
   }),
 ) {}
 
 export class OrdersGroup extends HttpApiGroup.make("orders")
   .add(
-    HttpApiEndpoint.get("list", "/", { query: OrdersSearch.fields, success: OrdersPage }),
+    HttpApiEndpoint.get("list", "/", { query: OrdersSearch.fields, success: OrdersPage }).annotate(AgentTool, {
+      title: "Find orders",
+      description:
+        "Orders, newest first unless sorted otherwise, a page at a time (`pageSize` up to 100, `page` from 0). " +
+        "`search` matches the order number or the customer; `status` keeps one status. `total` is the number " +
+        "of matching orders. Amounts are in cents.",
+    }),
     /** What the pages show and offer, from Sales' settings. */
-    HttpApiEndpoint.get("options", "/options", { success: OrderOptions }),
+    HttpApiEndpoint.get("options", "/options", { success: OrderOptions }).annotate(AgentTool, {
+      title: "Order rules",
+      description: "Sales' current rules: the largest refund allowed (in cents), and whether exports are on.",
+    }),
     /** Refused while exports are off in Sales' settings. */
     HttpApiEndpoint.get("export", "/export.csv", {
       query: { status: OrdersSearch.fields.status, search: OrdersSearch.fields.search },
@@ -51,14 +65,28 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
       payload: Schema.Struct({ status: OrderStatus }),
       success: Order,
       error: [NotFound, BadRequest],
-    }).annotate(RequiredPermission, sales.perm("orders.edit")),
+    })
+      .annotate(RequiredPermission, sales.perm("orders.edit"))
+      .annotate(AgentTool, {
+        title: "Change an order's status",
+        description:
+          "Moves an order on: pending to paid or cancelled, paid to shipped or cancelled. Refunds are a " +
+          "separate tool. `id` is the order's id (not its number).",
+      }),
     /** Refused above the largest refund in Sales' settings. */
     HttpApiEndpoint.post("refund", "/:id/refund", {
       params: { id: OrderId },
       payload: Refund,
       success: Order,
       error: [NotFound, Conflict],
-    }).annotate(RequiredPermission, sales.perm("orders.refund")),
+    })
+      .annotate(RequiredPermission, sales.perm("orders.refund"))
+      .annotate(AgentTool, {
+        title: "Refund an order",
+        description:
+          "Refunds a paid or shipped order in full: the customer gets the money back and the order becomes " +
+          "refunded. Refused above the largest refund in Sales' rules. `id` is the order's id; `reason` says why.",
+      }),
     HttpApiEndpoint.get("attachments", "/:id/attachments", {
       params: { id: OrderId },
       success: Schema.Array(Attachment),

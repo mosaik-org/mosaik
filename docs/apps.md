@@ -65,7 +65,7 @@ code runs and which layer of Mosaik it needs:
 
 | Import | Where | What |
 |---|---|---|
-| `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Setting`, `Principal`, errors, `AccessControl`, `RequiredPermission`, `Fresh`, platform event types |
+| `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Setting`, `Principal`, errors, `AccessControl`, `RequiredPermission`, `AgentTool`, `Fresh`, platform event types |
 | `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Storage`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`); no framework |
@@ -464,6 +464,41 @@ export const EventHandlers = Events.handlers(crm, Effect.gen(function* () {
   A failing handler is retried with backoff before any later event.
 - A newly subscribed app starts with events from then on; one away for longer than the retention gets its
   `missed` handler.
+
+## AI clients
+
+People can connect an AI client (Claude, Cursor and others) to Mosaik's MCP server and use apps
+through it, as themselves. An app decides which endpoints it offers, with `AgentTool` on its contract:
+
+```ts
+HttpApiEndpoint.post("refund", "/:id/refund", { params: { id: OrderId }, payload: Refund, success: Order })
+  .annotate(RequiredPermission, sales.perm("orders.refund"))
+  .annotate(AgentTool, {
+    title: "Refund an order",
+    description: "Refunds a paid or shipped order in full. Refused above the largest refund in Sales' rules.",
+  })
+```
+
+- **What the AI sees.** A tool named `<app>_<group>_<endpoint>` (`sales_orders_refund`), with the title
+  and description, and one input: `path`, `query` and `body`, each in its JSON form from the endpoint's
+  schemas. The description is all the AI knows about when and how to use the tool: say what it does,
+  what its inputs mean when their names do not, and what it refuses.
+- **Who sees it.** Only people who may call it (its `RequiredPermission`, or the app's access
+  permission). Clients are told it changes nothing for a `GET`, and that it is destructive when its
+  permission is `dangerous` in the manifest, so they ask the person first.
+- **Calls are ordinary requests.** The MCP server calls the app's backend with a token for the person,
+  as the gateway does: the same permission checks, validation and rules. Handlers change nothing for AI
+  clients. `principal.agent` names the client (`null` otherwise), and `Audit.record` records it, so the
+  audit log shows "Ada (via Claude)".
+- **What the AI gets back.** The response body as text; errors with their status and body, so a refusal
+  like "Refunds above €500 are handled by finance" reaches the AI and it can explain it. Requests that do
+  not match the contract are answered with a `BadRequest` saying what is wrong. Answers beyond 60,000
+  characters are cut, with a note: offer paging (`pageSize`) on endpoints that can return a lot.
+- **Limits.** Only endpoints taking JSON (no file uploads); `runApp` refuses to start when an offered
+  endpoint takes anything else, or when a tool's name would exceed 64 characters.
+
+Apps serve their tools at `/.well-known/mosaik-tools.json`; the MCP server reads them when apps are
+installed or change. Sales and Issues offer theirs.
 
 ## Testing
 

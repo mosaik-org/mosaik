@@ -1,4 +1,4 @@
-import { AccessControl, Fresh, UpstreamError } from "@mosaik/sdk"
+import { AccessControl, AgentTool, Fresh, UpstreamError } from "@mosaik/sdk"
 import { JiraIssue, JiraProject, StatusCategory } from "@mosaik/sdk/connectors/jira/model"
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
@@ -24,8 +24,16 @@ export class IssuesGroup extends HttpApiGroup.make("issues").add(
     query: IssuesSearch.fields,
     success: Fresh(IssueList),
     error: UpstreamError,
+  }).annotate(AgentTool, {
+    title: "Find Jira issues",
+    description:
+      "Jira issues, open ones (to do and in progress) unless `category` says otherwise. `project` is a " +
+      'project key, as "Jira projects" lists them; `q` searches the text. `truncated`: more matched than were returned.',
   }),
-  HttpApiEndpoint.get("projects", "/projects", { success: Fresh(Schema.Array(JiraProject)), error: UpstreamError }),
+  HttpApiEndpoint.get("projects", "/projects", {
+    success: Fresh(Schema.Array(JiraProject)),
+    error: UpstreamError,
+  }).annotate(AgentTool, { title: "Jira projects", description: "The Jira projects, with their keys and names." }),
 ) {}
 
 export class IssuesApi extends HttpApi.make("issues")

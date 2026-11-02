@@ -10,7 +10,8 @@ at runtime from its team's repository. Together they look and work like one prod
 Mosaik comes in two layers ([Architecture](docs/architecture.md)):
 
 - **Mosaik Core:** the primitives. Sign-in, permissions and roles, app owners and access requests, audit,
-  notifications and messages, platform events, settings, databases and file storage. Any app can use Core alone, as a
+  notifications and messages, platform events, settings, databases, file storage, and AI clients using apps
+  through MCP. Any app can use Core alone, as a
   *standalone* app on its own address with its own page.
 - **Mosaik Portal:** the shared product built on Core. The shell everyone uses, the directory of apps,
   pins and usage, and installing and running apps. Apps *mounted* in the Portal share its sign-in,
@@ -18,7 +19,8 @@ Mosaik comes in two layers ([Architecture](docs/architecture.md)):
 
 - **For people using it:** one sign-in (email/password or Microsoft Entra ID), the apps they use pinned
   in the sidebar, a directory of every app with a way to request access, one inbox for notifications,
-  and a command palette (Ctrl/⌘+K) that searches pages and data across apps.
+  a command palette (Ctrl/⌘+K) that searches pages and data across apps, and their AI client (Claude,
+  Cursor, …) using apps as them through Mosaik's MCP server.
 - **For app teams:** an SDK that handles authentication, permissions, roles, audit, notifications, e-mail,
   Slack and Teams messages, platform events, databases and a consistent UI kit. An app is a manifest,
   an API contract, a backend and pages, mounted in the Portal or standalone with the same code.
@@ -73,8 +75,9 @@ Browser ── shell (Portal) ──► Gateway (Core)
                                 ├─ /api/notifications/* → notifications (inbox, settings, admin)
                                 ├─ /api/platform/*      → platform (who can use apps, access requests, apps' settings and storage)
                                 ├─ /api/portal/*        → portal (catalog, pins and usage, installs)
-                                └─ /api/<id>/*          → app <id> (route from the platform's registry)
-                                     + Authorization: Bearer <token for that app only>
+                                ├─ /api/<id>/*          → app <id> (route from the platform's registry)
+                                │    + Authorization: Bearer <token for that app only>
+                                └─ /mcp                 → mcp (AI clients, with their own access token)
 
 Apps ── /api/platform/v1 (app key) ──► platform ──► auth (permissions, roles, audit)
                                                  ├─► notifications ──► SMTP, Slack, Teams
@@ -82,9 +85,12 @@ Apps ── /api/platform/v1 (app key) ──► platform ──► auth (permis
 Portal ── /internal (service key) ──► platform (app identities, databases, events)
 
 Browser ── standalone app (own address, own page) ── sign-in ──► Core (OAuth: /api/auth/oauth/*)
+
+AI client ── /mcp ──► mcp ── tools from apps' contracts ──► apps (a token for the person, per call)
+          └─ sign-in ──► Core (OAuth 2.1 + PKCE: /api/auth/agents/*)
 ```
 
-**Core** (`services/auth`, `notifications`, `platform`, `gateway`):
+**Core** (`services/auth`, `notifications`, `platform`, `mcp`, `gateway`):
 
 - **Gateway.** The only public entry point.
   - It exchanges the session cookie for a short-lived (60 s) Ed25519-signed token carrying the user and
@@ -106,6 +112,10 @@ Browser ── standalone app (own address, own page) ── sign-in ──► C
   their manifest, audit entries, messages and notifications, platform events, settings and files. It
   provisions apps' databases, stores apps' files in SeaweedFS within their limits, keeps apps' settings,
   runs access requests, and gives the Portal its registry API.
+- **MCP service.** Mosaik's MCP server for people's AI clients. It reads the tools apps offer
+  (`AgentTool` on their contracts), lists each person only those they may call, and calls apps as that
+  person. AI clients sign in through the auth service (OAuth 2.1 with PKCE, once per client) and stay
+  connected as long as the person's Core session; the audit log names the client.
 - **Apps.** Each backend checks tokens locally against the platform's JWKS (no call per request) and
   enforces each endpoint's permission. Every app serves its manifest at `/.well-known/mosaik-app.json`.
 
@@ -124,7 +134,8 @@ shell/            The Portal's web shell: layout, directory, inbox; mounts the c
 console/          Core's console app: frames the console's pages when Mosaik runs without the Portal
 services/
   gateway/        Core: reverse proxy, session → token exchange, serves the built shell in production
-  auth/           Core: Better Auth, roles and grants, app registry, audit log, admin API, OAuth for standalone apps
+  auth/           Core: Better Auth, roles and grants, app registry, audit log, admin API, OAuth for standalone apps and AI clients
+  mcp/            Core: the MCP server for AI clients: apps' tools per person, calls as the person
   notifications/  Core: outbox, worker, channels (e-mail, Slack, Teams), inbox, settings, routing
   platform/       Core: app identities and keys, platform API, events, databases, access requests
   portal/         Portal: installing and running apps, catalog, pins, usage and categories
@@ -139,8 +150,8 @@ examples/<id>/    Example apps, written like a team's app; `bun dev` runs them
 packages/         The SDK and shared code
   sdk             @mosaik/sdk, the one package apps use: entry points per side and layer, re-exporting the packages below
   core            Manifests, permissions, roles, principal, errors, AccessControl contract
-  auth            contract (tokens, internal, admin and OAuth APIs) · server (verification, middleware) · web (session, <Can>, live access)
-  server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, observability
+  auth            contract (tokens, internal, admin and OAuth APIs, AI clients' sign-in) · server (verification, middleware) · web (session, <Can>, live access)
+  server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, tools for AI clients, observability
   notifications   contract (content, destinations, audiences, internal and browser APIs)
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
   portal          The Portal's package: contract (catalog, workspace, installs, permissions) · web (defineWebApp, what the shell mounts) · build (the mounted bundle, the shared-module list)
