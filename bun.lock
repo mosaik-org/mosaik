@@ -381,6 +381,16 @@
         "jose": "^6.1.0",
       },
     },
+    "packages/tools": {
+      "name": "@mosaik/tools",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/core": "workspace:*",
+        "@mosaik/platform": "workspace:*",
+        "@mosaik/server": "workspace:*",
+        "effect": "^4.1.2",
+      },
+    },
     "packages/web-kit": {
       "name": "@mosaik/web-kit",
       "version": "0.0.0",
@@ -437,6 +447,7 @@
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/server": "workspace:*",
+        "@mosaik/tools": "workspace:*",
         "effect": "^4.1.2",
         "jose": "^6.1.0",
       },
@@ -747,6 +758,8 @@
     "@mosaik/testing": ["@mosaik/testing@workspace:packages/testing"],
 
     "@mosaik/tooling": ["@mosaik/tooling@workspace:tooling"],
+
+    "@mosaik/tools": ["@mosaik/tools@workspace:packages/tools"],
 
     "@mosaik/web-kit": ["@mosaik/web-kit@workspace:packages/web-kit"],
 

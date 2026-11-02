@@ -1,7 +1,7 @@
 import { runMain, serve } from "@mosaik/server"
+import { AppCalls, Catalog } from "@mosaik/tools"
 import { Layer } from "effect"
-import { AgentTokens, AppCalls } from "./AppCalls"
-import { Catalog } from "./Catalog"
+import { ConnectionCallers } from "./McpTools"
 import * as Routes from "./Routes"
 
 /**
@@ -10,7 +10,7 @@ import * as Routes from "./Routes"
  */
 const Main = serve(Routes.layer, { name: "mosaik-mcp", port: 3000 }).pipe(
   Layer.provide(AppCalls.layer),
-  Layer.provide([Catalog.layer, AgentTokens.layer]),
+  Layer.provide([Catalog.layer, ConnectionCallers.layer]),
 )
 
 runMain(Main)

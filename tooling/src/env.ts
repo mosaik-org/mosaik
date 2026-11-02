@@ -254,7 +254,7 @@ export const planServices = (
       cwd: `${root}/services/mcp`,
       cmd: ["bun", "--watch", "src/main.ts"],
       port: PORTS.mcp,
-      env: { ...shared(), PORT: String(PORTS.mcp), PUBLIC_URL: coreUrl, ...pick("MCP_CALLS_PER_MINUTE") },
+      env: { ...shared(), PORT: String(PORTS.mcp), PUBLIC_URL: coreUrl, ...pick("TOOL_CALLS_PER_MINUTE") },
     },
     ...(headless ? [] : [portalPlan]),
     ...appPlans,

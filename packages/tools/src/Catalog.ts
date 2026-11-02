@@ -2,12 +2,11 @@ import { createHash } from "node:crypto"
 import type { Principal } from "@mosaik/core"
 import { AppRoute, AppTool, AppTools, agentToolName, ROUTES_STREAM_PATH, TOOLS_PATH } from "@mosaik/platform/contract"
 import { followEventStream } from "@mosaik/server"
-import { Config, Context, Duration, Effect, Layer, Ref, Schema, Semaphore } from "effect"
-import type { McpSchema } from "effect/ai"
+import { Config, Context, Deferred, Duration, Effect, Layer, Queue, Ref, Schema } from "effect"
 import { FetchHttpClient, HttpClient, HttpClientResponse } from "effect/http"
-import { toMcpTool } from "./AgentTools"
+import { type InputSchema, inputSchema } from "./Tools"
 
-/** A tool of an installed app, ready for AI clients. */
+/** A tool of an installed app, ready for an AI. */
 export interface CatalogTool {
   /** As AI clients call it (`agentToolName`). */
   readonly name: string
@@ -15,8 +14,9 @@ export interface CatalogTool {
   /** Where the app's backend is reached. */
   readonly upstream: URL
   readonly tool: AppTool
-  readonly definition: McpSchema.Tool
-  /** Changes whenever anything AI clients see of the tool does. */
+  /** What it takes, as one JSON Schema (see `inputSchema`). */
+  readonly input: InputSchema
+  /** Changes whenever anything an AI sees of the tool does. */
   readonly fingerprint: string
 }
 
@@ -24,6 +24,8 @@ export interface CatalogTool {
 const REFRESH = Duration.seconds(30)
 /** Sooner while some app could not be reached, e.g. one still starting. */
 const RETRY = Duration.seconds(5)
+/** How long a request waits, right after startup, for the first read of every app's tools. */
+const STARTUP_WAIT = Duration.seconds(5)
 
 const decodeTools = Schema.decodeUnknownEffect(Schema.toCodecJson(AppTools))
 
@@ -41,15 +43,17 @@ export class Catalog extends Context.Service<
     /** The tools someone may call, by name. */
     readonly visibleTo: (principal: Principal) => Effect.Effect<ReadonlyArray<CatalogTool>>
   }
->()("@mosaik/mcp/Catalog") {
+>()("@mosaik/tools/Catalog") {
   static readonly layer = Layer.effect(
     Catalog,
     Effect.gen(function* () {
       const client = (yield* HttpClient.HttpClient).pipe(HttpClient.filterStatusOk)
       const routes = yield* Ref.make<ReadonlyArray<AppRoute>>([])
       const tools = yield* Ref.make<ReadonlyMap<string, ReadonlyArray<CatalogTool>>>(new Map())
-      // One refresh at a time: a slower one must not overwrite a newer one's result.
-      const refreshing = yield* Semaphore.make(1)
+      // Wakes the reading loop when the routes change (one pending wake-up is enough).
+      const changed = yield* Queue.make<void>({ capacity: 1, strategy: "sliding" })
+      // Done once the tools of the platform's first list of apps were read.
+      const ready = yield* Deferred.make<void>()
 
       const readApp = Effect.fn("Catalog.readApp")(function* (route: AppRoute) {
         const upstream = new URL(route.upstream)
@@ -62,14 +66,12 @@ export class Catalog extends Context.Service<
           )
         if (served.app !== route.id) return yield* Effect.fail(new Error(`It says it is "${served.app}"`))
         return served.tools.map((tool): CatalogTool => {
-          const name = agentToolName(route.id, tool.name)
-          const definition = toMcpTool(name, tool)
           return {
-            name,
+            name: agentToolName(route.id, tool.name),
             app: route.id,
             upstream,
             tool,
-            definition,
+            input: inputSchema(tool),
             fingerprint: fingerprint([route.upstream, Schema.encodeSync(AppTool)(tool)]),
           }
         })
@@ -100,24 +102,32 @@ export class Catalog extends Context.Service<
         )
         yield* Ref.set(tools, next)
         return unreachable === 0
-      }).pipe(refreshing.withPermit, Effect.withSpan("Catalog.refresh"))
+      }).pipe(Effect.withSpan("Catalog.refresh"))
 
       yield* followEventStream({
         name: "App route",
         url: new URL(ROUTES_STREAM_PATH, yield* Config.URL("PLATFORM_URL")),
         key: yield* Config.Redacted("INTERNAL_KEY"),
         schema: Schema.Array(AppRoute),
-        onEvent: (current) => Ref.set(routes, current).pipe(Effect.andThen(refresh)),
+        onEvent: (current) => Ref.set(routes, current).pipe(Effect.andThen(Queue.offer(changed, undefined))),
       })
-      yield* refresh.pipe(
-        Effect.flatMap((complete) => Effect.sleep(complete ? REFRESH : RETRY)),
-        Effect.forever,
-        Effect.forkScoped,
-      )
+      // One loop reads, so reads never overlap: at once when the routes change, then every
+      // REFRESH, or every RETRY while an app cannot be reached (whatever started the read).
+      yield* Effect.gen(function* () {
+        yield* Queue.take(changed)
+        for (;;) {
+          const complete = yield* refresh
+          yield* Deferred.succeed(ready, undefined)
+          yield* Queue.take(changed).pipe(Effect.timeoutOption(complete ? REFRESH : RETRY))
+        }
+      }).pipe(Effect.forkScoped)
 
       return Catalog.of({
         visibleTo: (principal) =>
-          Ref.get(tools).pipe(
+          // Right after startup, a request waits for the first read rather than finding no tools.
+          Deferred.await(ready).pipe(
+            Effect.timeoutOption(STARTUP_WAIT),
+            Effect.andThen(Ref.get(tools)),
             Effect.map((byApp) => {
               // Two apps' tools could map to one name (`a_b` + `c`, `a` + `b_c`): the first wins.
               const visible = new Map<string, CatalogTool>()

@@ -167,7 +167,7 @@ services:
     environment:
       <<: *env
       PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL}
-      MCP_CALLS_PER_MINUTE: ${MCP_CALLS_PER_MINUTE:-120}
+      TOOL_CALLS_PER_MINUTE: ${TOOL_CALLS_PER_MINUTE:-120}
 
   status:
     <<: *service

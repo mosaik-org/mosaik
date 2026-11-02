@@ -1,11 +1,18 @@
 import type { AppTool, JsonSchemaDocument } from "@mosaik/platform/contract"
 import { Result, type Schema } from "effect"
-import { McpSchema } from "effect/ai"
 
 /**
- * How the MCP server turns an app's tools (`AppTool`, from its contract) into MCP tools, and a
- * tool call back into an HTTP request to the app. Pure: no I/O, so it is tested on its own.
+ * How an app's tools (`AppTool`, from its contract) are offered to an AI, whatever reaches it (the
+ * MCP server, the assistant): their input as one JSON Schema, a call back into an HTTP request to
+ * the app, and the app's answer as what the AI reads. Pure: no I/O, so it is tested on its own.
  */
+
+/** A JSON Schema object for a tool's input. */
+export interface InputSchema extends Schema.JsonObject {
+  readonly type: "object"
+  readonly properties: Readonly<Record<string, Schema.JsonObject>>
+  readonly required: ReadonlyArray<string>
+}
 
 /** What a tool takes, grouped as the endpoint does: path parameters, query and JSON body. */
 export interface ToolArguments {
@@ -29,7 +36,7 @@ const requiresSomething = (document: JsonSchemaDocument): boolean => {
  * The tool's input: one object with `path`, `query` and `body`, each when the endpoint has it.
  * Their definitions are gathered in the root's `$defs`, where their `$ref`s point.
  */
-export const inputSchema = (tool: AppTool): McpSchema.ToolJson => {
+export const inputSchema = (tool: AppTool): InputSchema => {
   const properties: Record<string, Schema.JsonObject> = {}
   const required: Array<string> = []
   const definitions: Record<string, Schema.Json> = {}
@@ -51,23 +58,6 @@ export const inputSchema = (tool: AppTool): McpSchema.ToolJson => {
     ...(Object.keys(definitions).length > 0 ? { $defs: definitions } : {}),
   }
 }
-
-/** The tool as AI clients list it. `name` is the catalog's (`agentToolName`). */
-export const toMcpTool = (name: string, tool: AppTool): McpSchema.Tool =>
-  McpSchema.Tool.make({
-    name,
-    title: tool.title,
-    description: tool.description,
-    inputSchema: inputSchema(tool),
-    annotations: McpSchema.ToolAnnotations.make({
-      title: tool.title,
-      readOnlyHint: tool.readOnly,
-      destructiveHint: tool.destructive,
-      idempotentHint: tool.method === "GET" || tool.method === "PUT" || tool.method === "DELETE",
-      // Only the company's own apps: nothing outside Mosaik.
-      openWorldHint: false,
-    }),
-  })
 
 /** The request a call makes: relative to the app's address. */
 export interface ToolRequest {
@@ -113,20 +103,22 @@ export const toRequest = (tool: AppTool, args: unknown): Result.Result<ToolReque
 /** Large answers would fill the AI's context: past this, they are cut, with a note. */
 export const MAX_RESULT_CHARACTERS = 60_000
 
-/** What the AI gets for the app's answer: its body as text, marked as an error unless it succeeded. */
-export const toResult = (status: number, body: string): McpSchema.CallToolResult => {
+/** What a call came to, as the AI reads it: text, and whether the call failed. */
+export interface ToolOutcome {
+  readonly ok: boolean
+  readonly text: string
+}
+
+/** What the AI gets for the app's answer: its body as text, marked as failed unless it succeeded. */
+export const toOutcome = (status: number, body: string): ToolOutcome => {
   const ok = status >= 200 && status < 300
   const shown =
     body.length > MAX_RESULT_CHARACTERS
       ? `${body.slice(0, MAX_RESULT_CHARACTERS)}\n[Cut after ${MAX_RESULT_CHARACTERS} of ${body.length} characters: ask for less, e.g. a smaller page or narrower filters]`
       : body
   const content = ok ? (shown === "" ? "Done." : shown) : `The app answered ${status}: ${shown || "(no details)"}`
-  return textResult(content, !ok)
+  return { ok, text: content }
 }
 
-/** A result with just a message: the AI reads it, and `isError` tells it the call failed. */
-export const textResult = (message: string, isError: boolean): McpSchema.CallToolResult =>
-  McpSchema.CallToolResult.make({
-    content: [McpSchema.TextContent.make({ type: "text", text: message })],
-    ...(isError ? { isError: true } : {}),
-  })
+/** A call that failed before reaching the app (or could not reach it), and why. */
+export const failure = (text: string): ToolOutcome => ({ ok: false, text })

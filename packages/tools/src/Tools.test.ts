@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest"
 import { AppTool } from "@mosaik/platform/contract"
 import { Result } from "effect"
-import { inputSchema, MAX_RESULT_CHARACTERS, toMcpTool, toRequest, toResult } from "./AgentTools"
+import { inputSchema, MAX_RESULT_CHARACTERS, toOutcome, toRequest } from "./Tools"
 
 const document = (schema: object, definitions: object = {}) => ({ schema, definitions }) as never
 
@@ -61,21 +61,6 @@ describe("inputSchema", () => {
   })
 })
 
-describe("toMcpTool", () => {
-  it("tells clients what the tool changes", () => {
-    expect(toMcpTool("shop_orders_refund", refund).annotations).toMatchObject({
-      readOnlyHint: false,
-      destructiveHint: true,
-      idempotentHint: false,
-      openWorldHint: false,
-    })
-    expect(toMcpTool("shop_orders_search", search).annotations).toMatchObject({
-      readOnlyHint: true,
-      destructiveHint: false,
-    })
-  })
-})
-
 describe("toRequest", () => {
   it("fills in path parameters, encoded, and sends the body as JSON", () => {
     const request = toRequest(refund, { path: { id: "SO 7/1" }, body: { reason: "Damaged" } })
@@ -105,21 +90,18 @@ describe("toRequest", () => {
   })
 })
 
-describe("toResult", () => {
+describe("toOutcome", () => {
   it("passes the app's answer on, and marks failures", () => {
-    expect(toResult(200, '{"id":1}')).toMatchObject({ content: [{ type: "text", text: '{"id":1}' }] })
-    expect(toResult(200, '{"id":1}').isError).toBeUndefined()
-    expect(toResult(204, "").content[0]).toMatchObject({ text: "Done." })
-    expect(toResult(403, '{"_tag":"Forbidden"}')).toMatchObject({
-      isError: true,
-      content: [{ text: 'The app answered 403: {"_tag":"Forbidden"}' }],
+    expect(toOutcome(200, '{"id":1}')).toEqual({ ok: true, text: '{"id":1}' })
+    expect(toOutcome(204, "")).toEqual({ ok: true, text: "Done." })
+    expect(toOutcome(403, '{"_tag":"Forbidden"}')).toEqual({
+      ok: false,
+      text: 'The app answered 403: {"_tag":"Forbidden"}',
     })
   })
 
   it("cuts long answers, saying so", () => {
-    const [content] = toResult(200, "x".repeat(MAX_RESULT_CHARACTERS + 10)).content
-    expect(content).toMatchObject({ type: "text" })
-    const text = (content as { readonly text: string }).text
+    const { text } = toOutcome(200, "x".repeat(MAX_RESULT_CHARACTERS + 10))
     expect(text.startsWith("x".repeat(MAX_RESULT_CHARACTERS))).toBe(true)
     expect(text).toContain(`[Cut after ${MAX_RESULT_CHARACTERS} of ${MAX_RESULT_CHARACTERS + 10} characters`)
   })

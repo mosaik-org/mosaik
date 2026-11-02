@@ -152,6 +152,7 @@ packages/         The SDK and shared code
   core            Manifests, permissions, roles, principal, errors, AccessControl contract
   auth            contract (tokens, internal, admin and OAuth APIs, AI clients' sign-in) · server (verification, middleware) · web (session, <Can>, live access)
   server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, tools for AI clients, observability
+  tools           Apps' tools for AI (Core): the catalog of what apps offer (AgentTool), calls to them as a person; used by mcp
   notifications   contract (content, destinations, audiences, internal and browser APIs)
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
   portal          The Portal's package: contract (catalog, workspace, installs, permissions) · web (defineWebApp, what the shell mounts) · build (the mounted bundle, the shared-module list)

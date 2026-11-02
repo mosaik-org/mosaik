@@ -80,7 +80,7 @@ const target = (specifier: string, file: string): string | null =>
     : null
 
 /** Core's services; the shared packages (`packages/`, except the Portal's) and the console are Core's too. */
-const CORE_SERVICES = ["auth", "notifications", "platform", "gateway"]
+const CORE_SERVICES = ["auth", "notifications", "platform", "gateway", "mcp"]
 
 /** The SDK's modules that give apps the Portal: the only way from the SDK to it (rule 7). */
 const SDK_PORTAL_MODULES: ReadonlySet<string> = new Set([

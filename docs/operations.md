@@ -204,7 +204,7 @@ offer (`AgentTool`, see [Building apps](apps.md#ai-clients)).
   disconnects the person's AI clients too. People disconnect a client on their *AI clients* page; admins
   see and disconnect everyone's under Administration → *AI clients* (`users.manage`, audited).
 - **Audit.** What a client does is recorded as its person's, with the client's name ("via <the client's name>").
-- **Limits.** Each connection may make `MCP_CALLS_PER_MINUTE` calls a minute (120). Answers are cut
+- **Limits.** Each connection may make `TOOL_CALLS_PER_MINUTE` calls a minute (120). Answers are cut
   at 60,000 characters.
 - **Network.** The `mcp` service calls apps' backends directly, like the gateway, so it needs the same
   networks (`apps`, for image apps). The auth service fetches clients' metadata documents over HTTPS

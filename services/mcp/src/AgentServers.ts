@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto"
 import { AGENT_RESOURCE_PATH, type AgentTokenClaims } from "@mosaik/auth/contract"
 import { Principal } from "@mosaik/core"
+import { AppCalls, Catalog, type CatalogTool } from "@mosaik/tools"
 import { Context, Duration, Effect, Equal, Hash, Layer, RcMap, type Scope } from "effect"
 import { McpProtocol, McpServer } from "effect/ai"
 import { HttpRouter, type HttpServerError, type HttpServerRequest, type HttpServerResponse } from "effect/http"
-import { AppCalls } from "./AppCalls"
-import { Catalog, type CatalogTool } from "./Catalog"
+import { ConnectionCallers, toCallToolResult, toMcpTool } from "./McpTools"
 
 /** What AI clients learn about the server when they connect. */
 const INSTRUCTIONS =
@@ -63,16 +63,18 @@ export class AgentServers extends Context.Service<
     Effect.gen(function* () {
       const catalog = yield* Catalog
       const calls = yield* AppCalls
+      const callers = yield* ConnectionCallers
 
       const serve = (key: ServerKey) => {
+        const caller = callers.forConnection(key.connection)
         const tools = Layer.effectDiscard(
           Effect.gen(function* () {
             const server = yield* McpServer.McpServer
             for (const tool of key.tools) {
               yield* server.addTool({
-                tool: tool.definition,
+                tool: toMcpTool(tool),
                 annotations: Context.empty(),
-                handle: (args) => calls.call(key.connection, tool, args),
+                handle: (args) => calls.call(caller, tool, args).pipe(Effect.map(toCallToolResult)),
               })
             }
           }),

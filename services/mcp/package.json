@@ -12,6 +12,7 @@
     "@mosaik/core": "workspace:*",
     "@mosaik/platform": "workspace:*",
     "@mosaik/server": "workspace:*",
+    "@mosaik/tools": "workspace:*",
     "effect": "^4.1.2",
     "jose": "^6.1.0"
   }
