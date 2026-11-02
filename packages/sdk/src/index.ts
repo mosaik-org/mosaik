@@ -14,6 +14,8 @@
  */
 export {
   AccessControl,
+  AgentTool,
+  type AgentToolSpec,
   type AnyApp,
   type App,
   type AppSpec,

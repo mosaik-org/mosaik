@@ -19,6 +19,29 @@ export class RequiredPermission extends Context.Service<RequiredPermission, Perm
   "@mosaik/core/RequiredPermission",
 ) {}
 
+/** How an endpoint is offered to AI clients (see {@link AgentTool}). */
+export interface AgentToolSpec {
+  /**
+   * What the tool does and when to use it, for the AI that chooses it: "Refund a paid or shipped
+   * order; the customer gets the money back". Say what the inputs mean when their names do not.
+   */
+  readonly description: string
+  /** A short name people read in their AI client, e.g. "Refund an order". Defaults to the endpoint's name. */
+  readonly title?: string
+}
+
+/**
+ * Endpoint annotation offering the endpoint to AI clients, as a tool of Mosaik's MCP server.
+ * People's AI clients see the tools of the endpoints they may call, and calls run as them:
+ * the same permission checks, the same audit log. Endpoints without it are not offered.
+ *
+ * @example
+ * HttpApiEndpoint.post("refund", "/orders/:id/refund", { ... })
+ *   .annotate(RequiredPermission, sales.perm("orders.refund"))
+ *   .annotate(AgentTool, { description: "Refund a paid or shipped order; the customer gets the money back" })
+ */
+export class AgentTool extends Context.Service<AgentTool, AgentToolSpec>()("@mosaik/core/AgentTool") {}
+
 /**
  * Verifies the internal token the gateway attaches to every request and enforces
  * the endpoint's {@link RequiredPermission}. Add it to every app API:

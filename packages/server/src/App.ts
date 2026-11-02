@@ -1,8 +1,15 @@
 import { AccessControlLive, TokenVerifier } from "@mosaik/auth/server"
 import type { AccessControl, AnyApp } from "@mosaik/core"
-import { type AppManifest, JWKS_URL_PATH, MANIFEST_PATH, toAppManifest } from "@mosaik/platform/contract"
+import {
+  type AppManifest,
+  AppTools,
+  JWKS_URL_PATH,
+  MANIFEST_PATH,
+  TOOLS_PATH,
+  toAppManifest,
+} from "@mosaik/platform/contract"
 import { PlatformClient } from "@mosaik/platform/server"
-import { Config, Effect, Layer, Option } from "effect"
+import { Config, Effect, Layer, Option, Schema } from "effect"
 import { FetchHttpClient, type HttpClient, HttpRouter, HttpServerResponse } from "effect/http"
 import { type HttpApi, HttpApiBuilder, type HttpApiGroup } from "effect/http-api"
 import { Audit } from "./Audit"
@@ -14,6 +21,7 @@ import { runMain, serve } from "./Server"
 import { Settings } from "./Settings"
 import { standaloneRoutes } from "./Standalone"
 import { Storage } from "./Storage"
+import { appTools } from "./Tools"
 import { loadWebBundle, webAssetsRoute } from "./WebAssets"
 
 /** Services every app backend gets for free (plus the `AccessControl` middleware). */
@@ -37,6 +45,14 @@ export interface AppServerOptions<Id extends string, Groups extends HttpApiGroup
 /** The app's manifest as static JSON, read by the platform when it is installed. */
 const ManifestRoute = (manifest: AppManifest) =>
   HttpRouter.add("GET", MANIFEST_PATH, Effect.succeed(HttpServerResponse.jsonUnsafe(manifest)))
+
+/** The endpoints offered to AI clients (`AgentTool`), read by Mosaik's MCP server. */
+const ToolsRoute = (tools: AppTools) =>
+  HttpRouter.add(
+    "GET",
+    TOOLS_PATH,
+    Effect.succeed(HttpServerResponse.jsonUnsafe(Schema.encodeSync(Schema.toCodecJson(AppTools))(tools))),
+  )
 
 /**
  * Builds an app backend: the API under `/api/<id>`, access control, manifest
@@ -100,7 +116,10 @@ const makeServer = <Id extends string, Groups extends HttpApiGroup.Constraint, E
 
   const Consumer = options.events === undefined ? Layer.empty : EventConsumer.pipe(Layer.provide(options.events))
 
-  const server = serve(Layer.mergeAll(ApiRoutes, ManifestRoute(manifest), assets, Consumer), {
+  // At startup: an endpoint that cannot be a tool stops the app here, not in someone's AI client.
+  const tools = ToolsRoute(appTools(app, options.api))
+
+  const server = serve(Layer.mergeAll(ApiRoutes, ManifestRoute(manifest), tools, assets, Consumer), {
     name: `mosaik-${app.id}`,
     ...(options.maxRequestBodySize === undefined ? {} : { maxRequestBodySize: options.maxRequestBodySize }),
   }).pipe(Layer.provide(AccessControlLive(app).pipe(Layer.provideMerge(Verifier))), Layer.provide(Platform))

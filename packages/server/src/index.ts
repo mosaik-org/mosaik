@@ -19,3 +19,4 @@ export {
 export { runMain, type ServeOptions, serve } from "./Server"
 export { type AppSettingsReader, Settings } from "./Settings"
 export { fileResponse, type RespondOptions, Storage, type StorageData, type StoredFile } from "./Storage"
+export { appTools } from "./Tools"
