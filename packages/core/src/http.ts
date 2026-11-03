@@ -28,6 +28,11 @@ export interface AgentToolSpec {
   readonly description: string
   /** A short name people read in their AI client, e.g. "Refund an order". Defaults to the endpoint's name. */
   readonly title?: string
+  /**
+   * Questions people might ask that this tool answers, e.g. "Which orders are the biggest this
+   * month?": the assistant suggests them to people who can use the tool.
+   */
+  readonly examples?: ReadonlyArray<string>
 }
 
 /**

@@ -478,6 +478,7 @@ HttpApiEndpoint.post("refund", "/:id/refund", { params: { id: OrderId }, payload
   .annotate(AgentTool, {
     title: "Refund an order",
     description: "Refunds a paid or shipped order in full. Refused above the largest refund in Sales' rules.",
+    examples: ["Refund order SO-10045, the customer returned it"],
   })
 ```
 
@@ -485,6 +486,8 @@ HttpApiEndpoint.post("refund", "/:id/refund", { params: { id: OrderId }, payload
   and description, and one input: `path`, `query` and `body`, each in its JSON form from the endpoint's
   schemas. The description is all the AI knows about when and how to use the tool: say what it does,
   what its inputs mean when their names do not, and what it refuses.
+- **Examples.** Questions people might ask that the tool answers (optional). The assistant in the shell
+  suggests them in a new conversation, to people who may use the tool, so write them as a person would.
 - **Who sees it.** Only people who may call it (its `RequiredPermission`, or the app's access
   permission). Clients are told it changes nothing for a `GET`, and that it is destructive when its
   permission is `dangerous` in the manifest, so they ask the person first.

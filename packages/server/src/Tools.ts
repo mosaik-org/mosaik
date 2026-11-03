@@ -55,6 +55,7 @@ export const appTools = <Id extends string, Groups extends HttpApiGroup.Constrai
           name,
           title: spec.value.title ?? name,
           description: spec.value.description,
+          examples: spec.value.examples ?? [],
           method: endpoint.method as AppTool["method"],
           path: endpoint.path,
           permission,

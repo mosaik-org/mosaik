@@ -18,6 +18,7 @@ const tool = (fields: Pick<AppTool, "name" | "method" | "readOnly" | "destructiv
       ...fields,
       title: fields.name,
       description: "",
+      examples: [],
       path: "/api/shop/orders",
       permission: "shop:view",
       params: null,

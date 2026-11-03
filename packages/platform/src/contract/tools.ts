@@ -28,6 +28,8 @@ export class AppTool extends Schema.Class<AppTool>("@mosaik/platform/AppTool")({
   name: Schema.String,
   title: Schema.String,
   description: Schema.String,
+  /** Questions people might ask that the tool answers (`AgentTool`'s `examples`). */
+  examples: Schema.Array(Schema.String),
   method: Schema.Literals(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   /** The full path, with `:params`, e.g. `/api/sales/orders/:id/refund`. */
   path: Schema.String,

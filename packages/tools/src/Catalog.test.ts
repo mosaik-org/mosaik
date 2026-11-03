@@ -19,6 +19,7 @@ const tools = Schema.encodeSync(Schema.toCodecJson(AppTools))(
         name: "orders.search",
         title: "Find orders",
         description: "Finds orders",
+        examples: [],
         method: "GET",
         path: "/api/shop/orders",
         permission: "shop:view",

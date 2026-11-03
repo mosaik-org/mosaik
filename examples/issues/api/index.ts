@@ -26,6 +26,7 @@ export class IssuesGroup extends HttpApiGroup.make("issues").add(
     error: UpstreamError,
   }).annotate(AgentTool, {
     title: "Find Jira issues",
+    examples: ["Which issues are in progress right now?", "Show me the open bugs"],
     description:
       "Jira issues, open ones (to do and in progress) unless `category` says otherwise. `project` is a " +
       'project key, as "Jira projects" lists them; `q` searches the text. `truncated`: more matched than were returned.',

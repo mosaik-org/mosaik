@@ -19,6 +19,7 @@ const tool = (name: string, method: AppTool["method"], destructive = false): Cat
     name,
     title: `Title of ${name}`,
     description: `Does ${name}`,
+    examples: [],
     method,
     path: "/api/shop/orders",
     permission: "shop:view",

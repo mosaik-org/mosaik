@@ -35,6 +35,7 @@ export class StatsGroup extends HttpApiGroup.make("stats").add(
     success: Fresh(SalesSummary),
   }).annotate(AgentTool, {
     title: "Sales summary",
+    examples: ["How did sales go over the last 30 days?"],
     description:
       "Revenue, order counts and revenue per day over the last `days` days (30 by default). Amounts are in euro cents.",
   }),
@@ -44,6 +45,7 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
   .add(
     HttpApiEndpoint.get("list", "/", { query: OrdersSearch.fields, success: OrdersPage }).annotate(AgentTool, {
       title: "Find orders",
+      examples: ["What are the biggest orders this month?", "Which orders are still pending?"],
       description:
         "Orders, newest first unless sorted otherwise, a page at a time (`pageSize` up to 100, `page` from 0). " +
         "`search` matches the order number or the customer; `status` keeps one status. `total` is the number " +
@@ -69,6 +71,7 @@ export class OrdersGroup extends HttpApiGroup.make("orders")
       .annotate(RequiredPermission, sales.perm("orders.edit"))
       .annotate(AgentTool, {
         title: "Change an order's status",
+        examples: ["Mark the oldest pending order as paid"],
         description:
           "Moves an order on: pending to paid or cancelled, paid to shipped or cancelled. Refunds are a " +
           "separate tool. `id` is the order's id (not its number).",
