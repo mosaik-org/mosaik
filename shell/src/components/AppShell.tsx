@@ -17,7 +17,7 @@ import Menu from "lucide-solid/icons/menu"
 import Search from "lucide-solid/icons/search"
 import Sparkles from "lucide-solid/icons/sparkles"
 import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
-import { appForPath } from "../apps"
+import { allApps, appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
 import { Sidebar } from "./Sidebar"
 import { UserMenu } from "./UserMenu"
@@ -166,6 +166,7 @@ const useAssistantBrowser = (): AssistantBrowser => {
       openPanel(conversation)
       void navigate({ href: path })
     },
+    appName: (id) => allApps.find((app) => app.id === id)?.name,
   }
 }
 

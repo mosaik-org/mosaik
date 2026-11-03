@@ -1,12 +1,14 @@
 import { AssistantApi, AssistantStatus, Conversation, TurnEvent } from "@mosaik/assistant/contract"
-import { CurrentPrincipal, NotFound } from "@mosaik/core"
+import { Conflict, CurrentPrincipal, NotFound } from "@mosaik/core"
 import { Live } from "@mosaik/server"
+import { Catalog } from "@mosaik/tools"
 import { Effect, Option, type Stream } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AssistantConfig } from "../AssistantConfig"
 import { pendingCalls } from "../Calls"
 import { Conversations } from "../Conversations"
 import { Model } from "../Model"
+import { suggestionsFrom } from "../Suggestions"
 import { Turns } from "../Turns"
 
 /** The signed-in person (the API's access control lets nobody else in). */
@@ -27,6 +29,8 @@ export const AssistantHandlers = HttpApiBuilder.group(
     const model = yield* Model
     const conversations = yield* Conversations
     const turns = yield* Turns
+    const catalog = yield* Catalog
+    const notFound = (id: string) => new NotFound({ resource: "conversation", id })
 
     return handlers.handleAll({
       status: () =>
@@ -38,10 +42,25 @@ export const AssistantHandlers = HttpApiBuilder.group(
         ),
       conversations: () => Effect.flatMap(currentUser, ({ user }) => conversations.list(user.id)),
       start: () => Effect.flatMap(currentUser, ({ user }) => conversations.start(user.id)),
+      suggestions: Effect.fn(function* () {
+        const { principal } = yield* currentUser
+        return suggestionsFrom(yield* catalog.visibleTo(principal))
+      }),
+      rename: Effect.fn(function* ({ params, payload }) {
+        const { user } = yield* currentUser
+        const renamed = yield* conversations.rename(user.id, params.id, payload.title)
+        if (Option.isNone(renamed)) return yield* notFound(params.id)
+        return renamed.value
+      }),
+      remove: Effect.fn(function* ({ params }) {
+        const { user } = yield* currentUser
+        if (turns.busy(params.id)) return yield* new Conflict({ message: "The assistant is still answering" })
+        if (!(yield* conversations.remove(user.id, params.id))) return yield* notFound(params.id)
+      }),
       conversation: Effect.fn(function* ({ params }) {
         const { user } = yield* currentUser
         const found = yield* conversations.find(user.id, params.id)
-        if (Option.isNone(found)) return yield* new NotFound({ resource: "conversation", id: params.id })
+        if (Option.isNone(found)) return yield* notFound(params.id)
         const { summary, messages } = found.value
         return new Conversation({ ...summary, messages, pending: pendingCalls(messages) })
       }),

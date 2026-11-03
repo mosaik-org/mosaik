@@ -3,7 +3,7 @@ import { createAnthropic } from "@ai-sdk/anthropic"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import type { MessagePart, ToolCallPart } from "@mosaik/assistant/contract"
 import type { InputSchema } from "@mosaik/tools"
-import { jsonSchema, type LanguageModel, type ModelMessage, streamText, tool } from "ai"
+import { generateText, jsonSchema, type LanguageModel, type ModelMessage, streamText, tool } from "ai"
 import { Context, Data, Effect, Layer, Option, Redacted, Stream } from "effect"
 import { AssistantConfig, type ModelSettings } from "./AssistantConfig"
 
@@ -54,6 +54,13 @@ export class Model extends Context.Service<
       /** The conversation, for providers that route or cache by it. */
       readonly session: string
     }) => Stream.Stream<StepEvent, ModelError>
+    /** A short answer without tools, for the assistant's own needs (a conversation's title). */
+    readonly complete: (options: {
+      readonly system: string
+      readonly prompt: string
+      /** The conversation it is for, as for `step`. */
+      readonly session: string
+    }) => Effect.Effect<string, ModelError>
   }
 >()("@mosaik/assistant-service/Model") {
   /** `None` when no model is configured: the assistant is off. */
@@ -63,11 +70,16 @@ export class Model extends Context.Service<
       const config = yield* AssistantConfig
       return Option.match(config.model, {
         onNone: () =>
-          Model.of({ label: "", step: () => Stream.fail(new ModelError({ message: "The assistant is off" })) }),
+          Model.of({
+            label: "",
+            step: () => Stream.fail(new ModelError({ message: "The assistant is off" })),
+            complete: () => Effect.fail(new ModelError({ message: "The assistant is off" })),
+          }),
         onSome: (settings) =>
           Model.of({
             label: `${settings.provider}/${settings.model}`,
             step: stepWith(languageModel(settings), sessionHeaders(settings)),
+            complete: completeWith(languageModel(settings), sessionHeaders(settings)),
           }),
       })
     }),
@@ -246,5 +258,13 @@ const stepWith =
         }),
       ),
     )
+
+const completeWith =
+  (model: LanguageModel, headersFor: (session: string) => Record<string, string>): Model["Service"]["complete"] =>
+  ({ system, prompt, session }) =>
+    Effect.tryPromise({
+      try: (signal) => generateText({ model, system, prompt, headers: headersFor(session), abortSignal: signal }),
+      catch: (cause) => new ModelError({ message: describe(cause), cause }),
+    }).pipe(Effect.map((result) => result.text))
 
 const describe = (cause: unknown) => (cause instanceof Error ? cause.message : String(cause))

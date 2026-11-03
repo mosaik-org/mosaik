@@ -12,6 +12,8 @@ export interface AssistantBrowser {
   readonly findPlaces: (query: string) => Promise<ReadonlyArray<Place>>
   /** Takes the person to a path of Mosaik, with the conversation beside the page. */
   readonly openPage: (path: string, conversation: string) => void
+  /** An app's name, from its id (the app a tool belongs to). */
+  readonly appName?: (app: string) => string | undefined
 }
 
 const AssistantBrowserContext = createContext<AssistantBrowser>()
@@ -19,3 +21,9 @@ const AssistantBrowserContext = createContext<AssistantBrowser>()
 export const AssistantBrowserProvider = AssistantBrowserContext.Provider
 
 export const useAssistantBrowser = (): AssistantBrowser | undefined => useContext(AssistantBrowserContext)
+
+/** An app's name as people know it, or its id without a frame that knows. */
+export const useAppName = (): ((app: string) => string) => {
+  const browser = useAssistantBrowser()
+  return (app) => browser?.appName?.(app) ?? app
+}

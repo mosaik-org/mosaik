@@ -25,6 +25,16 @@ export const titleOf = (text: string): string => {
   return line.length > 60 ? `${line.slice(0, 57).trimEnd()}…` : line
 }
 
+/**
+ * A title the model wrote, as people read it: one line, without quotes or a final period, not too
+ * long; `None` if nothing is left.
+ */
+export const cleanTitle = (raw: string): string | undefined => {
+  const line = (raw.trim().split("\n")[0] ?? "").trim().replace(/^["'“”*#\s]+|["'“”*.\s]+$/g, "")
+  if (line === "") return undefined
+  return line.length > 60 ? `${line.slice(0, 57).trimEnd()}…` : line
+}
+
 /** What a stored message needs; its id and time are the database's. */
 export interface NewMessage {
   readonly role: Message["role"]
@@ -50,6 +60,15 @@ export class Conversations extends Context.Service<
     >
     /** Stores a message; the person's first one also names the conversation. */
     readonly append: (id: string, message: NewMessage) => Effect.Effect<Message>
+    /** Names the user's conversation as they choose; `None` if it is not theirs. */
+    readonly rename: (userId: string, id: string, title: string) => Effect.Effect<Option.Option<ConversationSummary>>
+    /**
+     * Replaces the title the first message gave the conversation (a generated, better one), unless
+     * it changed meanwhile: a title the person chose stays.
+     */
+    readonly retitle: (id: string, from: string, to: string) => Effect.Effect<void>
+    /** Deletes the user's conversation and its messages; whether there was one. */
+    readonly remove: (userId: string, id: string) => Effect.Effect<boolean>
   }
 >()("@mosaik/assistant-service/Conversations") {
   static readonly layer = Layer.effect(
@@ -129,6 +148,31 @@ export class Conversations extends Context.Service<
           `.pipe(Effect.orDie)
           return new Message(row)
         }),
+
+        rename: Effect.fn("Conversations.rename")(function* (userId, id, title) {
+          const rows = yield* sql<typeof SummaryRow.Encoded>`
+            UPDATE conversations SET title = ${title}
+            WHERE id = ${id} AND user_id = ${userId}
+            RETURNING id, title, created_at, updated_at
+          `.pipe(Effect.orDie)
+          const [row] = rows
+          if (row === undefined) return Option.none()
+          return Option.some(
+            new ConversationSummary(yield* Schema.decodeUnknownEffect(SummaryRow)(row).pipe(Effect.orDie)),
+          )
+        }),
+
+        retitle: (id, from, to) =>
+          sql`UPDATE conversations SET title = ${to} WHERE id = ${id} AND title = ${from}`.pipe(
+            Effect.asVoid,
+            Effect.orDie,
+          ),
+
+        remove: (userId, id) =>
+          sql`DELETE FROM conversations WHERE id = ${id} AND user_id = ${userId} RETURNING id`.pipe(
+            Effect.map((rows) => rows.length > 0),
+            Effect.orDie,
+          ),
       })
     }),
   )

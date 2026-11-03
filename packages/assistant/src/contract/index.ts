@@ -180,15 +180,32 @@ const TurnStream = Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/
 
 const conversation = { id: Schema.String }
 
+/** A conversation's title, as people give it. */
+export const ConversationTitle = Schema.String.check(Schema.isTrimmed(), Schema.isMinLength(1), Schema.isMaxLength(120))
+
 export class AssistantGroup extends HttpApiGroup.make("assistant").add(
   HttpApiEndpoint.get("status", "/status", { success: AssistantStatus }),
   /** The person's conversations, latest first. */
   HttpApiEndpoint.get("conversations", "/conversations", { success: Schema.Array(ConversationSummary) }),
   HttpApiEndpoint.post("start", "/conversations", { success: ConversationSummary }),
+  /** Questions to suggest to the person: examples from the apps' tools they can use. */
+  HttpApiEndpoint.get("suggestions", "/suggestions", { success: Schema.Array(Schema.String) }),
   HttpApiEndpoint.get("conversation", "/conversations/:id", {
     params: conversation,
     success: Conversation,
     error: NotFound,
+  }),
+  HttpApiEndpoint.patch("rename", "/conversations/:id", {
+    params: conversation,
+    payload: Schema.Struct({ title: ConversationTitle }),
+    success: ConversationSummary,
+    error: NotFound,
+  }),
+  /** Deletes the conversation and its messages, for good. */
+  HttpApiEndpoint.delete("remove", "/conversations/:id", {
+    params: conversation,
+    success: HttpApiSchema.NoContent,
+    error: [NotFound, Conflict],
   }),
   /**
    * Sends the person's message and streams the turn it starts. Calls still waiting for a

@@ -10,14 +10,26 @@ import type {
 import { InternalClient } from "@mosaik/auth/server"
 import { BadRequest, Conflict, NotFound, type Principal, type PrincipalUser } from "@mosaik/core"
 import { AppCalls, type Caller, Catalog, type CatalogTool, MAX_RESULT_CHARACTERS } from "@mosaik/tools"
-import { Context, DateTime, Effect, Layer, Option, Queue, Result, Stream } from "effect"
+import { Context, DateTime, Duration, Effect, Layer, Option, Queue, Result, Stream } from "effect"
 import { AssistantConfig } from "./AssistantConfig"
 import { describeCall, matchResolutions, modelTools, pendingCalls, stepsSinceQuestion } from "./Calls"
-import { Conversations } from "./Conversations"
+import { Conversations, cleanTitle, titleOf } from "./Conversations"
 import { Model, type ModelError, type PromptMessage, type ReplyPart } from "./Model"
 
 /** Model steps a turn may take (each can call tools) since the person last wrote, before it stops. */
 export const MAX_STEPS = 20
+
+/** How long the first reply waits for the model to title the conversation, before ending without. */
+const TITLE_WAIT = Duration.seconds(5)
+
+/** The instructions for titling a conversation from its first exchange. */
+const TITLE_SYSTEM =
+  "Write a title of at most six words for a conversation that starts with this exchange. " +
+  "Answer with the title only, in the language of the question, without quotes."
+
+/** The texts of a message's text parts. */
+const textOf = (message: Message): string =>
+  message.parts.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n")
 
 /** Where the person was, as a line before their message. */
 const contextLine = (context: PageContext | null, today: string) => {
@@ -89,6 +101,8 @@ export class Turns extends Context.Service<
       conversation: string,
       resolutions: ReadonlyArray<Resolution>,
     ) => Effect.Effect<Stream.Stream<TurnEvent>, NotFound | Conflict | BadRequest>
+    /** Whether a turn of the conversation is running (it cannot be deleted meanwhile). */
+    readonly busy: (conversation: string) => boolean
   }
 >()("@mosaik/assistant-service/Turns") {
   static readonly layer = Layer.effect(
@@ -134,6 +148,31 @@ export class Turns extends Context.Service<
           )
       }
 
+      /**
+       * After the first answer, a title from the model in place of the first message's opening
+       * words; unless the person renamed the conversation meanwhile. Best effort: without one, the
+       * conversation keeps the title it has.
+       */
+      const nameConversation = Effect.fn("Turns.name")(function* (
+        conversation: string,
+        title: string,
+        messages: ReadonlyArray<Message>,
+        answer: string,
+      ) {
+        const questions = messages.filter((message) => message.role === "user")
+        const [question] = questions
+        if (questions.length !== 1 || question === undefined || title !== titleOf(textOf(question))) return
+        const prompt = `Question: ${textOf(question).slice(0, 1000)}\n\nAnswer: ${answer.slice(0, 1000)}`
+        yield* model.complete({ system: TITLE_SYSTEM, prompt, session: conversation }).pipe(
+          Effect.timeout(TITLE_WAIT),
+          Effect.flatMap((raw) => {
+            const better = cleanTitle(raw)
+            return better === undefined ? Effect.void : conversations.retitle(conversation, title, better)
+          }),
+          Effect.catchCause((cause) => Effect.logDebug("Could not title the conversation", cause)),
+        )
+      })
+
       /** Runs the model until it answers, waits for calls to be resolved, or reaches {@link MAX_STEPS}. */
       const continueTurn = Effect.fn("Turns.continue")(function* (
         user: PrincipalUser,
@@ -173,7 +212,12 @@ export class Turns extends Context.Service<
           yield* emit({ type: "message", message: stored })
 
           const asked = parts.flatMap((part) => (part.type === "tool-call" ? [part] : []))
-          if (asked.length === 0) return yield* emit({ type: "done" })
+          if (asked.length === 0) {
+            if (Option.isSome(found)) {
+              yield* nameConversation(conversation, found.value.summary.title, messages, textOf(stored))
+            }
+            return yield* emit({ type: "done" })
+          }
           // Reads of apps run now; changes and browser tools wait.
           const reads = asked.filter((call) => call.runsIn !== "browser" && !call.changes)
           const waiting = asked.filter((call) => call.runsIn === "browser" || call.changes)
@@ -225,6 +269,7 @@ export class Turns extends Context.Service<
       })
 
       return Turns.of({
+        busy: (conversation) => running.has(conversation),
         send: Effect.fn("Turns.send")(function* (principal, conversation, message) {
           const { user, messages } = yield* hold(principal, conversation)
           return turn(conversation, (emit) =>

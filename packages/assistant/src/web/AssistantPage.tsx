@@ -5,6 +5,8 @@ import { type JSX, Show } from "solid-js"
 import { assistant } from "./api"
 import { Conversation } from "./Conversation"
 import { ConversationList } from "./ConversationList"
+import { ConversationMenu } from "./ConversationMenu"
+import { titleOrDefault } from "./view"
 
 const styles = {
   page: css({
@@ -58,10 +60,7 @@ export const AssistantPage = (props: {
   readonly onBack?: (() => void) | undefined
 }): JSX.Element => {
   const conversations = useQuery(() => assistant.assistant.conversations.query())
-  const title = () =>
-    props.conversation === null
-      ? "New conversation"
-      : conversations.data?.find((each) => each.id === props.conversation)?.title || "Untitled"
+  const open = () => conversations.data?.find((each) => each.id === props.conversation)
 
   return (
     <div class={styles.page}>
@@ -88,7 +87,16 @@ export const AssistantPage = (props: {
               </button>
             )}
           </Show>
-          <span class={styles.title}>{title()}</span>
+          <span class={styles.title}>
+            {props.conversation === null ? "New conversation" : titleOrDefault(open()?.title ?? "")}
+          </span>
+          <Show when={open()}>
+            {(conversation) => (
+              <span class={css({ ml: "auto" })}>
+                <ConversationMenu conversation={conversation()} onDeleted={() => props.onSelect(null)} />
+              </span>
+            )}
+          </Show>
         </div>
         <Conversation
           conversation={() => props.conversation}

@@ -7,7 +7,7 @@ import { AppCalls, Catalog, type CatalogTool, inputSchema } from "@mosaik/tools"
 import { DateTime, Effect, Layer, Option, Stream } from "effect"
 import { AssistantConfig } from "./AssistantConfig"
 import { pendingCalls } from "./Calls"
-import { Conversations } from "./Conversations"
+import { Conversations, titleOf } from "./Conversations"
 import { Model, type PromptMessage, type StepEvent } from "./Model"
 import { MAX_STEPS, Turns, toPrompt } from "./Turns"
 
@@ -55,6 +55,9 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
   const prompts: Array<ReadonlyArray<PromptMessage>> = []
   const called: Array<string> = []
   const stored: Array<Message> = []
+  const titles: Array<string> = []
+  // The conversation's title: the first message's opening words, as the store would set it.
+  let title = ""
   let next = 0
 
   const model = Layer.succeed(
@@ -71,6 +74,7 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
             : [reply]
         return Stream.fromIterable(streamed)
       },
+      complete: () => Effect.succeed('"Biggest orders."'),
     }),
   )
   const conversations = Layer.succeed(
@@ -84,7 +88,7 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
             ? Option.some({
                 summary: new ConversationSummary({
                   id,
-                  title: "",
+                  title,
                   createdAt: DateTime.makeUnsafe(0),
                   updatedAt: DateTime.makeUnsafe(0),
                 }),
@@ -102,8 +106,18 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
             createdAt: DateTime.makeUnsafe(Date.UTC(2026, 10, 2)),
           })
           stored.push(created)
+          const first = message.parts[0]
+          if (title === "" && message.role === "user" && first?.type === "text") title = titleOf(first.text)
           return created
         }),
+      rename: () => Effect.die("unused"),
+      retitle: (_, from, to) =>
+        Effect.sync(() => {
+          if (title !== from) return
+          title = to
+          titles.push(to)
+        }),
+      remove: () => Effect.die("unused"),
     }),
   )
   const catalog = Layer.succeed(Catalog, Catalog.of({ visibleTo: () => Effect.succeed([search, refund]) }))
@@ -131,7 +145,7 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
   const layer = Turns.layer.pipe(
     Layer.provide([model, conversations, catalog, calls, config, Layer.succeed(InternalClient, {} as never)]),
   )
-  return { layer, prompts, called, stored }
+  return { layer, prompts, called, stored, titles, rename: (to: string) => (title = to) }
 }
 
 const events = (stream: Stream.Stream<TurnEvent>) =>
@@ -155,6 +169,27 @@ describe("Turns", () => {
       expect(prompts[0]?.[0]?.parts[0]).toMatchObject({
         text: "[Today is 2026-11-02. The person is on Order 7 (/shop/orders/7) in the shop app.]\n\nHi",
       })
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect("titles the conversation after its first answer, once", () => {
+    const { layer, titles } = setup([text("Here they are"), text("Again")])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      yield* events(yield* turns.send(principal, "c1", { text: "Biggest orders?", context }))
+      yield* events(yield* turns.send(principal, "c1", { text: "And again?", context }))
+      // Cleaned of quotes and the final period; not again after the second answer.
+      expect(titles).toEqual(["Biggest orders"])
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect("keeps a title the person chose", () => {
+    const { layer, titles, rename } = setup([text("Here they are")])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      rename("Mine")
+      yield* events(yield* turns.send(principal, "c1", { text: "Biggest orders?", context }))
+      expect(titles).toEqual([])
     }).pipe(Effect.provide(layer))
   })
 

@@ -238,7 +238,11 @@ chooses a model: it sends people's questions, and what apps answer them, to that
 - **As the person.** Calls run with the person's current permissions, and the audit log records them as
   the person's, "via <BRAND_NAME> assistant".
 - **History.** Conversations are kept, each visible only to its person, in the assistant's database
-  (`mosaik_assistant`).
+  (`mosaik_assistant`). After its first answer, the model names a conversation in a few words (one more
+  short request to the provider); people can rename or delete their conversations, and search them by
+  title. Deleting a conversation leaves what the assistant changed in apps as it is.
+- **Suggestions.** A new conversation offers questions to start with, from the examples of the tools
+  the person may use (`examples` in an app's `AgentTool`), a few from each app.
 - **Limits.** A turn takes at most 20 model steps since the person last wrote; each person may make `TOOL_CALLS_PER_MINUTE` tool calls
   a minute (120); answers from apps are cut at 60,000 characters.
 
