@@ -44,6 +44,11 @@ export const sales = defineApp({
   portal: {
     icon: "chart-line",
     category: "Sales",
+    // Listed under Sales in the shell's sidebar while it is open.
+    pages: [
+      { title: "Overview", path: "/" },
+      { title: "Orders", path: "/orders" },
+    ],
   },
 })
 

@@ -17,7 +17,7 @@ const manifest = new AppManifest({
   database: false,
   storage: false,
   settings: [],
-  portal: new PortalManifest({ icon: null, category: null, config: [], web: null }),
+  portal: new PortalManifest({ icon: null, category: null, config: [], pages: [], web: null }),
 })
 
 const row = (type: "user.access_changed" | "user.deleted", data: unknown) => ({

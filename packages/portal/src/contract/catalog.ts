@@ -1,5 +1,5 @@
 import { AccessControl, Forbidden, PermissionKey } from "@mosaik/core"
-import { AppId, WebBundle } from "@mosaik/platform/contract"
+import { AppId, PortalPageManifest, WebBundle } from "@mosaik/platform/contract"
 import { Schema } from "effect"
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { AppUsageStats, Category } from "./workspace"
@@ -12,6 +12,8 @@ export class PublicApp extends Schema.Class<PublicApp>("@mosaik/portal/PublicApp
   icon: Schema.NullOr(Schema.String),
   /** The category the app declares. */
   category: Schema.NullOr(Schema.String),
+  /** The app's pages, in the order navigation lists them. */
+  pages: Schema.Array(PortalPageManifest),
   version: Schema.String,
   access: PermissionKey,
   web: WebBundle,

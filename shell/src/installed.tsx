@@ -36,19 +36,27 @@ interface InstalledApp {
   failed: boolean
 }
 
-/** Shell-side description of an installed app, so navigation and the route guard treat it like a built-in one. */
+/**
+ * Shell-side description of an installed app, so navigation and the route guard treat it like a
+ * built-in one. Its permissions are the ones the shell checks: opening it, and seeing its pages.
+ */
 const toApp = (app: PublicApp): AnyApp => {
   const access = app.access.slice(app.access.indexOf(":") + 1)
+  const pages = app.pages.map(({ title, path, permission }) =>
+    permission === null ? { title, path } : { title, path, permission },
+  )
+  const permissions = [access, ...pages.flatMap((page) => (page.permission === undefined ? [] : [page.permission]))]
   return defineApp({
     id: app.id,
     name: app.name,
     ...(app.description === null ? {} : { description: app.description }),
     version: app.version,
     access,
-    permissions: { [access]: { description: "" } },
+    permissions: Object.fromEntries(permissions.map((name) => [name, { description: "" }])),
     portal: {
       ...(app.icon === null ? {} : { icon: app.icon }),
       ...(app.category === null ? {} : { category: app.category }),
+      pages,
     },
   })
 }

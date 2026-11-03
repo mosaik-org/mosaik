@@ -65,16 +65,31 @@ export interface ConfigSpec {
 export type ConfigKind = "text" | "url" | "number" | "boolean"
 
 /**
- * How the Portal lists and runs the app. Core ignores it; a standalone app (on its own
+ * A page of the app, for navigation: the shell's sidebar lists an app's pages under it while it is
+ * open; where nothing lists them (Core's console), `AppLayout` shows them as tabs.
+ */
+export interface PortalPage<Permission extends string = string> {
+  /** What navigation calls it, e.g. `Orders`. */
+  readonly title: string
+  /** Its address under the app's: `/` for the app's first page, `/orders` for `/<id>/orders`. */
+  readonly path: string
+  /** Listed only for people with this permission of the app, e.g. `orders.edit` (the page is theirs only). */
+  readonly permission?: Permission
+}
+
+/**
+ * How the Portal lists and runs the app. Core's services ignore it; a standalone app (on its own
  * address, without the Portal) leaves it out.
  */
-export interface PortalSpec {
+export interface PortalSpec<Permission extends string = string> {
   /** Name of a lucide icon, e.g. `chart-line`. */
   readonly icon?: string
   /** Where the directory lists the app, e.g. `Sales` (its owners and admins can change it). */
   readonly category?: string
   /** Environment variables admins enter when the Portal runs the app's image, keyed by name (e.g. `JIRA_URL`). */
   readonly config?: { readonly [name: string]: ConfigSpec }
+  /** The app's pages, in the order navigation lists them. An app of one page leaves them out. */
+  readonly pages?: ReadonlyArray<PortalPage<Permission>>
 }
 
 export interface AppSpec<
@@ -116,7 +131,7 @@ export interface AppSpec<
   /** Whether the app runs its own backend process. Defaults to `true`. */
   readonly backend?: boolean
   /** How the Portal lists and runs the app (see {@link PortalSpec}). */
-  readonly portal?: PortalSpec
+  readonly portal?: PortalSpec<NoInfer<Name>>
 }
 
 const AppTypeId: unique symbol = Symbol.for("@mosaik/core/App")
@@ -129,7 +144,7 @@ export interface App<
   Settings extends SettingsSpec = SettingsSpec,
 > extends Omit<AppSpec<Id, Name, Notification, Event, Settings>, "roles" | "portal" | "settings"> {
   readonly [AppTypeId]: typeof AppTypeId
-  readonly portal: PortalSpec
+  readonly portal: PortalSpec<Name>
   readonly apiPrefix: `/api/${Id}`
   readonly accessPermission: PermissionKey<Id, Name>
   /** Decides who can use the app (see `OWNER_PERMISSION_NAME`). */
@@ -200,6 +215,7 @@ export const defineApp = <
   if (OWNER_PERMISSION_NAME in spec.permissions) {
     throw new Error(`Permission "${OWNER_PERMISSION_NAME}" is reserved (app "${spec.id}")`)
   }
+  checkPages(spec.id, Object.keys(spec.permissions), spec.portal?.pages ?? [])
   const perm = <N extends Name>(name: N): PermissionKey<Id, N> => `${spec.id}:${name}`
   return {
     ...spec,
@@ -251,8 +267,40 @@ const appRoles = (spec: AppSpec<string, string, string, PlatformEventType>): Rea
   ]
 }
 
-/** The app with how the Portal lists it, for an app defined without (e.g. Core's administration). */
-export const withPortal = <A extends AnyApp>(app: A, portal: PortalSpec): A => ({ ...app, portal })
+/** The app with how the Portal lists it, for an app defined without (e.g. the Portal's own). */
+export const withPortal = <A extends AnyApp>(app: A, portal: A["portal"]): A => {
+  checkPages(app.id, Object.keys(app.permissions), portal.pages ?? [])
+  return { ...app, portal }
+}
+
+/** A page's path: `/`, or segments without a trailing slash (`/orders`, `/orders/archive`). */
+const PagePathPattern = /^\/([a-z0-9-]+(\/[a-z0-9-]+)*)?$/
+
+/**
+ * What keeps navigation from listing an app's pages: odd or repeated paths, permissions the app
+ * does not define (its names, e.g. `orders.edit`). Empty when they are fine.
+ */
+export const pageProblems = (
+  id: string,
+  permissions: ReadonlyArray<string>,
+  pages: ReadonlyArray<PortalPage>,
+): ReadonlyArray<string> =>
+  pages.flatMap((page, index) => [
+    ...(PagePathPattern.test(page.path)
+      ? []
+      : [`Invalid page path "${page.path}" in app "${id}" (e.g. "/" or "/orders")`]),
+    ...(pages.findIndex((other) => other.path === page.path) < index
+      ? [`Page "${page.path}" is listed twice in app "${id}"`]
+      : []),
+    ...(page.permission === undefined || permissions.includes(page.permission)
+      ? []
+      : [`Page "${page.path}" in app "${id}" needs "${page.permission}", which the app does not define`]),
+  ])
+
+const checkPages = (id: string, permissions: ReadonlyArray<string>, pages: ReadonlyArray<PortalPage>): void => {
+  const [problem] = pageProblems(id, permissions, pages)
+  if (problem !== undefined) throw new Error(problem)
+}
 
 export const isApp = (u: unknown): u is AnyApp => typeof u === "object" && u !== null && AppTypeId in u
 

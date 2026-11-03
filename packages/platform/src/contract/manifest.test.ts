@@ -56,6 +56,7 @@ describe("toAppManifest", () => {
       config: [
         { name: "CRM_REGION", label: null, description: "Region", kind: "text", required: false, secret: false },
       ],
+      pages: [],
       web: null,
     })
     const json = JSON.parse(JSON.stringify(Schema.encodeSync(AppManifest)(manifest)))

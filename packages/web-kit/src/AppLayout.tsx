@@ -3,23 +3,36 @@ import type { AnyApp } from "@mosaik/core"
 import { PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { Outlet } from "@tanstack/solid-router"
-import { type JSX, Show } from "solid-js"
+import { createContext, type JSX, Show, useContext } from "solid-js"
 import { AppIcon } from "./AppIcon"
-import { type NavTabItem, NavTabs } from "./NavTabs"
+import { appPageLinks } from "./appPages"
+import { NavTabs } from "./NavTabs"
+
+const FrameListsPagesContext = createContext(false)
+
+/**
+ * Tells `AppLayout` that the frame around apps lists their pages itself (the shell does, in its
+ * sidebar), so it does not show them again as tabs. Without it (Core's console), it does.
+ */
+export const FrameListsPages = (props: { readonly children: JSX.Element }): JSX.Element => (
+  <FrameListsPagesContext.Provider value={true}>{props.children}</FrameListsPagesContext.Provider>
+)
 
 export interface AppLayoutProps {
   readonly app: AnyApp
-  /** Sub-navigation; items with a `permission` are hidden from principals without it. */
-  readonly nav?: ReadonlyArray<NavTabItem & { readonly permission?: string }>
   readonly actions?: JSX.Element
   /** A lucide icon name; defaults to the one the app gives the Portal (`portal.icon`). */
   readonly icon?: string
 }
 
-/** Standard frame for an app: header from the manifest, sub-navigation and the active page. */
+/**
+ * Standard frame for an app: its header from the manifest, its pages (`portal.pages`, as tabs
+ * where the frame does not list them) and the page shown.
+ */
 export const AppLayout = (props: AppLayoutProps) => {
   const can = useCan()
-  const visibleNav = () => (props.nav ?? []).filter((item) => item.permission === undefined || can(item.permission))
+  const listedByFrame = useContext(FrameListsPagesContext)
+  const tabs = () => (listedByFrame ? [] : appPageLinks(props.app, can))
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
@@ -29,8 +42,8 @@ export const AppLayout = (props: AppLayoutProps) => {
         description={props.app.description}
         actions={props.actions}
       />
-      <Show when={visibleNav().length > 1}>
-        <NavTabs items={visibleNav()} />
+      <Show when={tabs().length > 0}>
+        <NavTabs items={tabs()} />
       </Show>
       <Outlet />
     </div>

@@ -119,6 +119,11 @@ export const sales = defineApp({
     config: {                  // environment variables admins enter when the Portal runs the app's image
       PAYMENTS_URL: { label: "Payments API", kind: "url", description: "Base address of the payments API" },
     },
+    pages: [                   // listed under the app in the shell's sidebar while it is open
+      { title: "Overview", path: "/" },
+      { title: "Orders", path: "/orders" },
+      { title: "Refunds", path: "/refunds", permission: "orders.refund" },
+    ],
   },
 })
 sales.perm("orders.refund")    // "sales:orders.refund", type-checked
@@ -234,7 +239,7 @@ file-based routes in `web/routes/`, compiled into the shell.
 
 ```tsx
 export default defineWebApp({
-  component: () => <AppLayout app={app} nav={[{ to: "/crm", label: "Deals", exact: true }]} />,
+  component: () => <AppLayout app={app} />,
   routes: (parent) => [
     createRoute({
       getParentRoute: () => parent,
@@ -278,8 +283,11 @@ backend, so it registers the new bundle: reload the page to see a change.
   ```
 
   `noValidate` leaves the checks to the Schema, so people read its messages instead of the browser's.
-- **Frame.** `AppLayout` shows the app's name and icon from the manifest, its sub-navigation (items with a
-  `permission` are hidden from people without it) and the page.
+- **Frame.** `AppLayout` shows the app's name and icon from the manifest, and the page.
+- **Pages.** An app with several pages lists them in its manifest (`portal.pages`), in order, with paths
+  under its address (`/` is its first page). The shell lists them under the app in its sidebar while it is
+  open; where nothing lists them (Core's console), `AppLayout` shows them as tabs. A page with a
+  `permission` is listed only for people with it. An app of one page leaves them out.
 - **Width.** A page says how much of the screen it takes in its route: `staticData: { layout: "wide" }`.
   `contained` (the default) is a centered column, for forms, settings and text; `wide` takes the whole
   width with the usual padding, for tables and dashboards (Sales' orders); `full` goes edge to edge,

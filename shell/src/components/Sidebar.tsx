@@ -4,9 +4,9 @@ import { managesAnyApp, reviewsQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon } from "@mosaik/web-kit"
+import { AppIcon, appPageLinks } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
-import { Link } from "@tanstack/solid-router"
+import { Link, useLocation } from "@tanstack/solid-router"
 import ArrowDown from "lucide-solid/icons/arrow-down"
 import ArrowUp from "lucide-solid/icons/arrow-up"
 import Ellipsis from "lucide-solid/icons/ellipsis"
@@ -17,9 +17,20 @@ import Pin from "lucide-solid/icons/pin"
 import PinOff from "lucide-solid/icons/pin-off"
 import Settings2 from "lucide-solid/icons/settings-2"
 import Sparkles from "lucide-solid/icons/sparkles"
-import { For, type JSX, Show } from "solid-js"
-import { appHref } from "../apps"
+import { type Accessor, createContext, For, type JSX, Show, useContext } from "solid-js"
+import { appForPath, appHref } from "../apps"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
+
+/**
+ * How the sidebar draws its links:
+ * - `full`: with their labels, and actions on hover (pinning, ordering);
+ * - `rail`: icons only, beside a page that needs the room;
+ * - `floating`: the rail opened over the page, with labels but without actions (their menus would
+ *   open under it).
+ */
+export type SidebarMode = "full" | "rail" | "floating"
+
+const ModeContext = createContext<Accessor<SidebarMode>>((): SidebarMode => "full")
 
 const styles = {
   nav: css({ display: "flex", flexDirection: "column", gap: "6", flex: "1", overflowY: "auto", px: "3", py: "4" }),
@@ -32,7 +43,10 @@ const styles = {
     color: "fg.subtle",
     textTransform: "uppercase",
     letterSpacing: "wider",
+    whiteSpace: "nowrap",
   }),
+  // In the rail, a section starts with a line instead of its heading.
+  divider: css({ mx: "2", mb: "2", borderTopWidth: "1px" }),
   row: css({
     position: "relative",
     // The actions show on hover and keyboard focus, and stay while their menu is open.
@@ -50,11 +64,13 @@ const styles = {
     fontSize: "sm",
     fontWeight: "medium",
     color: "fg.muted",
+    whiteSpace: "nowrap",
     transition: "background 0.15s, color 0.15s",
     _hover: { bg: "gray.subtle.bg", color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
     "&[data-status=active]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
   }),
+  icon: css({ position: "relative", display: "flex", flexShrink: "0" }),
   label: css({ flex: "1", minW: "0", truncate: true }),
   count: css({
     minW: "5",
@@ -66,6 +82,17 @@ const styles = {
     fontWeight: "semibold",
     textAlign: "center",
   }),
+  // In the rail, things waiting show as a dot on the icon.
+  dot: css({
+    position: "absolute",
+    top: "-0.5",
+    right: "-0.5",
+    width: "2",
+    height: "2",
+    borderRadius: "full",
+    bg: "accent.solid.bg",
+    outline: "2px solid token(colors.gray.2)",
+  }),
   actions: css({
     position: "absolute",
     top: "50%",
@@ -73,6 +100,20 @@ const styles = {
     transform: "translateY(-50%)",
     opacity: "0",
     transition: "opacity 0.15s",
+  }),
+  // The open app's pages, under its link.
+  pages: css({ display: "flex", flexDirection: "column", ml: "5", my: "1", pl: "2", borderLeftWidth: "1px" }),
+  page: css({
+    px: "3",
+    py: "1.5",
+    borderRadius: "md",
+    fontSize: "sm",
+    color: "fg.muted",
+    truncate: true,
+    transition: "background 0.15s, color 0.15s",
+    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    "&[data-status=active]": { color: "accent.plain.fg", fontWeight: "medium" },
   }),
   hint: css({ px: "3", fontSize: "xs", color: "fg.subtle", lineHeight: "relaxed" }),
   hintLink: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
@@ -87,30 +128,84 @@ const NavLink = (props: {
   count?: number
   onNavigate?: () => void
   actions?: JSX.Element
-}) => (
-  <div class={styles.row}>
-    <Link
-      to={props.to}
-      class={styles.link}
-      activeOptions={{ exact: props.exact ?? false }}
-      onClick={() => props.onNavigate?.()}
-    >
-      {props.icon}
-      <span class={styles.label}>{props.label}</span>
-      <Show when={(props.count ?? 0) > 0}>
-        <span class={styles.count}>
-          {props.count}
-          <span class={css({ srOnly: true })}> waiting</span>
-        </span>
-      </Show>
-    </Link>
-    <Show when={props.actions}>
-      <div class={styles.actions} data-actions>
-        {props.actions}
+  /** Below the link, e.g. the open app's pages. */
+  children?: JSX.Element
+}) => {
+  const mode = useContext(ModeContext)
+  const waiting = () => (props.count ?? 0) > 0
+  return (
+    <div>
+      <div class={styles.row}>
+        <Link
+          to={props.to}
+          class={styles.link}
+          activeOptions={{ exact: props.exact ?? false }}
+          onClick={() => props.onNavigate?.()}
+        >
+          <span class={styles.icon}>
+            {props.icon}
+            <Show when={mode() === "rail" && waiting()}>
+              <span class={styles.dot} />
+            </Show>
+          </span>
+          <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
+          <Show when={waiting()}>
+            <span class={mode() === "rail" ? css({ srOnly: true }) : styles.count}>
+              {props.count}
+              <span class={css({ srOnly: true })}> waiting</span>
+            </span>
+          </Show>
+        </Link>
+        <Show when={mode() === "full" && props.actions}>
+          <div class={styles.actions} data-actions>
+            {props.actions}
+          </div>
+        </Show>
       </div>
+      <Show when={mode() !== "rail"}>{props.children}</Show>
+    </div>
+  )
+}
+
+const Section = (props: { heading: string; children: JSX.Element }) => {
+  const mode = useContext(ModeContext)
+  return (
+    <div class={styles.section}>
+      <Show when={mode() === "rail"}>
+        <div class={styles.divider} />
+      </Show>
+      {/* Read out in the rail too, where it does not show. */}
+      <div class={mode() === "rail" ? css({ srOnly: true }) : styles.heading}>{props.heading}</div>
+      {props.children}
+    </div>
+  )
+}
+
+/** The pages of the app shown, under its link (as its manifest lists them, those the person may see). */
+const AppPages = (props: { app: AnyApp; onNavigate?: () => void }) => {
+  const principal = usePrincipal()
+  const location = useLocation()
+  const open = () => appForPath(location().pathname)?.id === props.app.id
+  const links = () => (open() ? appPageLinks(props.app, (permission) => principal().can(permission)) : [])
+  return (
+    <Show when={links().length > 0}>
+      <nav class={styles.pages} aria-label={`${props.app.name} pages`}>
+        <For each={links()}>
+          {(link) => (
+            <Link
+              to={link.to}
+              class={styles.page}
+              activeOptions={{ exact: link.exact ?? false }}
+              onClick={() => props.onNavigate?.()}
+            >
+              {link.label}
+            </Link>
+          )}
+        </For>
+      </nav>
     </Show>
-  </div>
-)
+  )
+}
 
 const PinnedActions = (props: { apps: MyAppsState; app: AnyApp; index: number; count: number }) => (
   <ActionMenu
@@ -145,10 +240,11 @@ const PinnedActions = (props: { apps: MyAppsState; app: AnyApp; index: number; c
 )
 
 /**
- * Navigation to the principal's apps: the ones they pinned, then either every other app
- * (when they can open only a few) or the ones they used recently. "All apps" lists the rest.
+ * Navigation: the overview and the assistant; the principal's apps, the ones they pinned, then
+ * either every other app (when they can open only a few) or the ones they used recently, with the
+ * open app's pages under it; and for owners and admins, what they manage. "All apps" lists the rest.
  */
-export const Sidebar = (props: { onNavigate?: () => void }) => {
+export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) => {
   const apps = useMyApps()
   const principal = usePrincipal()
   // For owners and admins: the requests they can answer.
@@ -164,7 +260,6 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
   }))
   const few = () => apps.accessible().length <= FEW_APPS
   const others = () => (few() ? apps.accessible().filter((app) => !apps.isPinned(app.id)) : apps.recent())
-
   const appLink = (app: AnyApp, actions?: JSX.Element) => (
     <NavLink
       to={appHref(app)}
@@ -172,68 +267,77 @@ export const Sidebar = (props: { onNavigate?: () => void }) => {
       label={app.name}
       onNavigate={props.onNavigate}
       actions={actions}
-    />
+    >
+      <AppPages app={app} onNavigate={props.onNavigate} />
+    </NavLink>
   )
 
   return (
-    <nav class={styles.nav} aria-label="Main">
-      <div class={styles.section}>
-        <NavLink to="/" exact icon={<LayoutDashboard size={18} />} label="Overview" onNavigate={props.onNavigate} />
-        <NavLink to="/directory" icon={<LayoutGrid size={18} />} label="All apps" onNavigate={props.onNavigate} />
-        <Show when={principal().isAuthenticated && assistantStatus.data?.enabled === true}>
-          <NavLink to="/assistant" icon={<Sparkles size={18} />} label="Assistant" onNavigate={props.onNavigate} />
+    <ModeContext.Provider value={() => props.mode ?? "full"}>
+      <nav class={styles.nav} aria-label="Main">
+        <div class={styles.section}>
+          <NavLink to="/" exact icon={<LayoutDashboard size={18} />} label="Overview" onNavigate={props.onNavigate} />
+          <NavLink to="/directory" icon={<LayoutGrid size={18} />} label="All apps" onNavigate={props.onNavigate} />
+          <Show when={principal().isAuthenticated && assistantStatus.data?.enabled === true}>
+            <NavLink to="/assistant" icon={<Sparkles size={18} />} label="Assistant" onNavigate={props.onNavigate} />
+          </Show>
+        </div>
+        <Show when={apps.pinned().length > 0}>
+          <Section heading="Pinned">
+            <For each={apps.pinned()}>
+              {(app, index) =>
+                appLink(app, <PinnedActions apps={apps} app={app} index={index()} count={apps.pinned().length} />)
+              }
+            </For>
+          </Section>
+        </Show>
+        <Show
+          when={others().length > 0}
+          fallback={
+            <Show when={!few() && apps.pinned().length === 0 && props.mode !== "rail"}>
+              <p class={styles.hint}>
+                Apps you open or pin show up here. Find them in{" "}
+                <Link to="/directory" class={styles.hintLink} onClick={() => props.onNavigate?.()}>
+                  All apps
+                </Link>
+                .
+              </p>
+            </Show>
+          }
+        >
+          <Section heading={few() ? "Apps" : "Recent"}>
+            <For each={others()}>
+              {(app) =>
+                appLink(
+                  app,
+                  <Show when={apps.canPin()}>
+                    <IconButton
+                      aria-label={`Pin ${app.name}`}
+                      size="xs"
+                      variant="plain"
+                      onClick={() => apps.pin(app.id)}
+                    >
+                      <Pin size={14} />
+                    </IconButton>
+                  </Show>,
+                )
+              }
+            </For>
+          </Section>
         </Show>
         <Show when={reviewing()}>
-          <NavLink
-            to="/access-requests"
-            icon={<Inbox size={18} />}
-            label="Access requests"
-            count={waiting.data?.length ?? 0}
-            onNavigate={props.onNavigate}
-          />
-          <NavLink to="/manage" icon={<Settings2 size={18} />} label="Manage apps" onNavigate={props.onNavigate} />
+          <Section heading="Manage">
+            <NavLink
+              to="/access-requests"
+              icon={<Inbox size={18} />}
+              label="Access requests"
+              count={waiting.data?.length ?? 0}
+              onNavigate={props.onNavigate}
+            />
+            <NavLink to="/manage" icon={<Settings2 size={18} />} label="Manage apps" onNavigate={props.onNavigate} />
+          </Section>
         </Show>
-      </div>
-      <Show when={apps.pinned().length > 0}>
-        <div class={styles.section}>
-          <div class={styles.heading}>Pinned</div>
-          <For each={apps.pinned()}>
-            {(app, index) =>
-              appLink(app, <PinnedActions apps={apps} app={app} index={index()} count={apps.pinned().length} />)
-            }
-          </For>
-        </div>
-      </Show>
-      <Show
-        when={others().length > 0}
-        fallback={
-          <Show when={!few() && apps.pinned().length === 0}>
-            <p class={styles.hint}>
-              Apps you open or pin show up here. Find them in{" "}
-              <Link to="/directory" class={styles.hintLink} onClick={() => props.onNavigate?.()}>
-                All apps
-              </Link>
-              .
-            </p>
-          </Show>
-        }
-      >
-        <div class={styles.section}>
-          <div class={styles.heading}>{few() ? "Apps" : "Recent"}</div>
-          <For each={others()}>
-            {(app) =>
-              appLink(
-                app,
-                <Show when={apps.canPin()}>
-                  <IconButton aria-label={`Pin ${app.name}`} size="xs" variant="plain" onClick={() => apps.pin(app.id)}>
-                    <Pin size={14} />
-                  </IconButton>
-                </Show>,
-              )
-            }
-          </For>
-        </div>
-      </Show>
-    </nav>
+      </nav>
+    </ModeContext.Provider>
   )
 }

@@ -83,6 +83,15 @@ export const WebBundle = Schema.Struct({
 })
 export type WebBundle = typeof WebBundle.Type
 
+/** A page of the app, for navigation (see `PortalPage` in `@mosaik/core`). */
+export const PortalPageManifest = Schema.Struct({
+  title: Schema.String,
+  path: Schema.String,
+  /** The name of the app's permission it is listed for (`orders.edit`); `null`: everyone who opens the app. */
+  permission: Schema.NullOr(Schema.String),
+})
+export type PortalPageManifest = typeof PortalPageManifest.Type
+
 /** How the Portal lists and runs the app; Core stores it with the manifest but does not use it. */
 export class PortalManifest extends Schema.Class<PortalManifest>("@mosaik/platform/PortalManifest")({
   icon: Schema.NullOr(Schema.String),
@@ -90,6 +99,8 @@ export class PortalManifest extends Schema.Class<PortalManifest>("@mosaik/platfo
   category: Schema.NullOr(Schema.String),
   /** Settings admins enter when the Portal runs the app's image. */
   config: Schema.Array(ConfigSetting),
+  /** The app's pages, in the order navigation lists them. */
+  pages: Schema.Array(PortalPageManifest),
   /** The browser bundle the shell mounts; `null` for built-in apps (compiled into the shell) and standalone ones. */
   web: Schema.NullOr(WebBundle),
 }) {}
@@ -150,6 +161,11 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
         kind: spec.kind ?? "text",
         required: spec.required ?? true,
         secret: spec.secret ?? false,
+      })),
+      pages: (app.portal.pages ?? []).map((page) => ({
+        title: page.title,
+        path: page.path,
+        permission: page.permission ?? null,
       })),
       web,
     }),

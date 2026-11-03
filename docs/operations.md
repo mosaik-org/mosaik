@@ -156,6 +156,12 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
 
 - **Sidebar.** The user's pinned apps (in their order, kept by the Portal so they follow the user across
   devices), then all their other apps when they can open 8 or fewer, or else the 5 they used most recently.
+  The open app's pages are listed under it (from its manifest), and owners and admins get a *Manage*
+  section: *Access requests*, with a count of those waiting, and *Manage apps*.
+- **Collapsing the sidebar.** Ctrl/⌘+B, the button at its foot or the command palette collapses it to a
+  rail of icons, remembered in that browser. Narrower screens (below 1024 px) get the rail whatever was
+  chosen; resting the pointer on it, or moving focus into it, opens it over the page. Going to another
+  page never changes it.
 - **All apps** (`/directory`). Every app by category, with search, *Most used* sorting and pinning. Apps the
   user can't open are listed too, with *Request access*. Apps declare a category; owners and admins can
   list an app under another one.

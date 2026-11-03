@@ -10,28 +10,39 @@ import {
 import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
-import { PageMain, useCommandPalette, useFindPlaces, usePageLayout } from "@mosaik/web-kit"
+import {
+  FrameListsPages,
+  PageMain,
+  useCommandPalette,
+  useCommands,
+  useFindPlaces,
+  usePageLayout,
+} from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
+import PanelLeftClose from "lucide-solid/icons/panel-left-close"
+import PanelLeftOpen from "lucide-solid/icons/panel-left-open"
 import Search from "lucide-solid/icons/search"
 import Sparkles from "lucide-solid/icons/sparkles"
 import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
 import { allApps, appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
-import { Sidebar } from "./Sidebar"
+import { Sidebar, type SidebarMode } from "./Sidebar"
+import { createSidebarState, type SidebarState } from "./sidebarState"
 import { UserMenu } from "./UserMenu"
 
 const styles = {
+  // The sidebar's column is as wide as the sidebar: with its labels, or a rail.
   shell: css({
     display: "grid",
-    gridTemplateColumns: { base: "1fr", md: "240px 1fr" },
+    gridTemplateColumns: { base: "1fr", md: "auto 1fr" },
     minHeight: "100dvh",
   }),
   // A page with the `full` layout gets exactly the window's height, which it fills and scrolls inside.
   shellFull: css({ height: "100dvh", gridTemplateRows: "minmax(0, 1fr)", overflow: "hidden" }),
   // With the assistant open, a third column on wide screens.
-  shellWithAssistant: css({ gridTemplateColumns: { base: "1fr", md: "240px 1fr", lg: "240px 1fr 400px" } }),
+  shellWithAssistant: css({ gridTemplateColumns: { base: "1fr", md: "auto 1fr", lg: "auto 1fr 400px" } }),
   assistant: css({
     // Docked on wide screens; over the page on narrower ones.
     position: { base: "fixed", lg: "sticky" },
@@ -49,11 +60,25 @@ const styles = {
     position: "sticky",
     top: "0",
     height: "100dvh",
+    width: "240px",
+    transition: "width 0.2s ease",
+    _motionReduce: { transition: "none" },
+    "&[data-rail=true]": { width: "64px" },
+    // Sticky, it stacks its content on its own: open over the page, it is raised above the top bar.
+    "&[data-floating=true]": { zIndex: "banner" },
+  }),
+  sidebar: css({
     display: "flex",
     flexDirection: "column",
+    width: "full",
+    height: "full",
+    overflow: "hidden",
     borderRightWidth: "1px",
     bg: "gray.2",
+    // The rail opened over the page, as wide as the sidebar.
+    "&[data-floating=true]": { position: "absolute", insetY: "0", left: "0", width: "240px", boxShadow: "lg" },
   }),
+  sidebarFooter: css({ display: "flex", px: "3", py: "3", borderTopWidth: "1px" }),
   drawer: css({
     position: "fixed",
     inset: "0",
@@ -74,11 +99,15 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "2",
+    flexShrink: "0",
     height: "14",
     px: "6",
     fontWeight: "bold",
     fontSize: "lg",
     letterSpacing: "tight",
+    whiteSpace: "nowrap",
+    // The logo alone, centred in the rail.
+    "&[data-rail=true]": { px: "4.5" },
   }),
   logo: css({
     display: "grid",
@@ -139,12 +168,40 @@ const SearchButton = () => {
   )
 }
 
-const Brand = () => (
-  <Link to="/" class={styles.brand}>
-    <span class={styles.logo}>M</span>
-    Mosaik
+const Brand = (props: { rail?: boolean }) => (
+  <Link to="/" class={styles.brand} data-rail={props.rail === true}>
+    <span class={styles.logo} aria-hidden="true">
+      M
+    </span>
+    <span class={props.rail === true ? css({ srOnly: true }) : undefined}>Mosaik</span>
   </Link>
 )
+
+/** Collapses or expands the sidebar where people choose; elsewhere, opens the rail over the page. */
+const SidebarToggle = (props: { state: SidebarState }) => {
+  // What a click does: where people choose, expand or collapse it; elsewhere, open or close the rail.
+  const opens = () => (props.state.roomy() ? props.state.rail() : !props.state.floating())
+  const label = () =>
+    props.state.roomy()
+      ? `${opens() ? "Expand" : "Collapse"} the sidebar (Ctrl+B)`
+      : `${opens() ? "Open" : "Close"} the sidebar`
+  return (
+    <div class={styles.sidebarFooter}>
+      <IconButton variant="plain" size="sm" aria-label={label()} title={label()} onClick={() => props.state.toggle()}>
+        <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
+          <PanelLeftOpen size={18} />
+        </Show>
+      </IconButton>
+    </div>
+  )
+}
+
+/** Ctrl/⌘+B, except where it formats text. */
+const isSidebarShortcut = (event: KeyboardEvent) =>
+  (event.ctrlKey || event.metaKey) &&
+  !event.altKey &&
+  event.key.toLowerCase() === "b" &&
+  !(event.target instanceof HTMLElement && event.target.isContentEditable)
 
 /**
  * The assistant's browser tools, run by the shell: it finds places as the command palette does
@@ -194,13 +251,34 @@ export const AppShell = (props: { children: JSX.Element }) => {
   const context = usePageContext()
   const assistantBrowser = useAssistantBrowser()
   const layout = usePageLayout()
+  const sidebar = createSidebarState()
+  const sidebarMode = (): SidebarMode => (sidebar.rail() ? (sidebar.floating() ? "floating" : "rail") : "full")
+
+  useCommands(() =>
+    sidebar.roomy()
+      ? [
+          {
+            id: "shell:sidebar",
+            title: sidebar.rail() ? "Expand the sidebar" : "Collapse the sidebar",
+            group: "Actions",
+            icon: sidebar.rail() ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />,
+            keywords: ["navigation", "menu", "rail"],
+            perform: sidebar.toggle,
+          },
+        ]
+      : [],
+  )
 
   onMount(() => {
-    // Ctrl/⌘+J opens and closes the assistant.
+    // Ctrl/⌘+J opens and closes the assistant; Ctrl/⌘+B collapses and expands the sidebar.
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "j" && assistantReady()) {
         event.preventDefault()
         setPanelOpen((open) => !open)
+      }
+      if (isSidebarShortcut(event)) {
+        event.preventDefault()
+        sidebar.toggle()
       }
     }
     window.addEventListener("keydown", onKeyDown)
@@ -212,9 +290,12 @@ export const AppShell = (props: { children: JSX.Element }) => {
       <div
         class={cx(styles.shell, assistantOpen() && styles.shellWithAssistant, layout() === "full" && styles.shellFull)}
       >
-        <aside class={styles.aside}>
-          <Brand />
-          <Sidebar />
+        <aside class={styles.aside} data-rail={sidebar.rail()} data-floating={sidebar.floating()} {...sidebar.handlers}>
+          <div class={styles.sidebar} data-floating={sidebar.floating()}>
+            <Brand rail={sidebarMode() === "rail"} />
+            <Sidebar mode={sidebarMode()} onNavigate={sidebar.close} />
+            <SidebarToggle state={sidebar} />
+          </div>
         </aside>
 
         <Show when={drawerOpen()}>
@@ -252,7 +333,9 @@ export const AppShell = (props: { children: JSX.Element }) => {
             </Show>
             <UserMenu />
           </header>
-          <PageMain>{props.children}</PageMain>
+          <PageMain>
+            <FrameListsPages>{props.children}</FrameListsPages>
+          </PageMain>
         </div>
 
         <Show when={assistantOpen()}>

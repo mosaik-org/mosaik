@@ -9,15 +9,8 @@ import "./styles.css"
  * it. Each route validates its search params; its page reads them with `useSearchParams`.
  */
 export default defineWebApp({
-  component: () => (
-    <AppLayout
-      app={sales}
-      nav={[
-        { to: "/sales", label: "Overview", exact: true },
-        { to: "/sales/orders", label: "Orders" },
-      ]}
-    />
-  ),
+  // Its pages are listed from the manifest: in the shell's sidebar.
+  component: () => <AppLayout app={sales} />,
   routes: (parent) => [
     createRoute({
       getParentRoute: () => parent,

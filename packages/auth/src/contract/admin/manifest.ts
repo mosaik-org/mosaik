@@ -36,4 +36,16 @@ export const admin = defineApp({
     },
   },
   backend: false,
+  // Its pages, for the console and the shell (the console's routes, `packages/console`).
+  portal: {
+    icon: "shield",
+    pages: [
+      { title: "Users", path: "/users", permission: "users.manage" },
+      { title: "Roles & permissions", path: "/roles" },
+      { title: "Notifications", path: "/notifications", permission: "notifications.view" },
+      { title: "Deliveries", path: "/deliveries", permission: "notifications.view" },
+      { title: "Audit log", path: "/audit", permission: "audit.view" },
+      { title: "AI clients", path: "/agents", permission: "users.manage" },
+    ],
+  },
 })

@@ -1,6 +1,6 @@
 export { AccessDenied } from "./AccessDenied"
 export { AppIcon, type AppIconName, type AppIconProps, appIconNames } from "./AppIcon"
-export { AppLayout, type AppLayoutProps } from "./AppLayout"
+export { AppLayout, type AppLayoutProps, FrameListsPages } from "./AppLayout"
 export {
   type Action,
   type ActionOptions,
@@ -11,6 +11,7 @@ export {
   type Keyed,
   useAction,
 } from "./api"
+export { appPageLinks } from "./appPages"
 export * from "./commands"
 export { Freshness, type FreshnessProps, type FreshnessQuery, QueryFreshness } from "./Freshness"
 export { createForm, type FieldBinding, type Form, type FormOptions } from "./form"

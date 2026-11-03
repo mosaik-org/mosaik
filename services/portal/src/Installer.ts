@@ -1,4 +1,4 @@
-import { BadRequest, Conflict, isReservedId, type NotFound } from "@mosaik/core"
+import { BadRequest, Conflict, isReservedId, type NotFound, type PortalPage, pageProblems } from "@mosaik/core"
 import {
   AppKey,
   AppManifest,
@@ -53,7 +53,24 @@ export const manifestProblems = (manifest: AppManifest): ReadonlyArray<string> =
   ...manifest.portal.config
     .filter((setting) => RESERVED_ENV.has(setting.name))
     .map((setting) => `Config "${setting.name}" is set by the Portal and cannot be declared`),
+  ...pageProblemsOf(manifest),
 ]
+
+const pageProblemsOf = (manifest: AppManifest): ReadonlyArray<string> =>
+  pageProblems(
+    manifest.id,
+    manifest.permissions.map((permission) => permission.key.slice(manifest.id.length + 1)),
+    manifest.portal.pages.map(
+      ({ title, path, permission }): PortalPage =>
+        permission === null ? { title, path } : { title, path, permission },
+    ),
+  )
+
+/**
+ * The pages the shell lists for an app. Apps register their manifest each time they start, after
+ * the checks of installing it: pages the shell could not list are left out (the app still opens).
+ */
+const listedPages = (manifest: AppManifest) => (pageProblemsOf(manifest).length === 0 ? manifest.portal.pages : [])
 
 const trimSlash = (url: string) => url.replace(/\/+$/, "")
 
@@ -460,6 +477,7 @@ export class Installer extends Context.Service<
                       description: app.manifest.description,
                       icon: app.manifest.portal.icon,
                       category: app.manifest.portal.category,
+                      pages: listedPages(app.manifest),
                       version: app.manifest.version,
                       access: app.manifest.access,
                       web,

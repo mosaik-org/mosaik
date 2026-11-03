@@ -74,6 +74,32 @@ describe("defineApp", () => {
       }),
     ).toThrow()
   })
+  it("accepts pages, and refuses ones navigation could not list", () => {
+    const withPages = (pages: ReadonlyArray<{ title: string; path: string; permission?: "view" | "edit" }>) => () =>
+      defineApp({
+        id: "x",
+        name: "x",
+        access: "view",
+        permissions: { view: { description: "" }, edit: { description: "" } },
+        portal: { pages },
+      })
+    expect(
+      withPages([
+        { title: "Home", path: "/" },
+        { title: "Edit", path: "/items/edit", permission: "edit" },
+      ]),
+    ).not.toThrow()
+    expect(withPages([{ title: "Orders", path: "orders" }])).toThrow(/Invalid page path/)
+    expect(withPages([{ title: "Orders", path: "/orders/" }])).toThrow(/Invalid page path/)
+    expect(
+      withPages([
+        { title: "A", path: "/a" },
+        { title: "B", path: "/a" },
+      ]),
+    ).toThrow(/listed twice/)
+    // A permission the app does not define, as an app built from JSON could have.
+    expect(withPages([{ title: "A", path: "/a", permission: "delete" as "edit" }])).toThrow(/does not define/)
+  })
 })
 
 describe("roles", () => {

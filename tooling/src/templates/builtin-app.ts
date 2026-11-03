@@ -204,7 +204,8 @@ import { createFileRoute } from "@tanstack/solid-router"
 import manifest from "../../manifest"
 
 export const Route = createFileRoute("/_app/${t.id}")({
-  component: () => <AppLayout app={manifest} nav={[{ to: "/${t.id}", label: "Overview", exact: true }]} />,
+  // More pages: list them in the manifest (\`portal.pages\`), and the sidebar shows them.
+  component: () => <AppLayout app={manifest} />,
 })
 `,
 

@@ -101,7 +101,7 @@ Most of the original's infrastructure has a Mosaik counterpart. Use it rather th
 | Forms | `createForm` with the API payload's Schema, `useAction` for calls |
 | Component libraries (MUI, Ant, Bootstrap, Tailwind UI) | `@mosaik/mosaik-ui` components and the theme's tokens (`css`, `token.var`) |
 | Global stores (Redux, Vuex, Pinia) for server data | TanStack Query through `createApi(Api)`: the server is the store |
-| A navigation bar | `AppLayout` with `nav`; full-width pages with `staticData: { layout: "wide" }` |
+| A navigation bar | the manifest's `portal.pages` (the shell's sidebar lists them) and `AppLayout`; full-width pages with `staticData: { layout: "wide" }` |
 | Search box across records | `defineSearchProvider` in `web/search.ts` (the command palette) |
 | Calls to Jira and similar | A connector (`@mosaik/sdk/connectors/*`) or an Effect service of the app's own |
 
