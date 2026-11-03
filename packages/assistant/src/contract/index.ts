@@ -38,6 +38,8 @@ export const ToolCallPart = Schema.Struct({
   changes: Schema.Boolean,
   /** Its permission is dangerous in the app's manifest. */
   destructive: Schema.Boolean,
+  /** One of the {@link BrowserTools}: the person's browser runs it, not an app. */
+  runsIn: Schema.optionalKey(Schema.Literal("browser")),
   providerOptions: ProviderOptions,
 })
 export type ToolCallPart = typeof ToolCallPart.Type
@@ -92,14 +94,17 @@ export class Conversation extends Schema.Class<Conversation>("@mosaik/assistant/
 
 /**
  * What a turn streams: the reply as it is written, every message as it is stored, and how the
- * turn ends (done, waiting for approvals, or failed).
+ * turn ends (done, waiting for calls to be resolved, or failed).
  */
 export const TurnEvent = Schema.Union([
   /** More of the reply being written; replaced by the stored message when it is complete. */
   Schema.Struct({ type: Schema.tag("text"), text: Schema.String }),
   Schema.Struct({ type: Schema.tag("message"), message: Message }),
-  /** The turn waits for the person to approve or deny these calls. */
-  Schema.Struct({ type: Schema.tag("approval"), calls: Schema.Array(ToolCallPart) }),
+  /**
+   * The turn waits for these calls to be resolved: changes, by the person allowing or denying
+   * them; browser tools, by the browser running them.
+   */
+  Schema.Struct({ type: Schema.tag("waiting"), calls: Schema.Array(ToolCallPart) }),
   Schema.Struct({ type: Schema.tag("done") }),
   Schema.Struct({ type: Schema.tag("failed"), message: Schema.String }),
 ])
@@ -118,11 +123,57 @@ export const SendMessage = Schema.Struct({
   context: Schema.NullOr(PageContext),
 })
 
-export const Decision = Schema.Struct({
-  /** A pending call's id. */
-  call: Schema.String,
-  approve: Schema.Boolean,
+/** Where a page or record is, as the browser found it (`find_pages`). */
+export const Place = Schema.Struct({
+  title: Schema.String,
+  subtitle: Schema.optionalKey(Schema.String),
+  /** What kind of place: "Pages", or a kind of record such as "Orders". */
+  group: Schema.String,
+  /** A path in Mosaik, e.g. `/sales/orders?search=SO-1`. */
+  path: Schema.String,
 })
+export type Place = typeof Place.Type
+
+/**
+ * Tools the person's browser runs (the frame showing the assistant), to find places in Mosaik
+ * and take the person there. The model gets them beside apps' tools.
+ */
+export const BrowserTools = {
+  find_pages: {
+    title: "Find pages",
+    description:
+      "Finds pages and records in Mosaik the person can open (as its search, Ctrl+K, does), with their paths. " +
+      "Use it to link to them, as Markdown links with the path, e.g. [SO-10938](/sales/orders?search=SO-10938). " +
+      "Never make up paths: link only to what it returns.",
+    input: Schema.Struct({
+      query: Schema.String.check(Schema.isMinLength(2), Schema.isMaxLength(100)).annotate({
+        description: "What to look for: a page's name, an order number, a customer…",
+      }),
+    }),
+  },
+  open_page: {
+    title: "Open a page",
+    description:
+      "Takes the person to a page of Mosaik, with this conversation beside it. Only when they ask to go " +
+      "somewhere; otherwise link to it. The path must come from find_pages.",
+    input: Schema.Struct({
+      path: Schema.String.check(Schema.isStartingWith("/")).annotate({ description: "A path from find_pages" }),
+      title: Schema.optional(Schema.String).annotate({ description: "The page's title, as shown to the person" }),
+    }),
+  },
+} as const
+export type BrowserToolName = keyof typeof BrowserTools
+
+export const isBrowserTool = (name: string): name is BrowserToolName => Object.hasOwn(BrowserTools, name)
+
+/** How a waiting call is resolved. */
+export const Resolution = Schema.Union([
+  /** By the person: a change they allow or deny. */
+  Schema.Struct({ type: Schema.tag("decision"), call: Schema.String, approve: Schema.Boolean }),
+  /** By the browser: what a browser tool came to. */
+  Schema.Struct({ type: Schema.tag("result"), call: Schema.String, ok: Schema.Boolean, text: Schema.String }),
+])
+export type Resolution = typeof Resolution.Type
 
 /** A turn's events, as Server-Sent Events of {@link TurnEvent}. */
 const TurnStream = Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/event-stream" }))
@@ -149,10 +200,10 @@ export class AssistantGroup extends HttpApiGroup.make("assistant").add(
     success: TurnStream,
     error: [NotFound, Conflict, BadRequest],
   }),
-  /** Approves or denies waiting calls; once none is left, streams the rest of the turn. */
-  HttpApiEndpoint.post("decide", "/conversations/:id/decisions", {
+  /** Resolves waiting calls; once none is left, streams the rest of the turn. */
+  HttpApiEndpoint.post("resolve", "/conversations/:id/calls", {
     params: conversation,
-    payload: Schema.Struct({ decisions: Schema.Array(Decision).check(Schema.isMinLength(1)) }),
+    payload: Schema.Struct({ resolutions: Schema.Array(Resolution).check(Schema.isMinLength(1)) }),
     success: TurnStream,
     error: [NotFound, Conflict, BadRequest],
   }),

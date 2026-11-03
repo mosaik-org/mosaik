@@ -30,7 +30,19 @@ export interface Command {
   readonly hint?: string
   /** Ranks the command by how much the user uses the app; Tab on it searches only that app. */
   readonly app?: CommandApp
+  /** Where the command takes the person, when it opens a page: it can then be found as a place ({@link Place}). */
+  readonly to?: string
   readonly perform: () => unknown
+}
+
+/** A page or a record people can open, found by what they called it (`useFindPlaces`). */
+export interface Place {
+  readonly title: string
+  readonly subtitle?: string
+  /** What kind of place: "Pages", or a search provider's group such as "Orders". */
+  readonly group: string
+  /** Its path and search, e.g. `/sales/orders?search=SO-1`. */
+  readonly to: string
 }
 
 export interface SearchResult {

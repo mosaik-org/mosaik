@@ -1,6 +1,6 @@
 import { makeApiClient } from "@mosaik/client"
 import { createApi } from "@mosaik/web-kit"
-import { ASSISTANT_API_PREFIX, AssistantApi, type Decision, type SendMessage, type TurnEvent } from "../contract"
+import { ASSISTANT_API_PREFIX, AssistantApi, type Resolution, type SendMessage, type TurnEvent } from "../contract"
 import { readEvents } from "./events"
 
 /** The assistant's API: queries keyed by the contract, under `assistant.key`. */
@@ -45,9 +45,9 @@ export const sendMessage = (
   signal?: AbortSignal,
 ) => streamTurn(`/conversations/${encodeURIComponent(conversation)}/messages`, message, onEvent, signal)
 
-export const decide = (
+export const resolve = (
   conversation: string,
-  decisions: ReadonlyArray<typeof Decision.Type>,
+  resolutions: ReadonlyArray<Resolution>,
   onEvent: (event: TurnEvent) => void,
   signal?: AbortSignal,
-) => streamTurn(`/conversations/${encodeURIComponent(conversation)}/decisions`, { decisions }, onEvent, signal)
+) => streamTurn(`/conversations/${encodeURIComponent(conversation)}/calls`, { resolutions }, onEvent, signal)

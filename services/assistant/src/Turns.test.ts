@@ -6,9 +6,10 @@ import { AppTool } from "@mosaik/platform/contract"
 import { AppCalls, Catalog, type CatalogTool, inputSchema } from "@mosaik/tools"
 import { DateTime, Effect, Layer, Option, Stream } from "effect"
 import { AssistantConfig } from "./AssistantConfig"
+import { pendingCalls } from "./Calls"
 import { Conversations } from "./Conversations"
 import { Model, type PromptMessage, type StepEvent } from "./Model"
-import { pendingCalls, Turns, toPrompt } from "./Turns"
+import { MAX_STEPS, Turns, toPrompt } from "./Turns"
 
 const ada = new PrincipalUser({ id: UserId.make("u1"), email: "ada@example.com", name: "Ada", image: null })
 const principal = new Principal({ user: ada, grants: ["shop:*"] })
@@ -182,19 +183,16 @@ describe("Turns", () => {
       expect(yield* events(yield* turns.send(principal, "c1", { text: "Refund it", context }))).toEqual([
         "message",
         "message",
-        "approval",
+        "waiting",
       ])
       expect(called).toEqual([])
       expect(pendingCalls(stored)).toMatchObject([
         { id: "r", title: "Title of orders.refund", app: "shop", changes: true, destructive: true },
       ])
 
-      expect(yield* events(yield* turns.decide(principal, "c1", [{ call: "r", approve: true }]))).toEqual([
-        "message",
-        "text",
-        "message",
-        "done",
-      ])
+      expect(
+        yield* events(yield* turns.resolve(principal, "c1", [{ type: "decision", call: "r", approve: true }])),
+      ).toEqual(["message", "text", "message", "done"])
       expect(called).toEqual(["shop_orders_refund"])
       expect(stored[2]?.parts[0]).toMatchObject({ type: "tool-result", id: "r", ok: true, decision: "approved" })
       expect(pendingCalls(stored)).toEqual([])
@@ -206,12 +204,70 @@ describe("Turns", () => {
     return Effect.gen(function* () {
       const turns = yield* Turns
       yield* events(yield* turns.send(principal, "c1", { text: "Refund it", context }))
-      yield* events(yield* turns.decide(principal, "c1", [{ call: "r", approve: false }]))
+      yield* events(yield* turns.resolve(principal, "c1", [{ type: "decision", call: "r", approve: false }]))
       expect(called).toEqual([])
       expect(prompts[1]?.at(-1)).toMatchObject({
         role: "tool",
         parts: [{ type: "tool-result", id: "r", ok: false, decision: "denied" }],
       })
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect("waits for the browser to find pages, then goes on with what it found", () => {
+    const { layer, prompts, called, stored } = setup([asks("f", "find_pages", { query: "orders" }), text("Here")])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      expect(yield* events(yield* turns.send(principal, "c1", { text: "Where are orders?", context }))).toEqual([
+        "message",
+        "message",
+        "waiting",
+      ])
+      // No app is called: the browser runs it.
+      expect(called).toEqual([])
+      expect(pendingCalls(stored)).toMatchObject([{ id: "f", title: "Find pages", runsIn: "browser", changes: false }])
+      const found = JSON.stringify([{ title: "Orders", group: "Pages", path: "/sales/orders" }])
+      const resolved = yield* turns.resolve(principal, "c1", [{ type: "result", call: "f", ok: true, text: found }])
+      expect(yield* events(resolved)).toEqual(["message", "text", "message", "done"])
+      expect(prompts[1]?.at(-1)).toMatchObject({ role: "tool", parts: [{ id: "f", ok: true, text: found }] })
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect("refuses a decision on a browser tool, and a result for a change", () => {
+    const { layer } = setup([
+      {
+        type: "reply",
+        parts: [
+          { type: "tool-call", id: "f", tool: "find_pages", input: {} },
+          { type: "tool-call", id: "r", tool: "shop_orders_refund", input: {} },
+        ],
+      },
+    ])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      yield* events(yield* turns.send(principal, "c1", { text: "Refund it", context }))
+      const decided = yield* Effect.flip(
+        turns.resolve(principal, "c1", [{ type: "decision", call: "f", approve: true }]),
+      )
+      expect(decided).toMatchObject({ message: "Call f runs in the browser" })
+      const answered = yield* Effect.flip(
+        turns.resolve(principal, "c1", [{ type: "result", call: "r", ok: true, text: "done" }]),
+      )
+      expect(answered).toMatchObject({ message: "Call r waits for the person's decision" })
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect(`stops after ${MAX_STEPS} steps since the person wrote, however many requests the turn took`, () => {
+    const replies = Array.from({ length: MAX_STEPS + 1 }, (_, step) => asks(`f${step}`, "find_pages", { query: "x" }))
+    const { layer } = setup(replies)
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      let last = yield* events(yield* turns.send(principal, "c1", { text: "Loop", context }))
+      for (let step = 0; step < MAX_STEPS && last.at(-1) === "waiting"; step++) {
+        last = yield* events(
+          yield* turns.resolve(principal, "c1", [{ type: "result", call: `f${step}`, ok: true, text: "[]" }]),
+        )
+      }
+      expect(last.at(-1)).toBe("failed")
     }).pipe(Effect.provide(layer))
   })
 
@@ -231,8 +287,10 @@ describe("Turns", () => {
     const { layer } = setup([text("Hi")])
     return Effect.gen(function* () {
       const turns = yield* Turns
-      const unknown = yield* Effect.flip(turns.decide(principal, "c1", [{ call: "nope", approve: true }]))
-      expect(unknown).toMatchObject({ _tag: "BadRequest", message: "No call nope waits for a decision" })
+      const unknown = yield* Effect.flip(
+        turns.resolve(principal, "c1", [{ type: "decision", call: "nope", approve: true }]),
+      )
+      expect(unknown).toMatchObject({ _tag: "BadRequest", message: "No call nope waits to be resolved" })
       const missing = yield* Effect.flip(turns.send(principal, "other", { text: "Hi", context }))
       expect(missing._tag).toBe("NotFound")
     }).pipe(Effect.provide(layer))

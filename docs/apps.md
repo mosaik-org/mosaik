@@ -300,6 +300,8 @@ backend, so it registers the new bundle: reload the page to see a change.
   - To search the app's own data, default-export `defineSearchProvider({...})` from `web/search.ts`. It is
     built as a separate file, loaded the first time the palette opens, and gets 5 seconds per query.
   - Results rank by how much the user uses each app. Tab on any page of an app searches only that app.
+  - The assistant finds pages and records the same way, and links to them: a page's title and keywords,
+    and a search provider's results (their `to`), decide what it can link to in the app.
 - **Errors stay inside the app.** A page that throws shows "<App> ran into a problem" in place of the page;
   an installed app that cannot be loaded shows "<App> could not be loaded" with *Try again*. The shell and
   the app's navigation keep working. Apps are trusted code in the same page, though: one that blocks the

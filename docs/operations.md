@@ -232,10 +232,13 @@ chooses a model: it sends people's questions, and what apps answer them, to that
 - **Changes need the person's approval.** Tools that only read run at once; every call that changes
   something waits for the person to allow or deny it in the panel. Writing again denies the calls still
   waiting.
+- **Links and navigation.** The assistant finds pages and records as the command palette (Ctrl/⌘+K)
+  does, and links to them; asked to go somewhere, it opens the page, with the conversation beside it.
+  These run in the person's browser, so they find only what that person can see.
 - **As the person.** Calls run with the person's current permissions, and the audit log records them as
   the person's, "via <BRAND_NAME> assistant".
 - **History.** Conversations are kept, each visible only to its person, in the assistant's database
   (`mosaik_assistant`).
-- **Limits.** A turn takes at most 20 model steps; each person may make `TOOL_CALLS_PER_MINUTE` tool calls
+- **Limits.** A turn takes at most 20 model steps since the person last wrote; each person may make `TOOL_CALLS_PER_MINUTE` tool calls
   a minute (120); answers from apps are cut at 60,000 characters.
 

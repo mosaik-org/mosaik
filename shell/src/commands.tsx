@@ -47,6 +47,7 @@ export const useShellCommands = () => {
           keywords: [...(data.keywords ?? []), ...(app ? [app.name, app.description ?? ""] : [])],
           icon: app ? <AppIcon name={app.portal.icon} size={16} /> : <LayoutGrid size={16} />,
           ...(app === undefined ? {} : { app: { id: app.id, name: app.name } }),
+          to: path,
           perform: () => navigate({ to: path }),
         },
       ]

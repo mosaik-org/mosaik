@@ -1,8 +1,16 @@
-import { AssistantPanel, assistant, panelOpen, setPanelOpen } from "@mosaik/assistant/web"
+import {
+  type AssistantBrowser,
+  AssistantBrowserProvider,
+  AssistantPanel,
+  assistant,
+  openPanel,
+  panelOpen,
+  setPanelOpen,
+} from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
-import { PageMain, useCommandPalette, usePageLayout } from "@mosaik/web-kit"
+import { PageMain, useCommandPalette, useFindPlaces, usePageLayout } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
@@ -138,6 +146,29 @@ const Brand = () => (
   </Link>
 )
 
+/**
+ * The assistant's browser tools, run by the shell: it finds places as the command palette does
+ * (pages, and records through apps' search providers), and opens them with the conversation in
+ * the side panel, also from the assistant's own page.
+ */
+const useAssistantBrowser = (): AssistantBrowser => {
+  const findPlaces = useFindPlaces()
+  const navigate = useNavigate()
+  return {
+    findPlaces: async (query) =>
+      (await findPlaces(query)).map((place) => ({
+        title: place.title,
+        ...(place.subtitle === undefined ? {} : { subtitle: place.subtitle }),
+        group: place.group,
+        path: place.to,
+      })),
+    openPage: (path, conversation) => {
+      openPanel(conversation)
+      void navigate({ href: path })
+    },
+  }
+}
+
 /** Where the person is, for the assistant: the app, the path and the page's title. */
 const usePageContext = () => {
   const router = useRouterState()
@@ -160,6 +191,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
   const assistantReady = () => principal().isAuthenticated && status.data?.enabled === true
   const assistantOpen = () => panelOpen() && assistantReady()
   const context = usePageContext()
+  const assistantBrowser = useAssistantBrowser()
   const layout = usePageLayout()
 
   onMount(() => {
@@ -175,69 +207,71 @@ export const AppShell = (props: { children: JSX.Element }) => {
   })
 
   return (
-    <div
-      class={cx(styles.shell, assistantOpen() && styles.shellWithAssistant, layout() === "full" && styles.shellFull)}
-    >
-      <aside class={styles.aside}>
-        <Brand />
-        <Sidebar />
-      </aside>
-
-      <Show when={drawerOpen()}>
-        <div class={styles.drawer}>
-          <div class={styles.drawerPanel}>
-            <Brand />
-            <Sidebar onNavigate={() => setDrawerOpen(false)} />
-          </div>
-          <div class={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-        </div>
-      </Show>
-
-      <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
-        <header class={styles.header}>
-          <div class={css({ hideFrom: "md" })}>
-            <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
-              <Menu size={18} />
-            </IconButton>
-          </div>
-          <SearchButton />
-          <div class={css({ flex: "1" })} />
-          <Show when={assistantReady()}>
-            <IconButton
-              variant={assistantOpen() ? "subtle" : "plain"}
-              aria-label="Assistant (Ctrl+J)"
-              aria-pressed={assistantOpen()}
-              onClick={() => setPanelOpen((open) => !open)}
-            >
-              <Sparkles size={18} />
-            </IconButton>
-          </Show>
-          <ThemeToggle />
-          <Show when={principal().isAuthenticated}>
-            <NotificationBell />
-          </Show>
-          <UserMenu />
-        </header>
-        <PageMain>{props.children}</PageMain>
-      </div>
-
-      <Show when={assistantOpen()}>
-        <aside class={styles.assistant}>
-          <AssistantPanel
-            context={context}
-            onClose={() => setPanelOpen(false)}
-            onExpand={(conversation) => {
-              const from = router().location.href
-              setPanelOpen(false)
-              void navigate(
-                conversation === null
-                  ? { to: "/assistant", search: { from } }
-                  : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
-              )
-            }}
-          />
+    <AssistantBrowserProvider value={assistantBrowser}>
+      <div
+        class={cx(styles.shell, assistantOpen() && styles.shellWithAssistant, layout() === "full" && styles.shellFull)}
+      >
+        <aside class={styles.aside}>
+          <Brand />
+          <Sidebar />
         </aside>
-      </Show>
-    </div>
+
+        <Show when={drawerOpen()}>
+          <div class={styles.drawer}>
+            <div class={styles.drawerPanel}>
+              <Brand />
+              <Sidebar onNavigate={() => setDrawerOpen(false)} />
+            </div>
+            <div class={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+          </div>
+        </Show>
+
+        <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
+          <header class={styles.header}>
+            <div class={css({ hideFrom: "md" })}>
+              <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
+                <Menu size={18} />
+              </IconButton>
+            </div>
+            <SearchButton />
+            <div class={css({ flex: "1" })} />
+            <Show when={assistantReady()}>
+              <IconButton
+                variant={assistantOpen() ? "subtle" : "plain"}
+                aria-label="Assistant (Ctrl+J)"
+                aria-pressed={assistantOpen()}
+                onClick={() => setPanelOpen((open) => !open)}
+              >
+                <Sparkles size={18} />
+              </IconButton>
+            </Show>
+            <ThemeToggle />
+            <Show when={principal().isAuthenticated}>
+              <NotificationBell />
+            </Show>
+            <UserMenu />
+          </header>
+          <PageMain>{props.children}</PageMain>
+        </div>
+
+        <Show when={assistantOpen()}>
+          <aside class={styles.assistant}>
+            <AssistantPanel
+              context={context}
+              onClose={() => setPanelOpen(false)}
+              onExpand={(conversation) => {
+                const from = router().location.href
+                setPanelOpen(false)
+                void navigate(
+                  conversation === null
+                    ? { to: "/assistant", search: { from } }
+                    : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
+                )
+              }}
+            />
+          </aside>
+        </Show>
+      </div>
+    </AssistantBrowserProvider>
   )
 }

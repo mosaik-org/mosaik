@@ -4,9 +4,10 @@ import { Live } from "@mosaik/server"
 import { Effect, Option, type Stream } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AssistantConfig } from "../AssistantConfig"
+import { pendingCalls } from "../Calls"
 import { Conversations } from "../Conversations"
 import { Model } from "../Model"
-import { pendingCalls, Turns } from "../Turns"
+import { Turns } from "../Turns"
 
 /** The signed-in person (the API's access control lets nobody else in). */
 const currentUser = Effect.gen(function* () {
@@ -48,9 +49,9 @@ export const AssistantHandlers = HttpApiBuilder.group(
         const { principal } = yield* currentUser
         return yield* stream(yield* turns.send(principal, params.id, payload))
       }),
-      decide: Effect.fn(function* ({ params, payload }) {
+      resolve: Effect.fn(function* ({ params, payload }) {
         const { principal } = yield* currentUser
-        return yield* stream(yield* turns.decide(principal, params.id, payload.decisions))
+        return yield* stream(yield* turns.resolve(principal, params.id, payload.resolutions))
       }),
     })
   }),

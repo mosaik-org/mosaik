@@ -9,7 +9,9 @@ import Wrench from "lucide-solid/icons/wrench"
 import { createEffect, createMemo, createSignal, For, type JSX, on, Show } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import type { Message, PageContext, ToolCallPart, ToolResultPart, TurnEvent } from "../contract"
-import { assistant, decide, sendMessage, startConversation } from "./api"
+import { assistant, resolve, sendMessage, startConversation } from "./api"
+import { useAssistantBrowser } from "./browser"
+import { runBrowserCall } from "./browserCalls"
 import { inputFields } from "./format"
 import { Markdown } from "./Markdown"
 
@@ -61,10 +63,14 @@ const styles = {
   hint: css({ fontSize: "xs", color: "fg.muted" }),
 }
 
+/** One request of a turn: it streams the turn's events until the turn ends or waits. */
+type Turn = (onEvent: (event: TurnEvent) => void) => Promise<void>
+
 /** A call's state, from the results stored after it. */
 const callState = (call: ToolCallPart, results: ReadonlyMap<string, ToolResultPart>, pending: ReadonlySet<string>) => {
   const result = results.get(call.id)
-  if (result === undefined) return pending.has(call.id) ? "Waiting for you" : "Running…"
+  // Browser calls wait too, but on the browser, which runs them at once.
+  if (result === undefined) return pending.has(call.id) && call.changes ? "Waiting for you" : "Running…"
   if (result.decision === "denied") return "Not allowed"
   return result.ok ? "Done" : `Failed: ${result.text.slice(0, 200)}`
 }
@@ -120,6 +126,12 @@ export const Conversation = (props: {
   readonly readable?: boolean
 }): JSX.Element => {
   const queryClient = useQueryClient()
+  const browser = useAssistantBrowser()
+  /** Links in replies, and pages the model opens, go through the frame. */
+  const navigate = (path: string) => {
+    const conversation = props.conversation()
+    if (conversation !== null) browser?.openPage(path, conversation)
+  }
   const [text, setText] = createSignal("")
   const [state, setState] = createStore({
     messages: [] as Array<Message>,
@@ -185,7 +197,7 @@ export const Conversation = (props: {
             if (event.message.role === "assistant") draft.draft = ""
           }),
         )
-      case "approval":
+      case "waiting":
         return setState("pending", [...event.calls])
       case "done":
         return
@@ -194,17 +206,32 @@ export const Conversation = (props: {
     }
   }
 
-  /** Runs a turn, then reloads what was stored. */
-  const run = async (turn: (onEvent: (event: TurnEvent) => void) => Promise<void>) => {
-    setState({ busy: true, error: null, draft: "", pending: [] })
+  /**
+   * Runs a turn to its end, then reloads what was stored. Calls the browser runs (finding and
+   * opening pages) are run here as they come, and their results continue the turn; the person
+   * is taken to a page only once the reply is complete. Changes stay for the person to decide.
+   */
+  const run = async (conversation: string, turn: Turn) => {
+    setState({ busy: true, error: null, draft: "" })
+    let destination: string | undefined
     try {
-      await turn(onEvent)
+      for (let next: Turn | undefined = turn; next !== undefined; ) {
+        setState("pending", [])
+        await next(onEvent)
+        const inBrowser = state.pending.filter((call) => call.runsIn === "browser")
+        if (inBrowser.length === 0) break
+        const outcomes = await Promise.all(inBrowser.map((call) => runBrowserCall(call, browser)))
+        destination = outcomes.findLast((outcome) => outcome.navigateTo !== undefined)?.navigateTo ?? destination
+        const resolutions = outcomes.map((outcome) => outcome.resolution)
+        next = (onEvent) => resolve(conversation, resolutions, onEvent)
+      }
     } catch (error) {
       setState("error", errorMessage(error))
     } finally {
       setState("busy", false)
       await queryClient.invalidateQueries({ queryKey: assistant.assistant.key() })
     }
+    if (destination !== undefined) browser?.openPage(destination, conversation)
   }
 
   const send = async () => {
@@ -223,13 +250,15 @@ export const Conversation = (props: {
       props.onStarted(id)
     }
     const conversationId = id
-    await run((onEvent) => sendMessage(conversationId, { text: message, context: props.context() }, onEvent))
+    await run(conversationId, (onEvent) =>
+      sendMessage(conversationId, { text: message, context: props.context() }, onEvent),
+    )
   }
 
   const decideCall = async (call: ToolCallPart, approve: boolean) => {
     const id = props.conversation()
     if (id === null || state.busy) return
-    await run((onEvent) => decide(id, [{ call: call.id, approve }], onEvent))
+    await run(id, (onEvent) => resolve(id, [{ type: "decision", call: call.id, approve }], onEvent))
     // An allowed change may have changed what the page shows: everything is fetched again.
     if (approve) await queryClient.invalidateQueries()
   }
@@ -263,7 +292,7 @@ export const Conversation = (props: {
                       <For each={message.parts}>
                         {(part) =>
                           part.type === "text" ? (
-                            <Markdown text={part.text} />
+                            <Markdown text={part.text} onNavigate={navigate} />
                           ) : part.type === "tool-call" ? (
                             <div class={styles.call}>
                               <Wrench size={12} />
@@ -280,7 +309,7 @@ export const Conversation = (props: {
               )}
             </For>
             <Show when={state.draft !== ""}>
-              <Markdown text={state.draft} />
+              <Markdown text={state.draft} onNavigate={navigate} />
             </Show>
             <Show when={state.busy && state.draft === ""}>
               <Spinner size="sm" />
@@ -289,7 +318,7 @@ export const Conversation = (props: {
             <Show when={!state.busy && state.error === null && state.messages.at(-1)?.role === "user"}>
               <span class={styles.hint}>No reply to this message. Send it again to retry.</span>
             </Show>
-            <For each={state.pending}>
+            <For each={state.pending.filter((call) => call.changes)}>
               {(call) => (
                 <ApprovalCard call={call} busy={state.busy} onDecide={(approve) => void decideCall(call, approve)} />
               )}
@@ -319,7 +348,7 @@ export const Conversation = (props: {
             props.readable === true && styles.composerReadable,
           )}
         >
-          <Show when={state.pending.length > 0}>
+          <Show when={state.pending.some((call) => call.changes)}>
             <span class={styles.hint}>Writing again skips the changes waiting above.</span>
           </Show>
           <Textarea

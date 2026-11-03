@@ -20,7 +20,15 @@ import { withTimeout } from "../loading"
 import { createDebounced } from "../primitives"
 import { CommandMenu, type CommandMenuGroup, type CommandMenuItem } from "./CommandMenu"
 import { sourcesToSearch } from "./scope"
-import type { Command, CommandApp, SearchProvider, SearchProviderLoader, SearchResult, SearchSource } from "./types"
+import type {
+  Command,
+  CommandApp,
+  Place,
+  SearchProvider,
+  SearchProviderLoader,
+  SearchResult,
+  SearchSource,
+} from "./types"
 
 const RECENT_KEY = "mosaik-command-recent"
 const RECENT_LIMIT = 5
@@ -35,6 +43,7 @@ const AFFINITY_WEIGHT = 8
 interface CommandRegistry {
   register(commands: Accessor<ReadonlyArray<Command>>): () => void
   open(): void
+  findPlaces(query: string): Promise<ReadonlyArray<Place>>
 }
 
 const CommandContext = createContext<CommandRegistry>()
@@ -57,6 +66,16 @@ export const useCommands = (commands: Accessor<ReadonlyArray<Command>>): void =>
 
 /** Opens the palette programmatically (e.g. from a search button). */
 export const useCommandPalette = () => ({ open: useRegistry().open })
+
+/**
+ * Finds the pages and records the person can open, as the palette would for the same words:
+ * pages by fuzzy match, records from every app's search provider. For finding places from code,
+ * e.g. the assistant linking to them.
+ */
+export const useFindPlaces = (): ((query: string) => Promise<ReadonlyArray<Place>>) => useRegistry().findPlaces
+
+/** At most this many pages a search for places returns (search providers bring their own). */
+const PLACES_PAGE_LIMIT = 8
 
 const readRecent = (): ReadonlyArray<string> => {
   try {
@@ -89,6 +108,22 @@ interface Entry {
 
 /** How long a search provider may take to load, and to answer a query. */
 const PROVIDER_TIMEOUT_MS = 5000
+
+/**
+ * Asks one app's provider (loading it first): `undefined` when the query is too short for it or
+ * the person may not see its results. A slow or failing provider fails only this search.
+ */
+const askProvider = async (
+  source: SearchSource,
+  term: string,
+  can: (permission: string) => boolean,
+): Promise<Found | undefined> => {
+  const provider = await loadProvider(source.load)
+  if (term.length < (provider.minQueryLength ?? 2)) return undefined
+  if (provider.permission !== undefined && !can(provider.permission)) return undefined
+  const results = await withTimeout(provider.search(term), PROVIDER_TIMEOUT_MS, `${provider.group} search timed out`)
+  return { source, provider, results }
+}
 
 /**
  * Providers load on first use (each is a separate chunk) and stay loaded. One that fails
@@ -141,12 +176,51 @@ export const CommandProvider = (props: CommandProviderProps) => {
   const [skipped, setSkipped] = createSignal(0)
   const [searching, setSearching] = createSignal(false)
 
+  const commands = createMemo(() => sources().flatMap((source) => source()))
+
   const registry: CommandRegistry = {
     register: (commands) => {
       setSources((current) => [...current, commands])
       return () => setSources((current) => current.filter((source) => source !== commands))
     },
     open: () => setOpen(true),
+    findPlaces: async (query) => {
+      const term = query.trim()
+      const pages = commands()
+        .flatMap((command) => {
+          if (command.to === undefined) return []
+          const score = bestScore(term, [command.title, command.hint ?? "", ...(command.keywords ?? [])])
+          return score === null
+            ? []
+            : [{ command, to: command.to, score: score + AFFINITY_WEIGHT * affinity(command.app?.id) }]
+        })
+        .toSorted((a, b) => b.score - a.score)
+        .slice(0, PLACES_PAGE_LIMIT)
+        .map(
+          ({ command, to }): Place => ({
+            title: command.title,
+            ...(command.hint === undefined ? {} : { subtitle: command.hint }),
+            group: "Pages",
+            to,
+          }),
+        )
+      // Every app's provider: a search from code is not typed key by key, so it can ask them all.
+      const { searched } = sourcesToSearch(props.sources ?? [], { app: undefined, everything: true, affinity })
+      const answers = await Promise.allSettled(searched.map((source) => askProvider(source, term, can)))
+      const records = answers.flatMap((answer) => {
+        if (answer.status === "rejected" || answer.value === undefined) return []
+        const { provider, results } = answer.value
+        return results.map(
+          (result): Place => ({
+            title: result.title,
+            ...(result.subtitle === undefined ? {} : { subtitle: result.subtitle }),
+            group: provider.group,
+            to: result.to,
+          }),
+        )
+      })
+      return [...pages, ...records]
+    },
   }
 
   onMount(() => {
@@ -170,8 +244,6 @@ export const CommandProvider = (props: CommandProviderProps) => {
     }),
   )
 
-  const commands = createMemo(() => sources().flatMap((source) => source()))
-
   const debouncedQuery = createDebounced(query, 200)
   let searchId = 0
   createEffect(
@@ -189,18 +261,12 @@ export const CommandProvider = (props: CommandProviderProps) => {
       setSkipped(skipped)
       // Each provider loads and answers on its own: a failing or slow one only leaves its results out.
       const found: Array<Found | undefined> = []
+      // Providers ask for two characters at least, unless they say otherwise.
+      setSearching(searched.length > 0 && term.length >= 2)
       const searches = searched.map(async (source, index) => {
-        const provider = await loadProvider(source.load)
-        if (id !== searchId || term.length < (provider.minQueryLength ?? 2)) return
-        if (provider.permission !== undefined && !can(provider.permission)) return
-        setSearching(true)
-        const results = await withTimeout(
-          provider.search(term),
-          PROVIDER_TIMEOUT_MS,
-          `${provider.group} search timed out`,
-        )
-        if (id !== searchId) return
-        found[index] = { source, provider, results }
+        const answer = await askProvider(source, term, can)
+        if (id !== searchId || answer === undefined) return
+        found[index] = answer
         setResults(found.filter((entry) => entry !== undefined))
       })
       void Promise.allSettled(searches).then((outcomes) => {
