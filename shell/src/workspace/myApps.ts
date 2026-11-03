@@ -33,6 +33,8 @@ export interface MyAppsState {
   move(id: string, offset: number): void
   /** How much the user uses an app, from 0 (never opened) to 1 (pinned). */
   affinity(id: string): number
+  /** When the user last opened the app (epoch milliseconds); `undefined`: never, as far as the Portal knows. */
+  lastOpened(id: string): number | undefined
 }
 
 const toUsage = (data: MyApps | undefined): ReadonlyArray<Usage> =>
@@ -109,6 +111,7 @@ export const useMyApps = (): MyAppsState => {
       save([...moved, ...hidden])
     },
     affinity: (id) => scores().get(id) ?? 0,
+    lastOpened: (id) => usage().find((entry) => entry.app === id)?.lastOpenedAt,
   }
 }
 

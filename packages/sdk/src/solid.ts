@@ -9,6 +9,8 @@ export {
   type EventStream,
   type EventStreamStatus,
   type QueryClientOptions,
+  useBusy,
+  useStatus,
 } from "@mosaik/client/solid"
 export {
   type Action,

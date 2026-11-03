@@ -39,6 +39,7 @@ Core's first and biggest client, so whatever a standalone app needs, the Portal 
 | Audit, notifications, messages | auth, notifications; the console's administration; a page for notification settings | the inbox, the bell, settings in the shell |
 | Platform events | platform: the log, delivery to apps and to services | consumes `user.deleted` like any client |
 | App settings | platform: values, checks, audit, delivery to running apps; the console's Settings tab | — |
+| Statuses | platform: current values per person or permission, checked against manifests, live per person; Core's own (access requests computed, the assistant's set by it) | shows them in the sidebar, All apps, the Overview, the tab's title and the palette |
 | App files | platform: storage in SeaweedFS (S3), per-app limits; the console's Storage tab | — |
 | AI clients (MCP) | mcp: tools from apps' contracts, listed per person, calls as the person; auth: sign-in for AI clients, connections; the console's and account pages | — |
 | The assistant | assistant: conversations, the model (a provider admins choose), turns with approvals; its panel (`packages/assistant`) | mounts the panel in the shell |

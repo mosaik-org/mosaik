@@ -7,6 +7,7 @@ export {
   TestMessages,
   TestNotify,
   TestSettings,
+  TestStatus,
   TestStorage,
   type TypedTestSettings,
 } from "./platform"

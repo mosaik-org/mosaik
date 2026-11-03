@@ -23,7 +23,7 @@ import {
   NotificationTypesPayload,
 } from "@mosaik/notifications/contract"
 import { AccessAdmin, AccessRequest, type AccessRequestStatus, canManageApp } from "@mosaik/platform/contract"
-import { Context, Effect, Layer, Option, Schedule, Schema } from "effect"
+import { Context, Effect, Layer, Option, PubSub, Schedule, Schema, Stream } from "effect"
 import { SqlSchema } from "effect/sql"
 import { Apps } from "./Apps"
 import { NotificationsClient } from "./clients"
@@ -95,6 +95,8 @@ export class AccessRequests extends Context.Service<
     accessChanged(user: UserId, grants: ReadonlyArray<string>): Effect.Effect<void>
     forgetUser(user: UserId): Effect.Effect<void>
     forgetApp(app: string): Effect.Effect<void>
+    /** Ticks once at once, then whenever a request is made, answered or removed. */
+    readonly changes: Stream.Stream<void>
   }
 >()("@mosaik/platform-service/AccessRequests") {
   static readonly layer = Layer.effect(
@@ -104,6 +106,8 @@ export class AccessRequests extends Context.Service<
       const auth = yield* InternalClient
       const apps = yield* Apps
       const notifications = yield* NotificationsClient
+      const changed = yield* PubSub.sliding<void>(16)
+      const announce = PubSub.publish(changed, undefined)
 
       // The notifications service may still be starting.
       yield* notifications.notifications
@@ -231,6 +235,7 @@ export class AccessRequests extends Context.Service<
           RETURNING id
         `.pipe(Effect.orDie)
         if (rows.length === 0) return yield* new Conflict({ message: "The request was already answered" })
+        yield* announce
         const request = yield* get(id).pipe(Effect.orDie)
         yield* tellRequester(request)
         return request
@@ -318,6 +323,7 @@ export class AccessRequests extends Context.Service<
             return yield* Effect.die("An access request vanished")
           }
           const request = yield* get(row.id).pipe(Effect.orDie)
+          yield* announce
           yield* notify(
             AccessNotifications.requested,
             yield* reviewers(app, user.id),
@@ -387,8 +393,15 @@ export class AccessRequests extends Context.Service<
         }),
 
         forgetUser: (user) =>
-          sql`DELETE FROM access_requests WHERE user_id = ${user}`.pipe(Effect.asVoid, Effect.orDie),
-        forgetApp: (app) => sql`DELETE FROM access_requests WHERE app_id = ${app}`.pipe(Effect.asVoid, Effect.orDie),
+          sql`DELETE FROM access_requests WHERE user_id = ${user}`.pipe(Effect.andThen(announce), Effect.orDie),
+        forgetApp: (app) =>
+          sql`DELETE FROM access_requests WHERE app_id = ${app}`.pipe(Effect.andThen(announce), Effect.orDie),
+        changes: Stream.unwrap(
+          // Subscribed before the first tick, so a change right after it is not missed.
+          Effect.map(PubSub.subscribe(changed), (subscription) =>
+            Stream.concat(Stream.make(undefined), Stream.fromSubscription(subscription)),
+          ),
+        ),
       })
     }),
   )

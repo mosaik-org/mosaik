@@ -7,6 +7,7 @@ import { SqlSchema } from "effect/sql"
 const SummaryRow = Schema.Struct({
   id: Schema.String,
   title: Schema.String,
+  waitingChanges: Schema.Int,
   createdAt: Schema.DateTimeUtcFromDate,
   updatedAt: Schema.DateTimeUtcFromDate,
 })
@@ -69,6 +70,12 @@ export class Conversations extends Context.Service<
     readonly retitle: (id: string, from: string, to: string) => Effect.Effect<void>
     /** Deletes the user's conversation and its messages; whether there was one. */
     readonly remove: (userId: string, id: string) => Effect.Effect<boolean>
+    /** Keeps how many changes the conversation waits for its person to allow. */
+    readonly setWaiting: (id: string, changes: number) => Effect.Effect<void>
+    /** The user's conversations waiting for them to allow changes, most recent first, with how many. */
+    readonly waitingIn: (
+      userId: string,
+    ) => Effect.Effect<ReadonlyArray<{ readonly id: string; readonly changes: number }>>
   }
 >()("@mosaik/assistant-service/Conversations") {
   static readonly layer = Layer.effect(
@@ -80,7 +87,7 @@ export class Conversations extends Context.Service<
         Request: Schema.Struct({ userId: Schema.String, id: Schema.optional(Schema.String) }),
         Result: SummaryRow,
         execute: ({ userId, id }) => sql`
-          SELECT id, title, created_at, updated_at FROM conversations
+          SELECT id, title, waiting_changes, created_at, updated_at FROM conversations
           WHERE ${sql.and([sql`user_id = ${userId}`, id === undefined ? sql.literal("true") : sql`id = ${id}`])}
           ORDER BY updated_at DESC
         `,
@@ -118,7 +125,7 @@ export class Conversations extends Context.Service<
         start: Effect.fn("Conversations.start")(function* (userId) {
           const [row] = yield* sql<typeof SummaryRow.Encoded>`
             INSERT INTO conversations ${sql.insert({ id: randomUUID(), userId, title: "" })}
-            RETURNING id, title, created_at, updated_at
+            RETURNING id, title, waiting_changes, created_at, updated_at
           `.pipe(Effect.orDie)
           return new ConversationSummary(yield* Schema.decodeUnknownEffect(SummaryRow)(row).pipe(Effect.orDie))
         }),
@@ -153,7 +160,7 @@ export class Conversations extends Context.Service<
           const rows = yield* sql<typeof SummaryRow.Encoded>`
             UPDATE conversations SET title = ${title}
             WHERE id = ${id} AND user_id = ${userId}
-            RETURNING id, title, created_at, updated_at
+            RETURNING id, title, waiting_changes, created_at, updated_at
           `.pipe(Effect.orDie)
           const [row] = rows
           if (row === undefined) return Option.none()
@@ -165,6 +172,19 @@ export class Conversations extends Context.Service<
         retitle: (id, from, to) =>
           sql`UPDATE conversations SET title = ${to} WHERE id = ${id} AND title = ${from}`.pipe(
             Effect.asVoid,
+            Effect.orDie,
+          ),
+
+        setWaiting: (id, changes) =>
+          sql`UPDATE conversations SET waiting_changes = ${changes} WHERE id = ${id}`.pipe(Effect.asVoid, Effect.orDie),
+
+        waitingIn: (userId) =>
+          sql<{ id: string; waitingChanges: number }>`
+            SELECT id, waiting_changes FROM conversations
+            WHERE user_id = ${userId} AND waiting_changes > 0
+            ORDER BY updated_at DESC
+          `.pipe(
+            Effect.map((rows) => rows.map((row) => ({ id: row.id, changes: row.waitingChanges }))),
             Effect.orDie,
           ),
 

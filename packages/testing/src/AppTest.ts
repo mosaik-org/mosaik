@@ -6,7 +6,7 @@ import { Context, Effect, Layer } from "effect"
 import { FetchHttpClient, HttpClientRequest, HttpServer } from "effect/http"
 import { type HttpApi, type HttpApiClient, type HttpApiGroup, HttpApiMiddleware, HttpApiTest } from "effect/http-api"
 import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from "jose"
-import { TestAudit, TestEvents, TestMessages, TestNotify, TestSettings, TestStorage } from "./platform"
+import { TestAudit, TestEvents, TestMessages, TestNotify, TestSettings, TestStatus, TestStorage } from "./platform"
 
 /** Who calls the app's API in a test: a person with grants, or a visitor (`user: null`). */
 export interface TestPrincipal {
@@ -85,7 +85,7 @@ export interface AppTestOptions<Id extends string, Groups extends HttpApiGroup.C
  * An app's backend in a test, without a server or the platform: its API runs in memory with its real
  * access control (people sign in with tokens made for the test), and the platform's services are
  * stand-ins that record what the app did (`TestAudit`, `TestNotify`, `TestMessages`, `TestSettings`,
- * `TestStorage`, `TestEvents`).
+ * `TestStatus`, `TestStorage`, `TestEvents`).
  *
  * @example
  * layer(AppTest.layer({ app: sales, api: SalesApi, handlers }))("Sales", (it) => {
@@ -110,6 +110,7 @@ export const AppTest = {
       TestNotify.layer,
       TestMessages.layer,
       TestSettings.layer,
+      TestStatus.layer,
       TestStorage.layer,
       FetchHttpClient.layer,
     )
@@ -124,6 +125,7 @@ export const AppTest = {
       | TestNotify
       | TestMessages
       | TestSettings
+      | TestStatus
       | TestStorage
       | TestEvents
       | TestTokens

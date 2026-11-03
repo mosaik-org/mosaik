@@ -1,6 +1,6 @@
 import { describe, expect, layer } from "@effect/vitest"
 import { Audiences } from "@mosaik/sdk/server"
-import { AppTest, TestAudit, TestNotify, TestSettings } from "@mosaik/sdk/testing"
+import { AppTest, TestAudit, TestNotify, TestSettings, TestStatus } from "@mosaik/sdk/testing"
 import { DateTime, Effect, Layer } from "effect"
 import { Order, OrderId, Refund, SalesApi } from "../api"
 import { sales } from "../manifest"
@@ -20,7 +20,13 @@ const order = (id: number, amountCents: number, status: Order["status"] = "paid"
   })
 
 // Every order its own test needs: tests of one layer share the app, as requests share a running one.
-const orders = [order(1, 49_011), order(2, 4_200), order(3, 2_500), order(4, 1_000, "pending")]
+const orders = [
+  order(1, 49_011),
+  order(2, 4_200),
+  order(3, 2_500),
+  order(4, 1_000, "pending"),
+  order(5, 800, "pending"),
+]
 
 const viewer = AppTest.user({ id: "grace", name: "Grace", grants: [sales.accessPermission] })
 const refunder = AppTest.user({ id: "ada", name: "Ada", grants: [sales.accessPermission, sales.perm("orders.refund")] })
@@ -110,4 +116,22 @@ layer(app)("Sales", (it) => {
       yield* (yield* TestSettings).reset
     }),
   )
+
+  describe("orders waiting for approval", () => {
+    it.effect("show beside Orders for everyone who can change orders, counted again after each change", () =>
+      Effect.gen(function* () {
+        const api = yield* AppTest.client(SalesApi)
+        yield* api.as(manager, (client) =>
+          client.orders.setStatus({ params: { id: OrderId.make(4) }, payload: { status: "paid" } }),
+        )
+        expect(yield* (yield* TestStatus).values("orders.pending")).toEqual([
+          {
+            audience: { _tag: "permission", permission: "sales:orders.edit" },
+            value: { _tag: "count", count: 1 },
+            link: "/orders?status=pending",
+          },
+        ])
+      }),
+    )
+  })
 })

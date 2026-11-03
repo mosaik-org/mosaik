@@ -17,6 +17,7 @@ import { Events, serviceConsumer, serviceSubscriber } from "../Events"
 import { Provisioner } from "../Provisioner"
 import { Registry } from "../Registry"
 import { RouteFeed } from "../RouteFeed"
+import { Statuses } from "../Statuses"
 
 export const RoutesHandlers = HttpApiBuilder.group(
   PlatformInternalApi,
@@ -107,6 +108,19 @@ export const ClientsHandlers = HttpApiBuilder.group(
         const app = yield* registry.get(id.value).pipe(Effect.orDie)
         return new AppClient({ id: app.id, publicUrl: app.publicUrl })
       }),
+    })
+  }),
+)
+
+/** For Core's services: a person's statuses (the assistant tells its AI), and Core's own to set. */
+export const StatusesInternalHandlers = HttpApiBuilder.group(
+  PlatformInternalApi,
+  "statuses",
+  Effect.fn(function* (handlers) {
+    const statuses = yield* Statuses
+    return handlers.handleAll({
+      forPrincipal: ({ payload }) => statuses.forPrincipal(payload.principal),
+      setCore: ({ params, payload }) => statuses.setCore(params.name, payload),
     })
   }),
 )

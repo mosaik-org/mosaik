@@ -1,5 +1,5 @@
 import { InternalClient } from "@mosaik/auth/server"
-import type { Caller, CatalogTool, ToolOutcome } from "@mosaik/tools"
+import { type Caller, type CatalogTool, type ToolOutcome, WhatNeedsMe } from "@mosaik/tools"
 import { Context, Effect, Layer, Option } from "effect"
 import { McpSchema } from "effect/ai"
 
@@ -19,6 +19,21 @@ export const toMcpTool = (tool: CatalogTool): McpSchema.Tool =>
       openWorldHint: false,
     }),
   })
+
+/** Mosaik's own tool, as AI clients list it: what waits for the person, changing nothing. */
+export const whatNeedsMeTool: McpSchema.Tool = McpSchema.Tool.make({
+  name: WhatNeedsMe.name,
+  title: WhatNeedsMe.title,
+  description: WhatNeedsMe.description,
+  inputSchema: WhatNeedsMe.input,
+  annotations: McpSchema.ToolAnnotations.make({
+    title: WhatNeedsMe.title,
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: false,
+  }),
+})
 
 /** A call's outcome as MCP clients read it: its text, and `isError` when it failed. */
 export const toCallToolResult = (outcome: ToolOutcome): McpSchema.CallToolResult =>

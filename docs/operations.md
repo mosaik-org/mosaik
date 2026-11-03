@@ -158,6 +158,14 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
   devices), then all their other apps when they can open 8 or fewer, or else the 5 they used most recently.
   The open app's pages are listed under it (from its manifest), and owners and admins get a *Manage*
   section: *Access requests*, with a count of those waiting, and *Manage apps*.
+- **Statuses.** What waits for someone shows beside the app or page it is about: in the sidebar (a
+  number, a spinner for work running, a dot for news or trouble), on All apps cards, in the Overview's
+  *Needs you*, in the tab's title and in the command palette ("what needs me"). *Needs you* and the
+  palette lead to the things themselves (Sales' orders waiting for approval, the conversation waiting),
+  and pages show what waits there (Sales' *Waiting for approval* filter, a clock on the assistant's
+  conversations waiting for approval). Apps set them for one person or for everyone with a permission;
+  Core shows the access requests waiting for someone to answer, and the changes the assistant waits for
+  them to allow.
 - **Collapsing the sidebar.** Ctrl/⌘+B, the button at its foot or the command palette collapses it to a
   rail of icons, remembered in that browser. Narrower screens (below 1024 px) get the rail whatever was
   chosen; resting the pointer on it, or moving focus into it, opens it over the page. Going to another
@@ -247,6 +255,8 @@ chooses a model: it sends people's questions, and what apps answer them, to that
   (`mosaik_assistant`). After its first answer, the model names a conversation in a few words (one more
   short request to the provider); people can rename or delete their conversations, and search them by
   title. Deleting a conversation leaves what the assistant changed in apps as it is.
+- **What waits for the person.** The assistant reads the person's statuses with each question, so it can
+  mention what needs them, and offers them as a tool (`what_needs_me`), as the MCP server does to AI clients.
 - **Suggestions.** A new conversation offers questions to start with, from the examples of the tools
   the person may use (`examples` in an app's `AgentTool`), a few from each app.
 - **Limits.** A turn takes at most 20 model steps since the person last wrote; each person may make `TOOL_CALLS_PER_MINUTE` tool calls

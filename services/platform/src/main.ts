@@ -11,10 +11,23 @@ import { Apps } from "./Apps"
 import { NotificationsClient } from "./clients"
 import { Events } from "./Events"
 import { AppHandlers, KeysHandlers } from "./http/App"
-import { ClientsHandlers, EventsHandlers, RegistryHandlers, RoutesHandlers } from "./http/Internal"
+import {
+  ClientsHandlers,
+  EventsHandlers,
+  RegistryHandlers,
+  RoutesHandlers,
+  StatusesInternalHandlers,
+} from "./http/Internal"
 import { RequestAccessRoutes } from "./http/Pages"
 import { StorageContentRoutes } from "./http/StorageContent"
-import { AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers, StorageHandlers } from "./http/Web"
+import {
+  AccessHandlers,
+  AccessReviewHandlers,
+  AppsHandlers,
+  SettingsHandlers,
+  StatusesHandlers,
+  StorageHandlers,
+} from "./http/Web"
 import { migrations } from "./migrations"
 import { Ownership } from "./Ownership"
 import { PlatformConfig } from "./PlatformConfig"
@@ -22,12 +35,16 @@ import { Provisioner } from "./Provisioner"
 import { Registry } from "./Registry"
 import { RouteFeed } from "./RouteFeed"
 import { SettingsStore } from "./Settings"
+import { Statuses, StatusStore } from "./Statuses"
 import { AppStorage } from "./Storage"
 
 const Clients = Layer.mergeAll(InternalClient.layer, NotificationsClient.layer, FetchHttpClient.layer)
 
 const Domain = Layer.mergeAll(Registry.layer, RouteFeed.layer, Ownership.layer, SettingsStore.layer).pipe(
-  Layer.provideMerge(Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer, AppStorage.layer)),
+  Layer.provideMerge(Statuses.layer),
+  Layer.provideMerge(
+    Layer.mergeAll(Events.layer, AccessRequests.layer, Provisioner.layer, AppStorage.layer, StatusStore.layer),
+  ),
   Layer.provideMerge(Apps.layer),
   Layer.provideMerge(Database.layer({ serviceId: "platform", migrations })),
   Layer.provideMerge(PlatformConfig.layer),
@@ -39,12 +56,19 @@ const AppHttp = HttpApiBuilder.layer(PlatformApi).pipe(Layer.provide([AppHandler
 
 /** Who can use apps and requests for access (`/api/platform`), through the gateway. */
 const WebHttp = HttpApiBuilder.layer(PlatformWebApi, { openapiPath: `${PLATFORM_WEB_PREFIX}/openapi.json` }).pipe(
-  Layer.provide([AccessHandlers, AccessReviewHandlers, AppsHandlers, SettingsHandlers, StorageHandlers]),
+  Layer.provide([
+    AccessHandlers,
+    AccessReviewHandlers,
+    AppsHandlers,
+    SettingsHandlers,
+    StorageHandlers,
+    StatusesHandlers,
+  ]),
 )
 
 /** Platform services only (`/internal`: routes, events, the app registry, sign-in clients), never routed by the gateway. */
 const InternalHttp = HttpApiBuilder.layer(PlatformInternalApi).pipe(
-  Layer.provide([RoutesHandlers, EventsHandlers, RegistryHandlers, ClientsHandlers]),
+  Layer.provide([RoutesHandlers, EventsHandlers, RegistryHandlers, ClientsHandlers, StatusesInternalHandlers]),
 )
 
 /** Tokens the gateway issues for this service (`/api/platform`): the web API and Core's request-access page. */

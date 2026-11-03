@@ -5,7 +5,7 @@ import {
   type Resolution,
   type ToolCallPart,
 } from "@mosaik/assistant/contract"
-import type { CatalogTool, InputSchema } from "@mosaik/tools"
+import { type CatalogTool, type InputSchema, WhatNeedsMe } from "@mosaik/tools"
 import { Result, Schema } from "effect"
 import type { ModelTool, ReplyPart } from "./Model"
 
@@ -79,15 +79,19 @@ export const browserModelTools: ReadonlyArray<ModelTool> = Object.entries(Browse
   input: inputSchemaOf(tool.input),
 }))
 
+/** Whether a tool is Mosaik's own (not an app's): what waits for the person. */
+const isOwnTool = (name: string) => isBrowserTool(name) || name === WhatNeedsMe.name
+
 /**
- * The tools the model may call: the person's apps' tools and the browser tools. An app's tool
- * named like a browser tool is left out; the browser's are the assistant's own.
+ * The tools the model may call: the person's apps' tools, the browser tools, and what waits for
+ * the person. An app's tool named like one of Mosaik's own is left out; those are the assistant's.
  */
 export const modelTools = (visible: ReadonlyArray<CatalogTool>): ReadonlyArray<ModelTool> => [
   ...visible
-    .filter((tool) => !isBrowserTool(tool.name))
+    .filter((tool) => !isOwnTool(tool.name))
     .map((tool) => ({ name: tool.name, description: tool.tool.description, input: tool.input })),
   ...browserModelTools,
+  { name: WhatNeedsMe.name, description: WhatNeedsMe.description, input: WhatNeedsMe.input },
 ]
 
 /** Completes the model's tool call with what the person needs to judge it, and where it runs. */
@@ -104,6 +108,9 @@ export const describeCall = (
       destructive: false,
       runsIn: "browser",
     }
+  }
+  if (part.tool === WhatNeedsMe.name) {
+    return { ...part, title: WhatNeedsMe.title, app: "", changes: false, destructive: false }
   }
   const tool = tools.get(part.tool)
   return {

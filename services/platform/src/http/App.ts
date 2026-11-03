@@ -11,6 +11,7 @@ import { NotificationsClient } from "../clients"
 import { appSubscriber, Events } from "../Events"
 import { Registry } from "../Registry"
 import { SettingsStore } from "../Settings"
+import { Statuses } from "../Statuses"
 import { AppStorage } from "../Storage"
 
 /**
@@ -28,6 +29,7 @@ export const AppHandlers = HttpApiBuilder.group(
     const events = yield* Events
     const settings = yield* SettingsStore
     const storage = yield* AppStorage
+    const statuses = yield* Statuses
 
     /** The calling app's registered manifest: it decides which events the app gets. */
     const manifest = Effect.fn(function* (id: string) {
@@ -65,6 +67,16 @@ export const AppHandlers = HttpApiBuilder.group(
             (error) => Effect.die(error),
           ),
         )
+      }),
+
+      setStatus: Effect.fn("Platform.setStatus")(function* ({ params, payload }) {
+        const app = yield* CurrentApp
+        yield* statuses.set(app.id, params.name, [payload], { replace: false })
+      }),
+
+      replaceStatus: Effect.fn("Platform.replaceStatus")(function* ({ params, payload }) {
+        const app = yield* CurrentApp
+        yield* statuses.set(app.id, params.name, payload.entries, { replace: true })
       }),
 
       notifications: Effect.fn("Platform.notifications")(function* ({ payload }) {

@@ -41,6 +41,10 @@ export const sales = defineApp({
   database: true,
   // Files attached to orders (see `Storage` in the backend), within the limit admins give Sales.
   storage: true,
+  // Beside Orders in Mosaik's navigation (see server/pending.ts).
+  statuses: {
+    "orders.pending": { description: "Orders waiting for approval", kind: "count", page: "/orders" },
+  },
   portal: {
     icon: "chart-line",
     category: "Sales",

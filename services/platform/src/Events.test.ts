@@ -17,6 +17,7 @@ const manifest = new AppManifest({
   database: false,
   storage: false,
   settings: [],
+  statuses: [],
   portal: new PortalManifest({ icon: null, category: null, config: [], pages: [], web: null }),
 })
 

@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto"
 import { AGENT_RESOURCE_PATH, type AgentTokenClaims } from "@mosaik/auth/contract"
 import { Principal } from "@mosaik/core"
-import { AppCalls, Catalog, type CatalogTool } from "@mosaik/tools"
+import { AppCalls, Catalog, type CatalogTool, PersonStatuses, WhatNeedsMe, whatNeedsMe } from "@mosaik/tools"
 import { Context, Duration, Effect, Equal, Hash, Layer, RcMap, type Scope } from "effect"
 import { McpProtocol, McpServer } from "effect/ai"
 import { HttpRouter, type HttpServerError, type HttpServerRequest, type HttpServerResponse } from "effect/http"
-import { ConnectionCallers, toCallToolResult, toMcpTool } from "./McpTools"
+import { ConnectionCallers, toCallToolResult, toMcpTool, whatNeedsMeTool } from "./McpTools"
 
 /** What AI clients learn about the server when they connect. */
 const INSTRUCTIONS =
@@ -64,19 +64,32 @@ export class AgentServers extends Context.Service<
       const catalog = yield* Catalog
       const calls = yield* AppCalls
       const callers = yield* ConnectionCallers
+      const statuses = yield* PersonStatuses
+      // Each connection's person as of their latest request: what waits for them follows their grants now.
+      const principals = new Map<string, Principal>()
 
       const serve = (key: ServerKey) => {
         const caller = callers.forConnection(key.connection)
         const tools = Layer.effectDiscard(
           Effect.gen(function* () {
             const server = yield* McpServer.McpServer
-            for (const tool of key.tools) {
+            // An app's tool named like Mosaik's own is left out.
+            for (const tool of key.tools.filter((tool) => tool.name !== WhatNeedsMe.name)) {
               yield* server.addTool({
                 tool: toMcpTool(tool),
                 annotations: Context.empty(),
                 handle: (args) => calls.call(caller, tool, args).pipe(Effect.map(toCallToolResult)),
               })
             }
+            yield* server.addTool({
+              tool: whatNeedsMeTool,
+              annotations: Context.empty(),
+              handle: () =>
+                Effect.suspend(() => {
+                  const principal = principals.get(key.connection)
+                  return principal === undefined ? Effect.succeed([]) : statuses.forPrincipal(principal)
+                }).pipe(Effect.map((found) => toCallToolResult(whatNeedsMe(found)))),
+            })
           }),
         )
         return HttpRouter.toHttpEffect(
@@ -100,7 +113,9 @@ export class AgentServers extends Context.Service<
 
       return AgentServers.of({
         handle: Effect.fn("AgentServers.handle")(function* (claims) {
-          const tools = yield* catalog.visibleTo(new Principal({ user: claims.user, grants: claims.grants }))
+          const principal = new Principal({ user: claims.user, grants: claims.grants })
+          principals.set(claims.connection, principal)
+          const tools = yield* catalog.visibleTo(principal)
           const handler = yield* RcMap.get(servers, new ServerKey(claims.connection, tools))
           return yield* handler
         }),

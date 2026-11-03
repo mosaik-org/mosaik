@@ -66,10 +66,10 @@ code runs and which layer of Mosaik it needs:
 | Import | Where | What |
 |---|---|---|
 | `@mosaik/sdk` | everywhere (`manifest.ts`, `api/`) | `defineApp`, permissions and roles, `Setting`, `Principal`, errors, `AccessControl`, `RequiredPermission`, `AgentTool`, `Fresh`, platform event types |
-| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Storage`, `Live`, `Database` and migrations |
+| `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Status`, `Storage`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
-| `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`); no framework |
-| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `<Toasts />` |
+| `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`, `markBusy`); no framework |
+| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `useBusy`, `useStatus`, `<Toasts />` |
 | `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
 | `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
 | `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
@@ -371,6 +371,61 @@ yield* messages.send({
   `RateLimited` or `Unavailable`). Deliveries are retried with backoff; rejections are not. Delivery is at-least-once.
 - **Content** is channel-neutral: the service renders it as HTML and plain-text e-mail, Slack Block Kit and
   Teams Adaptive Cards, escaping everything.
+
+## Statuses
+
+An app tells people what waits for them beside its name in Mosaik's navigation: a number on the
+app (or on one of its pages) in the sidebar, a dot when the sidebar is narrow, on its card in All apps,
+in the Overview's *Needs you*, in the tab's title ("(3) Mosaik"), in the command palette, and to the
+assistant and AI clients (`what_needs_me`). It declares its statuses in the manifest:
+
+```ts
+statuses: {
+  "orders.pending": { description: "Orders waiting for approval", kind: "count", page: "/orders" },
+  "import": { description: "Order import", kind: "running" },
+  "payments": { description: "Payments", kind: "health" },
+},
+```
+
+- **Kinds.** `count`: how many things wait (0 shows nothing); `new`: when the newest thing came, shown
+  until the person next opens the app; `running`: work the backend does, with its progress when known;
+  `health`: trouble, `warning` or `danger`, with what is wrong. `tone` (`attention`, `warning`, `danger`)
+  says how much a count asks for attention.
+- **For whom.** One person, or everyone with one of the app's permissions, who may open the app:
+  `StatusAudiences.user(id)`, `StatusAudiences.permission(sales.perm("orders.edit"))`.
+- **Setting them.** In the backend, typed by the manifest (a count takes a number, work running a
+  progress); they show at once, live, in every open browser of the people concerned:
+
+  ```ts
+  const status = yield* Status.for(sales)
+  yield* status.set("orders.pending", StatusAudiences.permission(sales.perm("orders.edit")), 3, {
+    link: "/orders?status=pending",                         // where the things are, under the app's address
+  })
+  yield* status.replace("orders.mine", perPerson)          // every value at once, the others cleared
+  yield* status.whileRunning("import", StatusAudiences.user(actor.id), (report) =>
+    importOrders(rows, (done) => report(done / rows.length)))
+  ```
+
+  Set the value the app computed from its data, not a change to it: `replace` leaves nothing stale, and
+  recounting from time to time (Sales does at startup and every five minutes, `server/pending.ts`) catches
+  what changed elsewhere. Work running expires unless it is set again within five minutes, so a crash
+  does not leave it spinning; `whileRunning` renews it and clears it however the work ends.
+- **Leading to the things.** A number says something waits; people want to see what. Give each value
+  a `link` to where the things are (a filtered list, the one item): *Needs you*, the command palette and
+  the AI lead there (its page otherwise). On the page, show what waits, from the status itself:
+
+  ```tsx
+  const waiting = useStatus(sales.status("orders.pending"))   // @mosaik/sdk/solid, live
+  <Show when={(waiting()?.count ?? 0) > 0}>
+    <Button onClick={() => table.setFilters({ status: "pending" })}>Waiting for approval · {waiting()?.count}</Button>
+  </Show>
+  ```
+
+- **Work in the page.** What only the browser tab knows (an upload, a long save) shows the same way, by
+  the page it started on: `markBusy({ label: "Uploading 3 files" })` returns what ends it, `useBusy(() =>
+  uploading(), { label })` ends it with the component; `keepOpen: true` asks before the page is left.
+- **Tests.** `TestStatus` (in `AppTest`) holds the values as people would see them now:
+  `yield* (yield* TestStatus).values("orders.pending")`.
 
 ## Settings
 

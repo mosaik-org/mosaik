@@ -9,8 +9,19 @@ import type {
 } from "@mosaik/assistant/contract"
 import { InternalClient } from "@mosaik/auth/server"
 import { BadRequest, Conflict, NotFound, type Principal, type PrincipalUser } from "@mosaik/core"
-import { AppCalls, type Caller, Catalog, type CatalogTool, MAX_RESULT_CHARACTERS } from "@mosaik/tools"
+import {
+  AppCalls,
+  type Caller,
+  Catalog,
+  type CatalogTool,
+  MAX_RESULT_CHARACTERS,
+  PersonStatuses,
+  WhatNeedsMe,
+  waitingLine,
+  whatNeedsMe,
+} from "@mosaik/tools"
 import { Context, DateTime, Duration, Effect, Layer, Option, Queue, Result, Stream } from "effect"
+import { Approvals } from "./Approvals"
 import { AssistantConfig } from "./AssistantConfig"
 import { describeCall, matchResolutions, modelTools, pendingCalls, stepsSinceQuestion } from "./Calls"
 import { Conversations, cleanTitle, titleOf } from "./Conversations"
@@ -38,23 +49,23 @@ const contextLine = (context: PageContext | null, today: string) => {
   return `[Today is ${today}. The person is on ${page}${context.app === null ? "" : ` in the ${context.app} app`}.]`
 }
 
-/** Stored messages as the model reads them: the person's page and the date before what they wrote. */
-export const toPrompt = (messages: ReadonlyArray<Message>): ReadonlyArray<PromptMessage> =>
-  messages.map((message) =>
-    message.role === "user"
-      ? {
-          role: "user",
-          parts: [
-            {
-              type: "text",
-              text: `${contextLine(message.context, DateTime.formatIsoDateUtc(message.createdAt))}\n\n${message.parts
-                .flatMap((part) => (part.type === "text" ? [part.text] : []))
-                .join("\n")}`,
-            },
-          ],
-        }
-      : { role: message.role, parts: message.parts },
-  )
+/**
+ * Stored messages as the model reads them: the person's page and the date before what they wrote,
+ * and before their newest question, what waits for them now (`waiting`). Earlier messages read the
+ * same at every step, so providers keep them cached.
+ */
+export const toPrompt = (messages: ReadonlyArray<Message>, waiting?: string): ReadonlyArray<PromptMessage> => {
+  const newest = messages.findLastIndex((message) => message.role === "user")
+  return messages.map((message, index) => {
+    if (message.role !== "user") return { role: message.role, parts: message.parts }
+    const context = [
+      contextLine(message.context, DateTime.formatIsoDateUtc(message.createdAt)),
+      ...(index === newest && waiting !== undefined ? [waiting] : []),
+    ].join("\n")
+    const text = message.parts.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("\n")
+    return { role: "user", parts: [{ type: "text", text: `${context}\n\n${text}` }] }
+  })
+}
 
 /**
  * The instructions: the same for every turn of a person, so providers can cache them with the
@@ -114,6 +125,8 @@ export class Turns extends Context.Service<
       const catalog = yield* Catalog
       const calls = yield* AppCalls
       const internal = yield* InternalClient
+      const approvals = yield* Approvals
+      const statuses = yield* PersonStatuses
       // Conversations with a turn running (one process: the platform runs on one host).
       const running = new Set<string>()
 
@@ -128,7 +141,19 @@ export class Turns extends Context.Service<
           ),
       })
 
-      const runCall = (caller: Caller, tools: ReadonlyMap<string, CatalogTool>, call: ToolCallPart) => {
+      const runCall = (
+        principal: Principal,
+        caller: Caller,
+        tools: ReadonlyMap<string, CatalogTool>,
+        call: ToolCallPart,
+      ): Effect.Effect<ToolResultPart> => {
+        // Mosaik's own: answered for the person from the platform, as they would see it.
+        if (call.tool === WhatNeedsMe.name) {
+          return Effect.map(
+            statuses.forPrincipal(principal),
+            (found): ToolResultPart => ({ type: "tool-result", id: call.id, tool: call.tool, ...whatNeedsMe(found) }),
+          )
+        }
         const tool = tools.get(call.tool)
         if (tool === undefined) {
           return Effect.succeed<ToolResultPart>({
@@ -185,6 +210,11 @@ export class Turns extends Context.Service<
         const tools = new Map(visible.map((tool) => [tool.name, tool]))
         const offered = modelTools(visible)
         const system = systemPrompt(config.brand, user)
+        // What waits for the person, once a turn. The changes this assistant waits for are in the
+        // conversation already (and the count lags behind the decision being made now).
+        const whatWaits = waitingLine(
+          (yield* statuses.forPrincipal(principal)).filter((status) => status.key !== "core:assistant.approvals"),
+        )
 
         for (;;) {
           const found = yield* conversations.find(user.id, conversation)
@@ -197,7 +227,7 @@ export class Turns extends Context.Service<
           }
           let reply: ReadonlyArray<ReplyPart> = []
           yield* model
-            .step({ system, messages: toPrompt(messages), tools: offered, session: conversation })
+            .step({ system, messages: toPrompt(messages, whatWaits), tools: offered, session: conversation })
             .pipe(
               Stream.runForEach((event) =>
                 event.type === "text"
@@ -222,7 +252,9 @@ export class Turns extends Context.Service<
           const reads = asked.filter((call) => call.runsIn !== "browser" && !call.changes)
           const waiting = asked.filter((call) => call.runsIn === "browser" || call.changes)
           if (reads.length > 0) {
-            const results = yield* Effect.forEach(reads, (call) => runCall(caller, tools, call), { concurrency: 4 })
+            const results = yield* Effect.forEach(reads, (call) => runCall(principal, caller, tools, call), {
+              concurrency: 4,
+            })
             yield* emit({
               type: "message",
               message: yield* conversations.append(conversation, { role: "tool", parts: results }),
@@ -236,7 +268,7 @@ export class Turns extends Context.Service<
        * A turn's events as a stream. The turn holds its conversation until it ends; errors end
        * it with a `failed` event (what was stored stays).
        */
-      const turn = (conversation: string, run: (emit: Emit) => Effect.Effect<void, ModelError>) =>
+      const turn = (user: PrincipalUser, conversation: string, run: (emit: Emit) => Effect.Effect<void, ModelError>) =>
         Stream.callback<TurnEvent>((queue) => {
           const emit: Emit = (event) => Queue.offer(queue, event).pipe(Effect.asVoid)
           return run(emit).pipe(
@@ -251,7 +283,12 @@ export class Turns extends Context.Service<
                 Effect.andThen(emit({ type: "failed", message: "Something went wrong. Try again." })),
               ),
             ),
-            Effect.ensuring(Effect.sync(() => running.delete(conversation))),
+            Effect.ensuring(
+              Effect.sync(() => running.delete(conversation)).pipe(
+                // What waits for the person may have changed: a change asked, allowed, denied or dropped.
+                Effect.andThen(approvals.settle(user.id, conversation)),
+              ),
+            ),
             Effect.andThen(Queue.end(queue)),
           )
         })
@@ -272,7 +309,7 @@ export class Turns extends Context.Service<
         busy: (conversation) => running.has(conversation),
         send: Effect.fn("Turns.send")(function* (principal, conversation, message) {
           const { user, messages } = yield* hold(principal, conversation)
-          return turn(conversation, (emit) =>
+          return turn(user, conversation, (emit) =>
             Effect.gen(function* () {
               // Writing again leaves earlier questions unanswered: their calls do not run.
               const pending = pendingCalls(messages)
@@ -304,7 +341,7 @@ export class Turns extends Context.Service<
             running.delete(conversation)
             return yield* new BadRequest({ message: matched.failure })
           }
-          return turn(conversation, (emit) =>
+          return turn(user, conversation, (emit) =>
             Effect.gen(function* () {
               const caller = callerFor(user)
               const tools = new Map((yield* catalog.visibleTo(principal)).map((tool) => [tool.name, tool]))
@@ -322,7 +359,7 @@ export class Turns extends Context.Service<
                     })
                   }
                   return resolution.approve
-                    ? runCall(caller, tools, call).pipe(
+                    ? runCall(principal, caller, tools, call).pipe(
                         Effect.map((result): ToolResultPart => ({ ...result, decision: "approved" })),
                       )
                     : Effect.succeed(denied(call, "The person did not allow this call; it did not run."))

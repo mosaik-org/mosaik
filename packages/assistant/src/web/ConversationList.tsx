@@ -1,6 +1,7 @@
 import { Button, Spinner, TextField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { useQuery } from "@tanstack/solid-query"
+import Clock from "lucide-solid/icons/clock"
 import Plus from "lucide-solid/icons/plus"
 import Search from "lucide-solid/icons/search"
 import { createMemo, createSignal, For, type JSX, Show } from "solid-js"
@@ -28,7 +29,9 @@ const styles = {
     },
   }),
   item: css({
-    display: "block",
+    display: "flex",
+    alignItems: "center",
+    gap: "2",
     width: "full",
     px: "3",
     py: "2",
@@ -38,12 +41,17 @@ const styles = {
     fontSize: "sm",
     color: "fg.muted",
     cursor: "pointer",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    "&[aria-current=true]": { bg: "accent.subtle.bg", color: "accent.plain.fg", fontWeight: "medium" },
+    // Each state once, so hovering never hides which one is open or which ones wait.
+    "&:not([aria-current=true]):not([data-waiting=true]):hover": { bg: "gray.subtle.bg", color: "fg.default" },
+    // Waiting for the person: light blue, a little darker on hover.
+    "&[data-waiting=true]:not([aria-current=true])": {
+      bg: "accent.subtle.bg",
+      color: "fg.default",
+      _hover: { bg: "accent.subtle.bg.hover" },
+    },
+    // The open conversation: the strongest blue, waiting or not.
+    "&[aria-current=true]": { bg: "accent.subtle.bg.hover", color: "accent.plain.fg", fontWeight: "medium" },
   }),
   actions: css({
     position: "absolute",
@@ -53,6 +61,9 @@ const styles = {
     opacity: "0",
     transition: "opacity 0.15s",
   }),
+  title: css({ flex: "1", minW: "0", truncate: true }),
+  // It waits for the person: what they came for.
+  waiting: css({ display: "flex", flexShrink: "0", color: "accent.plain.fg" }),
   empty: css({ px: "3", fontSize: "sm", color: "fg.muted" }),
 }
 
@@ -66,6 +77,7 @@ export const ConversationList = (props: {
 }): JSX.Element => {
   const conversations = useQuery(() => assistant.assistant.conversations.query())
   const [query, setQuery] = createSignal("")
+  // Latest first, under when they were last used; the ones waiting for the person are marked where they are.
   const groups = createMemo(() => groupByDate(matchingConversations(conversations.data ?? [], query()), new Date()))
 
   return (
@@ -98,9 +110,17 @@ export const ConversationList = (props: {
                         type="button"
                         class={styles.item}
                         aria-current={conversation.id === props.selected}
+                        data-waiting={conversation.waitingChanges > 0}
                         onClick={() => props.onSelect(conversation.id)}
                       >
-                        {titleOrDefault(conversation.title)}
+                        {/* As the conversation itself says it: "Waiting for your approval", with a clock. */}
+                        <Show when={conversation.waitingChanges > 0}>
+                          <span class={styles.waiting} title="Waiting for your approval">
+                            <Clock size={14} aria-hidden="true" />
+                            <span class={css({ srOnly: true })}>Waiting for your approval:</span>
+                          </span>
+                        </Show>
+                        <span class={styles.title}>{titleOrDefault(conversation.title)}</span>
                       </button>
                       <div class={styles.actions} data-actions>
                         <ConversationMenu

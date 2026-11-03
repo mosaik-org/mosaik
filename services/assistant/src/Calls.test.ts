@@ -88,9 +88,9 @@ const appTool = (name: string): CatalogTool => {
 }
 
 describe("modelTools", () => {
-  it("offers apps' tools and the browser's, which win a clash of names", () => {
-    const offered = modelTools([appTool("shop_orders_search"), appTool("find_pages")])
-    expect(offered.map((tool) => tool.name)).toEqual(["shop_orders_search", "find_pages", "open_page"])
+  it("offers apps' tools, the browser's and Mosaik's own, which win a clash of names", () => {
+    const offered = modelTools([appTool("shop_orders_search"), appTool("find_pages"), appTool("what_needs_me")])
+    expect(offered.map((tool) => tool.name)).toEqual(["shop_orders_search", "find_pages", "open_page", "what_needs_me"])
     expect(offered.find((tool) => tool.name === "open_page")?.input).toMatchObject({
       type: "object",
       properties: { path: { type: "string" } },

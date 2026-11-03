@@ -4,6 +4,7 @@ import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { AppEventBatch, MAX_EVENTS_WAIT_SECONDS } from "./api"
 import { RegistryGroup } from "./registry"
+import { StatusesInternalGroup } from "./status"
 
 /** Where the gateway sends `/api/<id>/*`. */
 export class AppRoute extends Schema.Class<AppRoute>("@mosaik/platform/AppRoute")({
@@ -89,7 +90,7 @@ export class ClientsGroup extends HttpApiGroup.make("clients")
   )
   .middleware(InternalAuth) {}
 
-/** Platform services only: the gateway, the auth service and the Portal. */
+/** Platform services only: the gateway, the auth service, the Portal and the assistant. */
 export class PlatformInternalApi extends HttpApi.make("platform-internal")
-  .add(RoutesGroup, EventsGroup, RegistryGroup, ClientsGroup)
+  .add(RoutesGroup, EventsGroup, RegistryGroup, ClientsGroup, StatusesInternalGroup)
   .prefix("/internal") {}

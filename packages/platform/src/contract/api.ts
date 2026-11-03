@@ -17,6 +17,7 @@ import {
 } from "effect/http-api"
 import { AppManifest } from "./manifest"
 import { AppSettingsSnapshot } from "./settings"
+import { replaceStatusEndpoint, setStatusEndpoint } from "./status"
 import { StorageKey, StorageUnavailable, StoredObject, StoredObjectsPage } from "./storage"
 
 export const PLATFORM_API_PREFIX = "/api/platform/v1"
@@ -145,6 +146,8 @@ export class AppGroup extends HttpApiGroup.make("app")
       query: { after: Schema.optional(Schema.NumberFromString), wait: Schema.optional(Schema.NumberFromString) },
       success: AppSettingsSnapshot,
     }),
+    setStatusEndpoint,
+    replaceStatusEndpoint,
     /** A stored file's size, type and date (its content: {@link STORAGE_CONTENT_PATH}). */
     HttpApiEndpoint.get("storedObject", "/storage/object", {
       query: { key: StorageKey },

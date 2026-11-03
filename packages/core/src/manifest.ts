@@ -13,6 +13,7 @@ import {
   type RoleSpec,
 } from "./roles"
 import { type NoSettings, SettingNamePattern, type SettingsSpec, settingProblem } from "./settings"
+import type { NoStatuses, StatusesSpec, StatusKey, StatusSpec } from "./status"
 
 export interface PermissionSpec {
   readonly description: string
@@ -98,6 +99,7 @@ export interface AppSpec<
   Notification extends string = never,
   Event extends PlatformEventType = never,
   Settings extends SettingsSpec = NoSettings,
+  Statuses extends StatusesSpec = NoStatuses,
 > {
   /** URL segment, API prefix and permission namespace. */
   readonly id: Id
@@ -124,6 +126,11 @@ export interface AppSpec<
    * with `Setting` and read them with `Settings` in `@mosaik/server`.
    */
   readonly settings?: Settings
+  /**
+   * What the app tells people about itself beside its name in navigation, by name: things waiting
+   * for them, something new, work running, trouble. Set them with `Status` in `@mosaik/server`.
+   */
+  readonly statuses?: Statuses
   /** Needs a Postgres database (`DATABASE_URL`): provisioned by the platform, or the app's own. */
   readonly database?: boolean
   /** Stores files with the platform (see `Storage` in `@mosaik/server`), within a limit admins set. */
@@ -142,7 +149,11 @@ export interface App<
   Notification extends string = string,
   Event extends PlatformEventType = PlatformEventType,
   Settings extends SettingsSpec = SettingsSpec,
-> extends Omit<AppSpec<Id, Name, Notification, Event, Settings>, "roles" | "portal" | "settings"> {
+  Statuses extends StatusesSpec = StatusesSpec,
+> extends Omit<
+    AppSpec<Id, Name, Notification, Event, Settings, Statuses>,
+    "roles" | "portal" | "settings" | "statuses"
+  > {
   readonly [AppTypeId]: typeof AppTypeId
   readonly portal: PortalSpec<Name>
   readonly apiPrefix: `/api/${Id}`
@@ -153,6 +164,7 @@ export interface App<
   readonly roles: ReadonlyArray<ManifestRole>
   readonly events: ReadonlyArray<Event>
   readonly settings: Settings
+  readonly statuses: Statuses
   readonly database: boolean
   readonly storage: boolean
   readonly backend: boolean
@@ -160,9 +172,11 @@ export interface App<
   perm<N extends Name>(name: N): PermissionKey<Id, N>
   /** Fully qualified, type-checked notification type key. */
   notification<N extends Notification>(name: N): NotificationKey<Id, N>
+  /** Fully qualified, type-checked status key. */
+  status<N extends keyof Statuses & string>(name: N): StatusKey<Id, N>
 }
 
-export type AnyApp = App<string, string, string, PlatformEventType, SettingsSpec>
+export type AnyApp = App<string, string, string, PlatformEventType, SettingsSpec, StatusesSpec>
 
 /** Reserved ids that would clash with platform routes. */
 const RESERVED_IDS = new Set([
@@ -187,9 +201,10 @@ export const defineApp = <
   const Notification extends string = never,
   const Event extends PlatformEventType = never,
   const Settings extends SettingsSpec = NoSettings,
+  const Statuses extends StatusesSpec = NoStatuses,
 >(
-  spec: AppSpec<Id, Name, Notification, Event, Settings>,
-): App<Id, Name, Notification, Event, Settings> => {
+  spec: AppSpec<Id, Name, Notification, Event, Settings, Statuses>,
+): App<Id, Name, Notification, Event, Settings, Statuses> => {
   if (!AppIdPattern.test(spec.id) || RESERVED_IDS.has(spec.id)) {
     throw new Error(`Invalid app id "${spec.id}"`)
   }
@@ -216,12 +231,19 @@ export const defineApp = <
     throw new Error(`Permission "${OWNER_PERMISSION_NAME}" is reserved (app "${spec.id}")`)
   }
   checkPages(spec.id, Object.keys(spec.permissions), spec.portal?.pages ?? [])
+  for (const [name, status] of Object.entries<StatusSpec>(spec.statuses ?? {})) {
+    if (!PermissionNamePattern.test(name)) throw new Error(`Invalid status name "${name}" in app "${spec.id}"`)
+    if (status.page !== undefined && !PagePathPattern.test(status.page)) {
+      throw new Error(`Invalid page "${status.page}" of status "${name}" in app "${spec.id}" (e.g. "/orders")`)
+    }
+  }
   const perm = <N extends Name>(name: N): PermissionKey<Id, N> => `${spec.id}:${name}`
   return {
     ...spec,
     [AppTypeId]: AppTypeId,
     events: [...new Set(spec.events ?? [])],
     settings: spec.settings ?? ({} as Settings),
+    statuses: spec.statuses ?? ({} as Statuses),
     database: spec.database ?? false,
     storage: spec.storage ?? false,
     backend: spec.backend ?? true,
@@ -232,6 +254,7 @@ export const defineApp = <
     roles: appRoles(spec),
     perm,
     notification: (name) => `${spec.id}:${name}`,
+    status: (name) => `${spec.id}:${name}`,
   }
 }
 

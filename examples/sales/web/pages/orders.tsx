@@ -2,10 +2,11 @@ import { Button, Input, SelectField } from "@mosaik/mosaik-ui"
 import { formatCurrency, formatDateTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
 import { useCommands, useSearchParams, useTableSearch } from "@mosaik/sdk/portal"
-import { createDebounced, useCan } from "@mosaik/sdk/solid"
+import { createDebounced, useCan, useStatus } from "@mosaik/sdk/solid"
 import { createColumnHelper, DataTable } from "@mosaik/sdk/table"
 import { QueryFreshness } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
+import Clock from "lucide-solid/icons/clock"
 import Download from "lucide-solid/icons/download"
 import { createEffect, createSignal, on, Show } from "solid-js"
 import { ORDERS_DEFAULTS, type Order, OrderSortField, OrderStatus, OrdersSearch } from "../../api"
@@ -61,6 +62,9 @@ export default function Orders() {
   const options = useQuery(optionsQuery)
   // Their role allows it, and Sales' settings do (until they say otherwise, assume they do).
   const canExport = () => can(sales.perm("orders.export")) && options.data?.exportsEnabled !== false
+  // What waits for the person here (Sales' status beside Orders): one click shows just those orders.
+  const waiting = useStatus(sales.status("orders.pending"))
+  const showingWaiting = () => table.params().status === "pending"
 
   useCommands(() => [
     ...STATUS_FILTERS.map((filter) => ({
@@ -120,6 +124,17 @@ export default function Orders() {
           size="sm"
           class={css({ width: "40" })}
         />
+        <Show when={(waiting()?.count ?? 0) > 0}>
+          <Button
+            size="xs"
+            variant={showingWaiting() ? "solid" : "outline"}
+            aria-pressed={showingWaiting()}
+            onClick={() => table.setFilters({ status: showingWaiting() ? undefined : "pending" })}
+          >
+            <Clock size={14} />
+            Waiting for approval · {waiting()?.count}
+          </Button>
+        </Show>
         <div class={css({ flex: "1" })} />
         <QueryFreshness query={orders} source="orders database" />
         <Show when={canExport()}>

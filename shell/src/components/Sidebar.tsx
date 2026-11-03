@@ -1,6 +1,6 @@
 import { assistant } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
-import { managesAnyApp, reviewsQuery } from "@mosaik/console"
+import { managesAnyApp } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
@@ -17,8 +17,11 @@ import Pin from "lucide-solid/icons/pin"
 import PinOff from "lucide-solid/icons/pin-off"
 import Settings2 from "lucide-solid/icons/settings-2"
 import Sparkles from "lucide-solid/icons/sparkles"
-import { type Accessor, createContext, For, type JSX, Show, useContext } from "solid-js"
+import { type Accessor, createContext, createMemo, For, type JSX, Show, useContext } from "solid-js"
 import { appForPath, appHref } from "../apps"
+import { type StatusSummary, statusesAt, summarize } from "../statuses/model"
+import { useStatuses, useStatusSummary } from "../statuses/StatusesProvider"
+import { StatusMark } from "../statuses/StatusMark"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
 
 /**
@@ -53,6 +56,10 @@ const styles = {
     "&:hover > [data-actions], &:focus-within > [data-actions], & > [data-actions]:has([data-state=open])": {
       opacity: "1",
     },
+    // Room for them as they show: the link's own mark (a status) moves left of them, not under them.
+    "&:has(> [data-actions]):is(:hover, :focus-within, :has(> [data-actions] [data-state=open])) > a": {
+      pr: "9",
+    },
   }),
   link: css({
     display: "flex",
@@ -72,27 +79,6 @@ const styles = {
   }),
   icon: css({ position: "relative", display: "flex", flexShrink: "0" }),
   label: css({ flex: "1", minW: "0", truncate: true }),
-  count: css({
-    minW: "5",
-    px: "1.5",
-    borderRadius: "full",
-    bg: "accent.solid.bg",
-    color: "accent.solid.fg",
-    fontSize: "xs",
-    fontWeight: "semibold",
-    textAlign: "center",
-  }),
-  // In the rail, things waiting show as a dot on the icon.
-  dot: css({
-    position: "absolute",
-    top: "-0.5",
-    right: "-0.5",
-    width: "2",
-    height: "2",
-    borderRadius: "full",
-    bg: "accent.solid.bg",
-    outline: "2px solid token(colors.gray.2)",
-  }),
   actions: css({
     position: "absolute",
     top: "50%",
@@ -104,12 +90,14 @@ const styles = {
   // The open app's pages, under its link.
   pages: css({ display: "flex", flexDirection: "column", ml: "5", my: "1", pl: "2", borderLeftWidth: "1px" }),
   page: css({
+    display: "flex",
+    alignItems: "center",
+    gap: "2",
     px: "3",
     py: "1.5",
     borderRadius: "md",
     fontSize: "sm",
     color: "fg.muted",
-    truncate: true,
     transition: "background 0.15s, color 0.15s",
     _hover: { bg: "gray.subtle.bg", color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
@@ -124,15 +112,14 @@ const NavLink = (props: {
   exact?: boolean
   icon: JSX.Element
   label: string
-  /** Things waiting there, e.g. requests to answer. */
-  count?: number
+  /** What its statuses come to: the mark beside it. */
+  status?: StatusSummary
   onNavigate?: () => void
   actions?: JSX.Element
   /** Below the link, e.g. the open app's pages. */
   children?: JSX.Element
 }) => {
   const mode = useContext(ModeContext)
-  const waiting = () => (props.count ?? 0) > 0
   return (
     <div>
       <div class={styles.row}>
@@ -144,17 +131,10 @@ const NavLink = (props: {
         >
           <span class={styles.icon}>
             {props.icon}
-            <Show when={mode() === "rail" && waiting()}>
-              <span class={styles.dot} />
-            </Show>
+            <Show when={mode() === "rail" && props.status}>{(status) => <StatusMark summary={status()} corner />}</Show>
           </span>
           <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
-          <Show when={waiting()}>
-            <span class={mode() === "rail" ? css({ srOnly: true }) : styles.count}>
-              {props.count}
-              <span class={css({ srOnly: true })}> waiting</span>
-            </span>
-          </Show>
+          <Show when={mode() !== "rail" && props.status}>{(status) => <StatusMark summary={status()} />}</Show>
         </Link>
         <Show when={mode() === "full" && props.actions}>
           <div class={styles.actions} data-actions>
@@ -165,6 +145,21 @@ const NavLink = (props: {
       <Show when={mode() !== "rail"}>{props.children}</Show>
     </div>
   )
+}
+
+/** A link of Mosaik's own, with the statuses at its path (e.g. requests for access waiting). */
+const PlaceLink = (props: {
+  to: string
+  exact?: boolean
+  icon: JSX.Element
+  label: string
+  onNavigate?: () => void
+}) => {
+  const status = useStatusSummary(
+    () => props.to,
+    () => false,
+  )
+  return <NavLink {...props} status={status()} />
 }
 
 const Section = (props: { heading: string; children: JSX.Element }) => {
@@ -181,29 +176,61 @@ const Section = (props: { heading: string; children: JSX.Element }) => {
   )
 }
 
-/** The pages of the app shown, under its link (as its manifest lists them, those the person may see). */
-const AppPages = (props: { app: AnyApp; onNavigate?: () => void }) => {
+/**
+ * An app in the sidebar, with its pages under it while it is open (as its manifest lists them,
+ * those the person may see). Statuses go on the pages listed; the app gets the rest, and all of
+ * them while its pages are not listed.
+ */
+const AppEntry = (props: { app: AnyApp; actions?: JSX.Element; onNavigate?: () => void }) => {
   const principal = usePrincipal()
   const location = useLocation()
-  const open = () => appForPath(location().pathname)?.id === props.app.id
-  const links = () => (open() ? appPageLinks(props.app, (permission) => principal().can(permission)) : [])
+  const mode = useContext(ModeContext)
+  const statuses = useStatuses()
+  const home = () => appHref(props.app)
+  const pages = () =>
+    mode() !== "rail" && appForPath(location().pathname)?.id === props.app.id
+      ? appPageLinks(props.app, (permission) => principal().can(permission))
+      : []
+  // The first page is the app's own address: its statuses stay with the app.
+  const listed = () =>
+    new Set(
+      pages()
+        .map((page) => page.to)
+        .filter((to) => to !== home()),
+    )
+  const own = createMemo(() =>
+    summarize(statusesAt(statuses(), home(), { below: true }).filter((status) => !listed().has(status.path))),
+  )
+  const ofPage = (to: string) => summarize(statusesAt(statuses(), to, { below: false }))
   return (
-    <Show when={links().length > 0}>
-      <nav class={styles.pages} aria-label={`${props.app.name} pages`}>
-        <For each={links()}>
-          {(link) => (
-            <Link
-              to={link.to}
-              class={styles.page}
-              activeOptions={{ exact: link.exact ?? false }}
-              onClick={() => props.onNavigate?.()}
-            >
-              {link.label}
-            </Link>
-          )}
-        </For>
-      </nav>
-    </Show>
+    <NavLink
+      to={home()}
+      icon={<AppIcon name={props.app.portal.icon} />}
+      label={props.app.name}
+      status={own()}
+      onNavigate={props.onNavigate}
+      actions={props.actions}
+    >
+      <Show when={pages().length > 0}>
+        <nav class={styles.pages} aria-label={`${props.app.name} pages`}>
+          <For each={pages()}>
+            {(page) => (
+              <Link
+                to={page.to}
+                class={styles.page}
+                activeOptions={{ exact: page.exact ?? false }}
+                onClick={() => props.onNavigate?.()}
+              >
+                <span class={styles.label}>{page.label}</span>
+                <Show when={page.to !== home()}>
+                  <StatusMark summary={ofPage(page.to)} />
+                </Show>
+              </Link>
+            )}
+          </For>
+        </nav>
+      </Show>
+    </NavLink>
   )
 }
 
@@ -249,10 +276,6 @@ export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) 
   const principal = usePrincipal()
   // For owners and admins: the requests they can answer.
   const reviewing = () => managesAnyApp(principal())
-  const waiting = useQuery(() => ({
-    ...reviewsQuery(principal().user?.id ?? "", { status: "pending" }),
-    enabled: reviewing(),
-  }))
   // The assistant, once an admin set up a model (the same query as the shell's button).
   const assistantStatus = useQuery(() => ({
     ...assistant.assistant.status.query(),
@@ -261,15 +284,7 @@ export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) 
   const few = () => apps.accessible().length <= FEW_APPS
   const others = () => (few() ? apps.accessible().filter((app) => !apps.isPinned(app.id)) : apps.recent())
   const appLink = (app: AnyApp, actions?: JSX.Element) => (
-    <NavLink
-      to={appHref(app)}
-      icon={<AppIcon name={app.portal.icon} />}
-      label={app.name}
-      onNavigate={props.onNavigate}
-      actions={actions}
-    >
-      <AppPages app={app} onNavigate={props.onNavigate} />
-    </NavLink>
+    <AppEntry app={app} actions={actions} onNavigate={props.onNavigate} />
   )
 
   return (
@@ -279,7 +294,7 @@ export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) 
           <NavLink to="/" exact icon={<LayoutDashboard size={18} />} label="Overview" onNavigate={props.onNavigate} />
           <NavLink to="/directory" icon={<LayoutGrid size={18} />} label="All apps" onNavigate={props.onNavigate} />
           <Show when={principal().isAuthenticated && assistantStatus.data?.enabled === true}>
-            <NavLink to="/assistant" icon={<Sparkles size={18} />} label="Assistant" onNavigate={props.onNavigate} />
+            <PlaceLink to="/assistant" icon={<Sparkles size={18} />} label="Assistant" onNavigate={props.onNavigate} />
           </Show>
         </div>
         <Show when={apps.pinned().length > 0}>
@@ -327,11 +342,10 @@ export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) 
         </Show>
         <Show when={reviewing()}>
           <Section heading="Manage">
-            <NavLink
+            <PlaceLink
               to="/access-requests"
               icon={<Inbox size={18} />}
               label="Access requests"
-              count={waiting.data?.length ?? 0}
               onNavigate={props.onNavigate}
             />
             <NavLink to="/manage" icon={<Settings2 size={18} />} label="Manage apps" onNavigate={props.onNavigate} />

@@ -20,12 +20,21 @@ import { Registration } from "./Registration"
 import { runMain, serve } from "./Server"
 import { Settings } from "./Settings"
 import { standaloneRoutes } from "./Standalone"
+import { Status } from "./Status"
 import { Storage } from "./Storage"
 import { appTools } from "./Tools"
 import { loadWebBundle, webAssetsRoute } from "./WebAssets"
 
 /** Services every app backend gets for free (plus the `AccessControl` middleware). */
-export type AppServices = Audit | Messages | Notify | Settings | Storage | HttpClient.HttpClient | AccessControl
+export type AppServices =
+  | Audit
+  | Messages
+  | Notify
+  | Settings
+  | Status
+  | Storage
+  | HttpClient.HttpClient
+  | AccessControl
 
 export interface AppServerOptions<Id extends string, Groups extends HttpApiGroup.Constraint, E, R> {
   readonly app: AnyApp
@@ -100,6 +109,7 @@ const makeServer = <Id extends string, Groups extends HttpApiGroup.Constraint, E
     Messages.layer,
     Notify.layer,
     Settings.layer,
+    Status.layer,
     Storage.layer(app.id),
     FetchHttpClient.layer,
   ).pipe(Layer.provideMerge(Registration.layer(manifest)), Layer.provideMerge(PlatformClient.layer(app.id)))

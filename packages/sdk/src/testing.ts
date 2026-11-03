@@ -14,6 +14,7 @@ export {
   TestNotify,
   type TestPrincipal,
   TestSettings,
+  TestStatus,
   TestStorage,
   type TypedTestSettings,
 } from "@mosaik/testing"

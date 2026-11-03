@@ -15,6 +15,7 @@ import {
 import { sales } from "../manifest"
 import { money } from "./money"
 import { Orders } from "./Orders"
+import { makeShowPendingOrders } from "./pending"
 
 const csvCell = (value: string | number): string => {
   const text = String(value)
@@ -79,6 +80,7 @@ const OrdersHandlers = HttpApiBuilder.group(
     // Read on every request: owners change them while Sales runs.
     const settings = yield* Settings.for(sales)
     const storage = yield* Storage
+    const showPendingOrders = yield* makeShowPendingOrders
 
     return handlers.handleAll({
       list: ({ query }) => orders.list({ ...ORDERS_DEFAULTS, ...query }),
@@ -100,6 +102,7 @@ const OrdersHandlers = HttpApiBuilder.group(
       setStatus: Effect.fn(function* ({ params, payload }) {
         const order = yield* orders.setStatus(params.id, payload.status)
         yield* audit.record({ action: "orders.set-status", target: order.number, details: { status: payload.status } })
+        yield* showPendingOrders
         return order
       }),
 

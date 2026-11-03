@@ -1,14 +1,18 @@
 import { HttpApi } from "effect/http-api"
 import { AccessGroup, AccessReviewGroup, AppsGroup } from "./access"
 import { SettingsGroup } from "./settings"
+import { StatusesGroup } from "./status"
 import { StorageGroup } from "./storage"
 
 export const PLATFORM_WEB_PREFIX = "/api/platform"
 
 /** Browser API of the platform service (through the gateway): who can use apps, asking for access, apps' settings and storage. */
 export class PlatformWebApi extends HttpApi.make("platform-web")
-  .add(AccessGroup, AccessReviewGroup, AppsGroup, SettingsGroup, StorageGroup)
+  .add(AccessGroup, AccessReviewGroup, AppsGroup, SettingsGroup, StorageGroup, StatusesGroup)
   .prefix(PLATFORM_WEB_PREFIX) {}
+
+/** The person's statuses, live (Server-Sent Events of `StatusSnapshot`). */
+export const statusesLiveUrl = `${PLATFORM_WEB_PREFIX}/me/statuses/live`
 
 /**
  * Core's page for asking for access to an app, for anyone signed in (rendered by the platform

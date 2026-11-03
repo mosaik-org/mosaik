@@ -28,6 +28,7 @@ import Sparkles from "lucide-solid/icons/sparkles"
 import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
 import { allApps, appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
+import { StatusesProvider } from "../statuses/StatusesProvider"
 import { Sidebar, type SidebarMode } from "./Sidebar"
 import { createSidebarState, type SidebarState } from "./sidebarState"
 import { UserMenu } from "./UserMenu"
@@ -286,76 +287,87 @@ export const AppShell = (props: { children: JSX.Element }) => {
   })
 
   return (
-    <AssistantBrowserProvider value={assistantBrowser}>
-      <div
-        class={cx(styles.shell, assistantOpen() && styles.shellWithAssistant, layout() === "full" && styles.shellFull)}
-      >
-        <aside class={styles.aside} data-rail={sidebar.rail()} data-floating={sidebar.floating()} {...sidebar.handlers}>
-          <div class={styles.sidebar} data-floating={sidebar.floating()}>
-            <Brand rail={sidebarMode() === "rail"} />
-            <Sidebar mode={sidebarMode()} onNavigate={sidebar.close} />
-            <SidebarToggle state={sidebar} />
-          </div>
-        </aside>
-
-        <Show when={drawerOpen()}>
-          <div class={styles.drawer}>
-            <div class={styles.drawerPanel}>
-              <Brand />
-              <Sidebar onNavigate={() => setDrawerOpen(false)} />
+    <StatusesProvider>
+      <AssistantBrowserProvider value={assistantBrowser}>
+        <div
+          class={cx(
+            styles.shell,
+            assistantOpen() && styles.shellWithAssistant,
+            layout() === "full" && styles.shellFull,
+          )}
+        >
+          <aside
+            class={styles.aside}
+            data-rail={sidebar.rail()}
+            data-floating={sidebar.floating()}
+            {...sidebar.handlers}
+          >
+            <div class={styles.sidebar} data-floating={sidebar.floating()}>
+              <Brand rail={sidebarMode() === "rail"} />
+              <Sidebar mode={sidebarMode()} onNavigate={sidebar.close} />
+              <SidebarToggle state={sidebar} />
             </div>
-            <div class={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
-          </div>
-        </Show>
-
-        <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
-          <header class={styles.header}>
-            <div class={css({ hideFrom: "md" })}>
-              <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
-                <Menu size={18} />
-              </IconButton>
-            </div>
-            <SearchButton />
-            <div class={css({ flex: "1" })} />
-            <Show when={assistantReady()}>
-              <IconButton
-                variant={assistantOpen() ? "subtle" : "plain"}
-                aria-label="Assistant (Ctrl+J)"
-                aria-pressed={assistantOpen()}
-                onClick={() => setPanelOpen((open) => !open)}
-              >
-                <Sparkles size={18} />
-              </IconButton>
-            </Show>
-            <ThemeToggle />
-            <Show when={principal().isAuthenticated}>
-              <NotificationBell />
-            </Show>
-            <UserMenu />
-          </header>
-          <PageMain>
-            <FrameListsPages>{props.children}</FrameListsPages>
-          </PageMain>
-        </div>
-
-        <Show when={assistantOpen()}>
-          <aside class={styles.assistant}>
-            <AssistantPanel
-              context={context}
-              onClose={() => setPanelOpen(false)}
-              onExpand={(conversation) => {
-                const from = router().location.href
-                setPanelOpen(false)
-                void navigate(
-                  conversation === null
-                    ? { to: "/assistant", search: { from } }
-                    : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
-                )
-              }}
-            />
           </aside>
-        </Show>
-      </div>
-    </AssistantBrowserProvider>
+
+          <Show when={drawerOpen()}>
+            <div class={styles.drawer}>
+              <div class={styles.drawerPanel}>
+                <Brand />
+                <Sidebar onNavigate={() => setDrawerOpen(false)} />
+              </div>
+              <div class={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+            </div>
+          </Show>
+
+          <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
+            <header class={styles.header}>
+              <div class={css({ hideFrom: "md" })}>
+                <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
+                  <Menu size={18} />
+                </IconButton>
+              </div>
+              <SearchButton />
+              <div class={css({ flex: "1" })} />
+              <Show when={assistantReady()}>
+                <IconButton
+                  variant={assistantOpen() ? "subtle" : "plain"}
+                  aria-label="Assistant (Ctrl+J)"
+                  aria-pressed={assistantOpen()}
+                  onClick={() => setPanelOpen((open) => !open)}
+                >
+                  <Sparkles size={18} />
+                </IconButton>
+              </Show>
+              <ThemeToggle />
+              <Show when={principal().isAuthenticated}>
+                <NotificationBell />
+              </Show>
+              <UserMenu />
+            </header>
+            <PageMain>
+              <FrameListsPages>{props.children}</FrameListsPages>
+            </PageMain>
+          </div>
+
+          <Show when={assistantOpen()}>
+            <aside class={styles.assistant}>
+              <AssistantPanel
+                context={context}
+                onClose={() => setPanelOpen(false)}
+                onExpand={(conversation) => {
+                  const from = router().location.href
+                  setPanelOpen(false)
+                  void navigate(
+                    conversation === null
+                      ? { to: "/assistant", search: { from } }
+                      : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
+                  )
+                }}
+              />
+            </aside>
+          </Show>
+        </div>
+      </AssistantBrowserProvider>
+    </StatusesProvider>
   )
 }

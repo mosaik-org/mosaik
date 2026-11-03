@@ -7,6 +7,7 @@ import { AccessRequests } from "./AccessRequests"
 import { type AppRecord, Apps } from "./Apps"
 import { NotificationsClient } from "./clients"
 import { appSubscriber, Events, type Subscriber } from "./Events"
+import { Statuses } from "./Statuses"
 import { AppStorage } from "./Storage"
 
 const subscriber = (app: AppRecord): Option.Option<Subscriber> =>
@@ -53,6 +54,7 @@ export class Registry extends Context.Service<
       const auth = yield* InternalClient
       const notifications = yield* NotificationsClient
       const accessRequests = yield* AccessRequests
+      const statuses = yield* Statuses
 
       const find = (id: string) =>
         apps.get(id).pipe(
@@ -103,6 +105,7 @@ export class Registry extends Context.Service<
             .registerTypes({ payload: new NotificationTypesPayload({ source: id, types: manifest.notifications }) })
             .pipe(Effect.catchIf((error) => error._tag !== "BadRequest", Effect.die))
           yield* apps.register(id, manifest, publicUrl)
+          yield* statuses.declared(id, manifest.statuses)
           yield* events.follow(appSubscriber(id, manifest))
         }),
 
@@ -141,6 +144,7 @@ export class Registry extends Context.Service<
             .registerTypes({ payload: new NotificationTypesPayload({ source: id, types: [] }) })
             .pipe(Effect.orDie)
           yield* accessRequests.forgetApp(id)
+          yield* statuses.declared(id, null)
           yield* events.forget(id)
           yield* storage.removeApp(id)
           yield* apps.delete(id)

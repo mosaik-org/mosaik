@@ -74,6 +74,27 @@ describe("defineApp", () => {
       }),
     ).toThrow()
   })
+  it("declares statuses with typed keys, and refuses odd names and pages", () => {
+    const shop = defineApp({
+      id: "shop",
+      name: "Shop",
+      access: "view",
+      permissions: { view: { description: "" } },
+      statuses: { "orders.pending": { description: "Orders waiting", kind: "count", page: "/orders" } },
+    })
+    expect(shop.status("orders.pending")).toBe("shop:orders.pending")
+    const withStatus = (name: string, page?: string) => () =>
+      defineApp({
+        id: "x",
+        name: "x",
+        access: "view",
+        permissions: { view: { description: "" } },
+        statuses: { [name]: { description: "", kind: "count", ...(page === undefined ? {} : { page }) } },
+      })
+    expect(withStatus("Bad Name")).toThrow(/Invalid status name/)
+    expect(withStatus("ok", "orders")).toThrow(/Invalid page/)
+  })
+
   it("accepts pages, and refuses ones navigation could not list", () => {
     const withPages = (pages: ReadonlyArray<{ title: string; path: string; permission?: "view" | "edit" }>) => () =>
       defineApp({

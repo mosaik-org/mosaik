@@ -81,6 +81,8 @@ export class Message extends Schema.Class<Message>("@mosaik/assistant/Message")(
 export class ConversationSummary extends Schema.Class<ConversationSummary>("@mosaik/assistant/ConversationSummary")({
   id: Schema.String,
   title: Schema.String,
+  /** Changes it waits for the person to allow (as of its last turn). */
+  waitingChanges: Schema.Int,
   createdAt: Schema.DateTimeUtc,
   updatedAt: Schema.DateTimeUtc,
 }) {}

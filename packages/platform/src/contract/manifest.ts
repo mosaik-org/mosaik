@@ -9,6 +9,9 @@ import {
   PlatformEventType,
   Setting,
   SettingDeclaration,
+  StatusKind,
+  type StatusSpec,
+  StatusTone,
   settingProblem,
   toSettingDeclaration,
 } from "@mosaik/core"
@@ -105,6 +108,16 @@ export class PortalManifest extends Schema.Class<PortalManifest>("@mosaik/platfo
   web: Schema.NullOr(WebBundle),
 }) {}
 
+/** A status the app declares (see `StatusSpec` in `@mosaik/core`). */
+export class StatusDeclaration extends Schema.Class<StatusDeclaration>("@mosaik/platform/StatusDeclaration")({
+  name: Schema.String,
+  description: Schema.String,
+  kind: StatusKind,
+  /** The app's page it belongs to (`/orders`); `null`: the app itself. */
+  page: Schema.NullOr(Schema.String),
+  tone: StatusTone,
+}) {}
+
 /** Everything the platform needs to know about an app, as static JSON (`mosaik-app.json`). */
 export class AppManifest extends Schema.Class<AppManifest>("@mosaik/platform/AppManifest")({
   id: AppId,
@@ -123,6 +136,8 @@ export class AppManifest extends Schema.Class<AppManifest>("@mosaik/platform/App
   events: Schema.Array(PlatformEventType),
   /** How the app behaves, changed while it runs by its owners and admins (see `Setting` in `@mosaik/core`). */
   settings: Schema.Array(SettingDeclaration),
+  /** What the app tells people beside its name in navigation. */
+  statuses: Schema.Array(StatusDeclaration),
   database: Schema.Boolean,
   /** Stores files with the platform. */
   storage: Schema.Boolean,
@@ -149,6 +164,16 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
     ),
     events: app.events,
     settings: Object.entries<Setting>(app.settings).map(([name, setting]) => toSettingDeclaration(name, setting)),
+    statuses: Object.entries<StatusSpec>(app.statuses).map(
+      ([name, spec]) =>
+        new StatusDeclaration({
+          name,
+          description: spec.description,
+          kind: spec.kind,
+          page: spec.page ?? null,
+          tone: spec.tone ?? "attention",
+        }),
+    ),
     database: app.database,
     storage: app.storage,
     portal: new PortalManifest({

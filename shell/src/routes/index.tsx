@@ -13,6 +13,8 @@ import { For, type JSX, Show } from "solid-js"
 import { allApps, appHref } from "../apps"
 import { unreadPreviewQuery } from "../notifications/api"
 import { NotificationList, useInboxActions } from "../notifications/NotificationList"
+import { NeedsYou } from "../statuses/NeedsYou"
+import { useStatuses } from "../statuses/StatusesProvider"
 import { FEW_APPS, useMyApps } from "../workspace/myApps"
 import { readRecentPages } from "../workspace/recentPages"
 
@@ -137,6 +139,7 @@ const Personal = (props: { user: string }) => {
   const pageApp = (id: string | undefined) => allApps.find((app) => app.id === id)?.name
 
   // Without pins or history yet: a few apps to start from.
+  const statuses = useStatuses()
   const starters = () => (apps.pinned().length > 0 || apps.recent().length > 0 ? [] : apps.accessible())
 
   return (
@@ -177,6 +180,11 @@ const Personal = (props: { user: string }) => {
       </div>
 
       <div class={styles.column}>
+        <Show when={statuses().length > 0}>
+          <Section title="Needs you">
+            <NeedsYou />
+          </Section>
+        </Show>
         <Section
           title="Unread notifications"
           aside={

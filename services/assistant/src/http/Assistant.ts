@@ -4,6 +4,7 @@ import { Live } from "@mosaik/server"
 import { Catalog } from "@mosaik/tools"
 import { Effect, Option, type Stream } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
+import { Approvals } from "../Approvals"
 import { AssistantConfig } from "../AssistantConfig"
 import { pendingCalls } from "../Calls"
 import { Conversations } from "../Conversations"
@@ -28,6 +29,7 @@ export const AssistantHandlers = HttpApiBuilder.group(
     const config = yield* AssistantConfig
     const model = yield* Model
     const conversations = yield* Conversations
+    const approvals = yield* Approvals
     const turns = yield* Turns
     const catalog = yield* Catalog
     const notFound = (id: string) => new NotFound({ resource: "conversation", id })
@@ -56,6 +58,8 @@ export const AssistantHandlers = HttpApiBuilder.group(
         const { user } = yield* currentUser
         if (turns.busy(params.id)) return yield* new Conflict({ message: "The assistant is still answering" })
         if (!(yield* conversations.remove(user.id, params.id))) return yield* notFound(params.id)
+        // Changes it waited for are gone with it.
+        yield* approvals.recount(user.id)
       }),
       conversation: Effect.fn(function* ({ params }) {
         const { user } = yield* currentUser

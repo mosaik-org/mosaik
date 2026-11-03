@@ -2,9 +2,10 @@ import { describe, expect, it } from "@effect/vitest"
 import { ConversationSummary, Message, type TurnEvent } from "@mosaik/assistant/contract"
 import { InternalClient } from "@mosaik/auth/server"
 import { Principal, PrincipalUser, UserId } from "@mosaik/core"
-import { AppTool } from "@mosaik/platform/contract"
-import { AppCalls, Catalog, type CatalogTool, inputSchema } from "@mosaik/tools"
+import { AppTool, PersonStatus } from "@mosaik/platform/contract"
+import { AppCalls, Catalog, type CatalogTool, inputSchema, PersonStatuses } from "@mosaik/tools"
 import { DateTime, Effect, Layer, Option, Stream } from "effect"
+import { Approvals } from "./Approvals"
 import { AssistantConfig } from "./AssistantConfig"
 import { pendingCalls } from "./Calls"
 import { Conversations, titleOf } from "./Conversations"
@@ -40,6 +41,32 @@ const tool = (name: string, method: AppTool["method"], destructive = false): Cat
 }
 const search = tool("orders.search", "GET")
 const refund = tool("orders.refund", "POST", true)
+
+/** What waits for Ada: an app's count, and changes this assistant waits for (which turns leave out). */
+const waiting = [
+  new PersonStatus({
+    key: "shop:orders.pending",
+    app: "shop",
+    description: "Orders waiting for approval",
+    kind: "count",
+    tone: "attention",
+    path: "/shop/orders",
+    link: "/shop/orders?status=pending",
+    value: { _tag: "count", count: 3 },
+    updatedAt: DateTime.makeUnsafe(0),
+  }),
+  new PersonStatus({
+    key: "core:assistant.approvals",
+    app: null,
+    description: "Changes the assistant is waiting for you to allow",
+    kind: "count",
+    tone: "attention",
+    path: "/assistant",
+    link: "/assistant",
+    value: { _tag: "count", count: 1 },
+    updatedAt: DateTime.makeUnsafe(0),
+  }),
+]
 
 const text = (value: string): StepEvent => ({ type: "reply", parts: [{ type: "text", text: value }] })
 const asks = (id: string, name: string, input: unknown = {}): StepEvent => ({
@@ -89,6 +116,7 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
                 summary: new ConversationSummary({
                   id,
                   title,
+                  waitingChanges: 0,
                   createdAt: DateTime.makeUnsafe(0),
                   updatedAt: DateTime.makeUnsafe(0),
                 }),
@@ -118,6 +146,17 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
           titles.push(to)
         }),
       remove: () => Effect.die("unused"),
+      setWaiting: () => Effect.die("unused"),
+      waitingIn: () => Effect.die("unused"),
+    }),
+  )
+  // Which conversations' waiting changes were counted again, when their turns ended.
+  const settled: Array<string> = []
+  const approvals = Layer.succeed(
+    Approvals,
+    Approvals.of({
+      settle: (_, conversation) => Effect.sync(() => void settled.push(conversation)),
+      recount: () => Effect.void,
     }),
   )
   const catalog = Layer.succeed(Catalog, Catalog.of({ visibleTo: () => Effect.succeed([search, refund]) }))
@@ -143,9 +182,18 @@ const setup = (replies: ReadonlyArray<StepEvent>, options: { readonly enabled?: 
     }),
   )
   const layer = Turns.layer.pipe(
-    Layer.provide([model, conversations, catalog, calls, config, Layer.succeed(InternalClient, {} as never)]),
+    Layer.provide([
+      model,
+      conversations,
+      catalog,
+      calls,
+      config,
+      approvals,
+      Layer.succeed(PersonStatuses, PersonStatuses.of({ forPrincipal: () => Effect.succeed(waiting) })),
+      Layer.succeed(InternalClient, {} as never),
+    ]),
   )
-  return { layer, prompts, called, stored, titles, rename: (to: string) => (title = to) }
+  return { layer, prompts, called, stored, titles, settled, rename: (to: string) => (title = to) }
 }
 
 const events = (stream: Stream.Stream<TurnEvent>) =>
@@ -167,7 +215,9 @@ describe("Turns", () => {
       expect(stored.map((message) => message.role)).toEqual(["user", "assistant"])
       // The model reads the page and the date before what the person wrote.
       expect(prompts[0]?.[0]?.parts[0]).toMatchObject({
-        text: "[Today is 2026-11-02. The person is on Order 7 (/shop/orders/7) in the shop app.]\n\nHi",
+        text:
+          "[Today is 2026-11-02. The person is on Order 7 (/shop/orders/7) in the shop app.]\n" +
+          "[Waiting for the person: shop: Orders waiting for approval: 3 (/shop/orders?status=pending).]\n\nHi",
       })
     }).pipe(Effect.provide(layer))
   })
@@ -193,6 +243,39 @@ describe("Turns", () => {
     }).pipe(Effect.provide(layer))
   })
 
+  it.effect("tells the model what waits for the person, with their newest question only", () => {
+    const { layer, prompts } = setup([text("One"), text("Two")])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      yield* events(yield* turns.send(principal, "c1", { text: "Hi", context: null }))
+      yield* events(yield* turns.send(principal, "c1", { text: "What now?", context: null }))
+      const read = (message: PromptMessage | undefined) =>
+        message?.parts.flatMap((part) => (part.type === "text" ? [part.text] : [])).join("") ?? ""
+      const [first, , second] = prompts[1] ?? []
+      expect(read(second)).toContain(
+        "[Waiting for the person: shop: Orders waiting for approval: 3 (/shop/orders?status=pending).]",
+      )
+      // Earlier questions read as they did: the provider's cache of them holds.
+      expect(read(first)).not.toContain("Waiting")
+      expect(read(second)).not.toContain("assistant is waiting")
+    }).pipe(Effect.provide(layer))
+  })
+
+  it.effect("answers what needs the person from the platform, not from an app", () => {
+    const { layer, called, stored } = setup([asks("w", "what_needs_me"), text("Three orders wait.")])
+    return Effect.gen(function* () {
+      const turns = yield* Turns
+      yield* events(yield* turns.send(principal, "c1", { text: "What needs me?", context: null }))
+      expect(called).toEqual([])
+      expect(stored[1]?.parts[0]).toMatchObject({ type: "tool-call", title: "What needs me", changes: false })
+      expect(stored[2]?.parts[0]).toMatchObject({
+        type: "tool-result",
+        ok: true,
+        text: expect.stringContaining("- shop: Orders waiting for approval: 3 (/shop/orders?status=pending)"),
+      })
+    }).pipe(Effect.provide(layer))
+  })
+
   it.effect("runs read-only calls at once and goes on", () => {
     const { layer, prompts, called, stored } = setup([asks("a", "shop_orders_search"), text("Found 2")])
     return Effect.gen(function* () {
@@ -213,7 +296,10 @@ describe("Turns", () => {
   })
 
   it.effect("waits for the person's approval before a change, then runs it", () => {
-    const { layer, called, stored } = setup([asks("r", "shop_orders_refund", { path: { id: "7" } }), text("Refunded")])
+    const { layer, called, stored, settled } = setup([
+      asks("r", "shop_orders_refund", { path: { id: "7" } }),
+      text("Refunded"),
+    ])
     return Effect.gen(function* () {
       const turns = yield* Turns
       expect(yield* events(yield* turns.send(principal, "c1", { text: "Refund it", context }))).toEqual([
@@ -225,6 +311,8 @@ describe("Turns", () => {
       expect(pendingCalls(stored)).toMatchObject([
         { id: "r", title: "Title of orders.refund", app: "shop", changes: true, destructive: true },
       ])
+      // What waits for the person is counted again when each turn ends.
+      expect(settled).toEqual(["c1"])
 
       expect(
         yield* events(yield* turns.resolve(principal, "c1", [{ type: "decision", call: "r", approve: true }])),
@@ -232,6 +320,7 @@ describe("Turns", () => {
       expect(called).toEqual(["shop_orders_refund"])
       expect(stored[2]?.parts[0]).toMatchObject({ type: "tool-result", id: "r", ok: true, decision: "approved" })
       expect(pendingCalls(stored)).toEqual([])
+      expect(settled).toEqual(["c1", "c1"])
     }).pipe(Effect.provide(layer))
   })
 

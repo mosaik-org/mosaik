@@ -10,6 +10,8 @@ import Lock from "lucide-solid/icons/lock"
 import Pin from "lucide-solid/icons/pin"
 import { type JSX, Match, Show, Switch } from "solid-js"
 import { appHref } from "../apps"
+import { useStatusSummary } from "../statuses/StatusesProvider"
+import { StatusMark } from "../statuses/StatusMark"
 
 const styles = {
   card: css({ display: "flex", flexDirection: "column", gap: "3", height: "full" }),
@@ -65,6 +67,11 @@ export interface AppCardProps {
 
 /** An app in the directory: what it is, and what the user can do about it. */
 export const AppCard = (props: AppCardProps) => {
+  // What waits in the app, its pages included.
+  const status = useStatusSummary(
+    () => appHref(props.app),
+    () => true,
+  )
   const pinButton = (): JSX.Element => (
     <Show when={props.available && props.onTogglePin}>
       {(toggle) => (
@@ -89,9 +96,12 @@ export const AppCard = (props: AppCardProps) => {
             <AppIcon name={props.app.portal.icon} size={20} />
           </div>
           <div class={styles.titles}>
-            <Link to="/directory/$app" params={{ app: props.app.id }} class={styles.name}>
-              {props.app.name}
-            </Link>
+            <span class={css({ display: "flex", alignItems: "center", gap: "2" })}>
+              <Link to="/directory/$app" params={{ app: props.app.id }} class={styles.name}>
+                {props.app.name}
+              </Link>
+              <StatusMark summary={status()} />
+            </span>
             <span class={styles.category}>{props.category}</span>
           </div>
           {pinButton()}

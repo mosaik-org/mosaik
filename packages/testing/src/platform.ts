@@ -8,10 +8,13 @@ import {
   type PrincipalUser,
   type SettingsSpec,
   type SettingValue,
+  type StatusAudience,
+  type StatusValue,
 } from "@mosaik/core"
 import { MessageAccepted, NotificationAccepted } from "@mosaik/notifications/contract"
 import {
   AppEvent,
+  type StatusEntry,
   StorageLimitReached,
   StoredObject,
   StoredObjectsPage,
@@ -27,6 +30,7 @@ import {
   type SendMessage,
   type SendNotification,
   Settings,
+  Status,
   Storage,
   type StorageData,
 } from "@mosaik/server"
@@ -84,6 +88,56 @@ export class TestNotify extends Context.Service<
           }),
         ),
         Layer.succeed(TestNotify, TestNotify.of({ sent: Ref.get(sent) })),
+      )
+    }),
+  )
+}
+
+/** How the test kit tells audiences apart, as the platform stores them. */
+const audienceId = (audience: StatusAudience) =>
+  audience._tag === "user" ? `user:${audience.id}` : `permission:${audience.permission}`
+
+/**
+ * The app's statuses as people would see them now: what was set, replaced and cleared applied as
+ * the platform does (a count of nothing clears). Nothing is checked against the manifest.
+ */
+export class TestStatus extends Context.Service<
+  TestStatus,
+  {
+    /** The status's current values, by audience. */
+    values(name: string): Effect.Effect<ReadonlyArray<StatusEntry & { readonly value: StatusValue }>>
+  }
+>()("@mosaik/testing/TestStatus") {
+  static readonly layer = Layer.unwrap(
+    Effect.gen(function* () {
+      const current = yield* Ref.make<ReadonlyMap<string, ReadonlyMap<string, StatusEntry>>>(new Map())
+      return Layer.mergeAll(
+        Layer.succeed(
+          Status,
+          Status.of({
+            write: (name, entries, replace) =>
+              Ref.update(current, (all) => {
+                const values = new Map(replace ? [] : (all.get(name) ?? []))
+                for (const entry of entries) {
+                  const empty = entry.value === null || (entry.value._tag === "count" && entry.value.count === 0)
+                  if (empty) values.delete(audienceId(entry.audience))
+                  else values.set(audienceId(entry.audience), entry)
+                }
+                return new Map([...all, [name, values]])
+              }),
+          }),
+        ),
+        Layer.succeed(
+          TestStatus,
+          TestStatus.of({
+            values: (name) =>
+              Effect.map(Ref.get(current), (all) =>
+                [...(all.get(name)?.values() ?? [])].flatMap((entry) =>
+                  entry.value === null ? [] : [{ ...entry, value: entry.value }],
+                ),
+              ),
+          }),
+        ),
       )
     }),
   )

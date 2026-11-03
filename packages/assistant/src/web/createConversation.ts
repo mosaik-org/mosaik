@@ -1,4 +1,5 @@
 import { errorMessage } from "@mosaik/client"
+import { useBusy } from "@mosaik/client/solid"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { type Accessor, createEffect, createMemo, on } from "solid-js"
 import { createStore, produce } from "solid-js/store"
@@ -82,6 +83,9 @@ export const createConversation = (options: {
       },
     ),
   )
+
+  // While a reply is being written, navigation shows it beside the assistant, wherever the person is.
+  useBusy(() => state.busy, { label: "The assistant is answering", path: "/assistant" })
 
   const results = createMemo(() => resultsOf(state.messages))
   const pendingIds = createMemo(() => new Set(state.pending.map((call) => call.id)))

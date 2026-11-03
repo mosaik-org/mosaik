@@ -78,6 +78,7 @@ const conversation = (id: string, updated: Date, title = id) =>
   new ConversationSummary({
     id,
     title,
+    waitingChanges: 0,
     createdAt: DateTime.makeUnsafe(updated.getTime()),
     updatedAt: DateTime.makeUnsafe(updated.getTime()),
   })

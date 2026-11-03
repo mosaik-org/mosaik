@@ -1,12 +1,14 @@
 import { AuditEventInput } from "@mosaik/auth/contract"
 import { InternalClient } from "@mosaik/auth/server"
 import { CurrentPrincipal, Forbidden, ownerPermission, type Principal, type PrincipalUser } from "@mosaik/core"
-import { AccessAdmin, canManageApp, PlatformWebApi } from "@mosaik/platform/contract"
-import { Effect, Schedule, type Schema } from "effect"
+import { AccessAdmin, canManageApp, PlatformWebApi, StatusSnapshot } from "@mosaik/platform/contract"
+import { Live } from "@mosaik/server"
+import { Duration, Effect, Schedule, type Schema, Stream } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { AccessRequests } from "../AccessRequests"
 import { Ownership } from "../Ownership"
 import { SettingsStore } from "../Settings"
+import { Statuses } from "../Statuses"
 import { AppStorage } from "../Storage"
 
 /** Records changes in the central audit log; a failure to record is logged, not returned. */
@@ -155,6 +157,31 @@ export const StorageHandlers = HttpApiBuilder.group(
           yield* audit("app.storage.set-limit", params.id, { limitBytes: payload.limitBytes })
           return usage
         }),
+    })
+  }),
+)
+
+/**
+ * Live streams end after a while so the browser reconnects with a fresh token: someone whose
+ * grants changed sees what they now may.
+ */
+const LIVE_SESSION = Duration.minutes(5)
+
+/** What apps and Core tell the person beside their names in navigation. */
+export const StatusesHandlers = HttpApiBuilder.group(
+  PlatformWebApi,
+  "statuses",
+  Effect.fn(function* (handlers) {
+    const statuses = yield* Statuses
+    return handlers.handleAll({
+      mine: () => Effect.flatMap(CurrentPrincipal, statuses.forPrincipal),
+      live: Effect.fn(function* () {
+        const principal = yield* CurrentPrincipal
+        return yield* Live.eventStream(
+          StatusSnapshot,
+          statuses.live(principal).pipe(Stream.interruptWhen(Effect.sleep(LIVE_SESSION))),
+        )
+      }),
     })
   }),
 )
