@@ -1,4 +1,4 @@
-import { Badge, Button } from "@mosaik/mosaik-ui"
+import { Badge, Button, Card } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import Check from "lucide-solid/icons/check"
 import ShieldAlert from "lucide-solid/icons/shield-alert"
@@ -9,17 +9,12 @@ import { useAppName } from "./browser"
 import { inputFields } from "./format"
 
 const styles = {
-  card: css({
-    display: "flex",
-    flexDirection: "column",
-    gap: "3",
-    p: "4",
-    borderWidth: "1px",
-    borderLeftWidth: "4px",
-    borderRadius: "l3",
-    borderColor: "warning.7",
-    bg: "warning.2",
-  }),
+  // A card in the warning's colours, its left edge thick: it waits for the person.
+  card: css({ borderLeftWidth: "4px", borderColor: "warning.7", bg: "warning.2" }),
+  // Closer than a page's card: it sits in a conversation.
+  header: css({ p: "4", pb: "3", gap: "2" }),
+  body: css({ px: "4", pb: "3" }),
+  footer: css({ px: "4", pt: "0", pb: "4", gap: "2" }),
   destructive: css({ borderColor: "danger.7", bg: "danger.2" }),
   label: css({
     display: "flex",
@@ -33,7 +28,7 @@ const styles = {
   }),
   labelDestructive: css({ color: "danger.11" }),
   heading: css({ display: "flex", alignItems: "center", gap: "2", flexWrap: "wrap" }),
-  title: css({ fontSize: "md", fontWeight: "semibold", color: "fg.default" }),
+
   inputs: css({
     display: "grid",
     gridTemplateColumns: "auto 1fr",
@@ -50,7 +45,6 @@ const styles = {
     "& dt": { color: "fg.muted" },
     "& dd": { m: "0", overflowWrap: "anywhere", whiteSpace: "pre-wrap" },
   }),
-  actions: css({ display: "flex", justifyContent: "flex-end", gap: "2" }),
 }
 
 /**
@@ -64,37 +58,42 @@ export const ApprovalCard = (props: {
 }): JSX.Element => {
   const appName = useAppName()
   return (
-    <section
+    <Card.Root
+      role="region"
       class={cx(styles.card, props.call.destructive && styles.destructive)}
       aria-label={`Approval: ${props.call.title}`}
     >
-      <span class={cx(styles.label, props.call.destructive && styles.labelDestructive)}>
-        <Show when={props.call.destructive} fallback={<ShieldAlert size={14} />}>
-          <TriangleAlert size={14} />
-        </Show>
-        {props.call.destructive ? "Needs your approval · cannot be undone" : "Needs your approval"}
-      </span>
-      <div class={styles.heading}>
-        <span class={styles.title}>{props.call.title}</span>
-        <Show when={props.call.app !== ""}>
-          <Badge size="sm" variant="outline">
-            {appName(props.call.app)}
-          </Badge>
-        </Show>
-      </div>
+      <Card.Header class={styles.header}>
+        <span class={cx(styles.label, props.call.destructive && styles.labelDestructive)}>
+          <Show when={props.call.destructive} fallback={<ShieldAlert size={14} />}>
+            <TriangleAlert size={14} />
+          </Show>
+          {props.call.destructive ? "Needs your approval · cannot be undone" : "Needs your approval"}
+        </span>
+        <div class={styles.heading}>
+          <Card.Title>{props.call.title}</Card.Title>
+          <Show when={props.call.app !== ""}>
+            <Badge size="sm" variant="outline">
+              {appName(props.call.app)}
+            </Badge>
+          </Show>
+        </div>
+      </Card.Header>
       <Show when={inputFields(props.call.input).length > 0}>
-        <dl class={styles.inputs}>
-          <For each={inputFields(props.call.input)}>
-            {([name, value]) => (
-              <>
-                <dt>{name}</dt>
-                <dd>{value}</dd>
-              </>
-            )}
-          </For>
-        </dl>
+        <Card.Body class={styles.body}>
+          <dl class={styles.inputs}>
+            <For each={inputFields(props.call.input)}>
+              {([name, value]) => (
+                <>
+                  <dt>{name}</dt>
+                  <dd>{value}</dd>
+                </>
+              )}
+            </For>
+          </dl>
+        </Card.Body>
       </Show>
-      <div class={styles.actions}>
+      <Card.Footer class={styles.footer}>
         <Button size="sm" variant="outline" disabled={props.busy} onClick={() => props.onDecide(false)}>
           Deny
         </Button>
@@ -106,7 +105,7 @@ export const ApprovalCard = (props: {
         >
           <Check size={14} /> Allow
         </Button>
-      </div>
-    </section>
+      </Card.Footer>
+    </Card.Root>
   )
 }

@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik/client"
-import { Badge, Button, EmptyState, Modal, SelectField, Tabs, TextareaField } from "@mosaik/mosaik-ui"
+import { Badge, Button, EmptyState, Modal, SelectField, Tabs, TextareaField, Tooltip } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
@@ -183,7 +183,11 @@ export const AccessRequests = (props: {
     column.columns([
       column.accessor("createdAt", {
         header: "Asked",
-        cell: (info) => <span title={formatDateTime(info.getValue())}>{formatRelativeTime(info.getValue())}</span>,
+        cell: (info) => (
+          <Tooltip content={formatDateTime(info.getValue())}>
+            <span>{formatRelativeTime(info.getValue())}</span>
+          </Tooltip>
+        ),
       }),
       column.accessor("userName", {
         header: "Person",

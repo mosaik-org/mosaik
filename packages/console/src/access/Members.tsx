@@ -2,7 +2,18 @@ import type { AppMember, AppRole } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import type { PrincipalUser } from "@mosaik/core"
-import { Avatar, Badge, Button, CheckboxField, EmptyState, Input, Modal } from "@mosaik/mosaik-ui"
+import {
+  Avatar,
+  Badge,
+  Button,
+  CheckboxField,
+  Combobox,
+  createListCollection,
+  EmptyState,
+  Modal,
+  Spinner,
+  Tooltip,
+} from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
@@ -10,7 +21,8 @@ import { createDebounced, QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import UserPlus from "lucide-solid/icons/user-plus"
 import Users from "lucide-solid/icons/users"
-import { createSignal, For, Show } from "solid-js"
+import { createMemo, createSignal, For, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { platformApi } from "../api"
 import { accessKeys, membersQuery } from "./queries"
 
@@ -22,19 +34,8 @@ const styles = {
   name: css({ fontWeight: "medium" }),
   muted: css({ fontSize: "xs", color: "fg.muted" }),
   badges: css({ display: "flex", gap: "1", flexWrap: "wrap" }),
-  results: css({ display: "flex", flexDirection: "column", gap: "1", maxH: "64", overflowY: "auto" }),
-  result: css({
-    display: "flex",
-    alignItems: "center",
-    gap: "3",
-    px: "2",
-    py: "2",
-    borderRadius: "md",
-    textAlign: "left",
-    cursor: "pointer",
-    _hover: { bg: "gray.subtle.bg" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
-  }),
+  // A person is two lines: their option grows with them.
+  option: css({ h: "auto", py: "1.5" }),
   roles: css({ display: "flex", flexDirection: "column", gap: "3" }),
 }
 
@@ -139,6 +140,14 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
       platformApi((client) => client.apps.people({ params: { id: props.about.app.id }, query: { q: term() } })),
     enabled: term().length >= 2,
   }))
+  // The people found, as the combobox's options: the server searched, so nothing is filtered here.
+  const found = createMemo(() =>
+    createListCollection<PrincipalUser>({
+      items: term().length >= 2 ? [...(people.data ?? [])] : [],
+      itemToString: (user) => user.name,
+      itemToValue: (user) => user.id,
+    }),
+  )
 
   return (
     <Modal
@@ -147,31 +156,47 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
       title={`Add someone to ${props.about.app.name}`}
       description="Search by name or e-mail, then choose their roles."
     >
-      <div class={styles.stack}>
-        <Input
-          type="search"
-          placeholder="Name or e-mail"
-          aria-label="Name or e-mail"
-          value={query()}
-          onInput={(event) => setQuery(event.currentTarget.value)}
-          autofocus
-        />
-        <Show when={term().length >= 2}>
-          <QueryBoundary query={people}>
-            {(found) => (
-              <div class={styles.results}>
-                <For each={found()} fallback={<span class={styles.note}>Nobody found.</span>}>
-                  {(user) => (
-                    <button type="button" class={styles.result} onClick={() => props.onPick(user)}>
-                      <Person user={user} />
-                    </button>
-                  )}
-                </For>
-              </div>
-            )}
-          </QueryBoundary>
-        </Show>
-      </div>
+      {/* A combobox: people found as the name is typed, chosen with the pointer or the keyboard. */}
+      <Combobox.Root
+        collection={found()}
+        openOnClick
+        onInputValueChange={(details) => setQuery(details.inputValue)}
+        onValueChange={(details) => {
+          const user = details.items[0]
+          if (user !== undefined) props.onPick(user)
+        }}
+      >
+        <Combobox.Control>
+          <Combobox.Input placeholder="Name or e-mail" aria-label="Name or e-mail" autofocus />
+          <Combobox.IndicatorGroup>
+            <Show when={people.isFetching}>
+              <Spinner size="xs" />
+            </Show>
+          </Combobox.IndicatorGroup>
+        </Combobox.Control>
+        <Portal>
+          <Combobox.Positioner>
+            <Combobox.Content>
+              <Combobox.Empty>
+                <span class={styles.note}>
+                  {term().length < 2
+                    ? "Type at least two letters."
+                    : people.isError
+                      ? `Could not search: ${errorMessage(people.error)}`
+                      : "Nobody found."}
+                </span>
+              </Combobox.Empty>
+              <For each={found().items}>
+                {(user) => (
+                  <Combobox.Item item={user} class={styles.option}>
+                    <Person user={user} />
+                  </Combobox.Item>
+                )}
+              </For>
+            </Combobox.Content>
+          </Combobox.Positioner>
+        </Portal>
+      </Combobox.Root>
     </Modal>
   )
 }
@@ -209,9 +234,9 @@ export const Members = (props: { about: AppAbout }) => {
           </For>
           <For each={info.row.original.via}>
             {(role) => (
-              <span class={styles.muted} title="A role that names this app">
-                through {role.name}
-              </span>
+              <Tooltip content="A role that names this app">
+                <span class={styles.muted}>through {role.name}</span>
+              </Tooltip>
             )}
           </For>
         </div>

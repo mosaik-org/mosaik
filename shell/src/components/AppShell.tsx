@@ -8,7 +8,7 @@ import {
   setPanelOpen,
 } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
-import { IconButton, Kbd } from "@mosaik/mosaik-ui"
+import { IconButton, Kbd, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import {
   createFrameHeaderStack,
@@ -233,17 +233,21 @@ const SidebarToggle = (props: { state: SidebarState }) => {
       : `${opens() ? "Open" : "Close"} the sidebar`
   return (
     <div class={styles.sidebarFooter}>
-      <button
-        type="button"
-        class={styles.sidebarToggle}
-        aria-label={label()}
-        title={label()}
-        onClick={() => props.state.toggle()}
-      >
-        <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
-          <PanelLeftOpen size={18} />
-        </Show>
-      </button>
+      <Tooltip content={label()} positioning={{ placement: "right" }}>
+        {(trigger) => (
+          <button
+            type="button"
+            {...trigger()}
+            class={styles.sidebarToggle}
+            aria-label={label()}
+            onClick={() => props.state.toggle()}
+          >
+            <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
+              <PanelLeftOpen size={18} />
+            </Show>
+          </button>
+        )}
+      </Tooltip>
     </div>
   )
 }

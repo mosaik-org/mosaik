@@ -2,7 +2,7 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
-import { Button, Card, EmptyState, PageHeader } from "@mosaik/mosaik-ui"
+import { Button, Card, EmptyState, Heading, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { AppIcon } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
@@ -33,7 +33,6 @@ const styles = {
   column: css({ display: "flex", flexDirection: "column", gap: "6", minW: "0" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
   sectionHeader: css({ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "3" }),
-  sectionTitle: css({ fontSize: "md", fontWeight: "semibold" }),
   // Equal columns whatever the tiles say: a long description is truncated, it does not widen its column.
   grid: css({
     display: "grid",
@@ -109,7 +108,7 @@ const AppTile = (props: { app: AnyApp }) => (
 const Section = (props: { title: string; aside?: JSX.Element; children: JSX.Element }) => (
   <section class={styles.section} aria-label={props.title}>
     <div class={styles.sectionHeader}>
-      <h2 class={styles.sectionTitle}>{props.title}</h2>
+      <Heading textStyle="md">{props.title}</Heading>
       {props.aside}
     </div>
     {props.children}

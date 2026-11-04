@@ -1,4 +1,4 @@
-import { Button, Spinner, TextField } from "@mosaik/mosaik-ui"
+import { Button, Spinner, TextField, Tooltip } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { useQuery } from "@tanstack/solid-query"
 import Clock from "lucide-solid/icons/clock"
@@ -127,10 +127,12 @@ export const ConversationList = (props: {
                       >
                         {/* As the conversation itself says it: "Waiting for your approval", with a clock. */}
                         <Show when={conversation.waitingChanges > 0}>
-                          <span class={styles.waiting} title="Waiting for your approval">
-                            <Clock size={14} aria-hidden="true" />
-                            <span class={css({ srOnly: true })}>Waiting for your approval:</span>
-                          </span>
+                          <Tooltip content="Waiting for your approval">
+                            <span class={styles.waiting}>
+                              <Clock size={14} aria-hidden="true" />
+                              <span class={css({ srOnly: true })}>Waiting for your approval:</span>
+                            </span>
+                          </Tooltip>
                         </Show>
                         <span class={styles.title}>{titleOrDefault(conversation.title)}</span>
                       </button>

@@ -14,6 +14,7 @@ import {
   SelectField,
   Tabs,
   TextField,
+  Tooltip,
 } from "@mosaik/mosaik-ui"
 import {
   type ConfigSetting,
@@ -131,9 +132,9 @@ const ManifestSummary = (props: { inspection: Inspection }) => (
             <div class={styles.list}>
               <For each={manifest().roles}>
                 {(role) => (
-                  <span title={role.grants.join(", ")}>
+                  <Tooltip content={role.grants.join(", ")}>
                     <Badge>{role.name}</Badge>
-                  </span>
+                  </Tooltip>
                 )}
               </For>
             </div>

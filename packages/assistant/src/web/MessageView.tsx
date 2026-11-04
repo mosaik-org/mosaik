@@ -1,5 +1,5 @@
 import { formatDateTime } from "@mosaik/client"
-import { IconButton } from "@mosaik/mosaik-ui"
+import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import Check from "lucide-solid/icons/check"
 import Copy from "lucide-solid/icons/copy"
@@ -115,12 +115,11 @@ export const Reply = (props: {
       <Show when={props.complete && last()}>
         {(message) => (
           <div class={styles.actions}>
-            <time
-              dateTime={new Date(message().createdAt.epochMilliseconds).toISOString()}
-              title={formatDateTime(message().createdAt.epochMilliseconds)}
-            >
-              {time.format(message().createdAt.epochMilliseconds)}
-            </time>
+            <Tooltip content={formatDateTime(message().createdAt.epochMilliseconds)}>
+              <time dateTime={new Date(message().createdAt.epochMilliseconds).toISOString()}>
+                {time.format(message().createdAt.epochMilliseconds)}
+              </time>
+            </Tooltip>
             <Show when={text() !== ""}>
               <CopyButton text={text()} />
             </Show>

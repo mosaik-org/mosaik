@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { EmptyState, Input, PageHeader, SelectField, SwitchField } from "@mosaik/mosaik-ui"
+import { EmptyState, Heading, Input, PageHeader, SelectField, SwitchField } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { searchValidator } from "@mosaik/web-kit"
@@ -73,7 +73,6 @@ const styles = {
   }),
   count: css({ fontSize: "xs", color: "fg.subtle" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
-  sectionTitle: css({ fontSize: "md", fontWeight: "semibold" }),
   grid: css({
     display: "grid",
     gap: "4",
@@ -232,7 +231,7 @@ function Directory() {
           <For each={groupByCategory(shown())}>
             {(group) => (
               <section class={styles.section} aria-label={group.category}>
-                <h2 class={styles.sectionTitle}>{group.category}</h2>
+                <Heading textStyle="md">{group.category}</Heading>
                 <div class={styles.grid}>
                   <For each={group.apps}>{card}</For>
                 </div>

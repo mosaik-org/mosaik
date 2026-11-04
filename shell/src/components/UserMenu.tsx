@@ -14,7 +14,7 @@ import { Portal } from "solid-js/web"
 import { version } from "../../package.json"
 
 const styles = {
-  // The avatar alone: the name is in the menu, and the top bar's room is the app's.
+  // The avatar alone: the name is in the menu (and read out with the button), and the top bar's room is the app's.
   trigger: css({
     display: "grid",
     placeItems: "center",
@@ -81,13 +81,7 @@ export const UserMenu = () => {
         <Menu.Root positioning={{ placement: "bottom-end" }}>
           <Menu.Trigger
             asChild={(trigger) => (
-              <button
-                type="button"
-                {...trigger()}
-                class={styles.trigger}
-                aria-label={`Account menu: ${user().name}`}
-                title={user().name}
-              >
+              <button type="button" {...trigger()} class={styles.trigger} aria-label={`Account menu: ${user().name}`}>
                 <Avatar.Root size="sm">
                   <Avatar.Fallback name={user().name} />
                   <Avatar.Image src={user().image ?? undefined} />

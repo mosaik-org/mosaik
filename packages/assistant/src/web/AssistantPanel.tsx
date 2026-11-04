@@ -1,4 +1,4 @@
-import { IconButton } from "@mosaik/mosaik-ui"
+import { Heading, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import Maximize2 from "lucide-solid/icons/maximize-2"
@@ -38,7 +38,6 @@ const styles = {
     backdropFilter: "blur(8px)",
   }),
   heading: css({ display: "flex", alignItems: "center", gap: "1", flex: "1", minW: "0" }),
-  title: css({ flex: "1", minW: "0", fontSize: "sm", fontWeight: "medium" }),
   list: css({ display: "flex", flexDirection: "column", flex: "1", minHeight: "0", pt: "14" }),
 }
 
@@ -67,7 +66,9 @@ export const AssistantPanel = (props: {
           when={!listing()}
           fallback={
             <div class={styles.heading}>
-              <h2 class={styles.title}>Conversations</h2>
+              <Heading textStyle="sm" fontWeight="medium" flex="1" minW="0">
+                Conversations
+              </Heading>
             </div>
           }
         >
