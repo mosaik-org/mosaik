@@ -73,7 +73,7 @@ export const segmentGroup = defineSlotRecipe({
     indicator: {
       bg: {
         base: "white",
-        _dark: "gray.2",
+        _dark: "gray.3",
       },
       borderWidth: "1px",
       borderColor: "gray.surface.border",
@@ -87,9 +87,9 @@ export const segmentGroup = defineSlotRecipe({
 
   variants: {
     size: {
-      xs: { item: { h: "8", minW: "8", textStyle: "sm", px: "2.5", _icon: { boxSize: "4" } } },
-      sm: { item: { h: "9", minW: "9", textStyle: "sm", px: "3", _icon: { boxSize: "4" } } },
-      md: { item: { h: "10", minW: "10", textStyle: "sm", px: "3.5", _icon: { boxSize: "5" } } },
+      xs: { item: { h: "7", minW: "7", textStyle: "sm", px: "2.5", _icon: { boxSize: "4" } } },
+      sm: { item: { h: "8", minW: "8", textStyle: "sm", px: "3", _icon: { boxSize: "4" } } },
+      md: { item: { h: "9", minW: "9", textStyle: "sm", px: "3.5", _icon: { boxSize: "4.5" } } },
       lg: { item: { h: "11", minW: "11", textStyle: "md", px: "4", _icon: { boxSize: "5" } } },
       xl: { item: { h: "12", minW: "12", textStyle: "md", px: "4.5", _icon: { boxSize: "5.5" } } },
     },

@@ -1,4 +1,5 @@
 import { defineRecipe } from "@pandacss/dev"
+import { FIELD_HOVER } from "./input"
 
 export const textarea = defineRecipe({
   className: "textarea",
@@ -24,6 +25,7 @@ export const textarea = defineRecipe({
       outline: {
         borderWidth: "1px",
         borderColor: "gray.outline.border",
+        [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
         focusVisibleRing: "inside",
         _invalid: {
           borderColor: "error",
@@ -34,6 +36,7 @@ export const textarea = defineRecipe({
         bg: "gray.surface.bg",
         borderWidth: "1px",
         borderColor: "gray.surface.border",
+        [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
         focusVisibleRing: "inside",
         _invalid: {
           borderColor: "error",

@@ -1,3 +1,10 @@
+/**
+ * A field under the pointer: its border a step darker. Not while it is focused or invalid, whose
+ * borders say more (the condition outranks theirs).
+ */
+export const FIELD_HOVER =
+  "&:hover:not(:disabled, :focus-visible, [data-focus-visible], :user-invalid, [data-invalid], [aria-invalid=true])"
+
 export const input = {
   className: "input",
   jsx: ["Input", "Field.Input"],
@@ -25,6 +32,7 @@ export const input = {
       outline: {
         borderWidth: "1px",
         borderColor: "gray.outline.border",
+        [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
         focusVisibleRing: "inside",
         _invalid: {
           focusRingColor: "error",
@@ -35,6 +43,7 @@ export const input = {
         bg: "gray.surface.bg",
         borderWidth: "1px",
         borderColor: "gray.surface.border",
+        [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
         focusVisibleRing: "inside",
 
         _invalid: {
@@ -76,9 +85,9 @@ export const input = {
     },
     size: {
       "2xs": { textStyle: "xs", px: "1.5", "--input-height": "sizes.7" },
-      xs: { textStyle: "sm", px: "2", "--input-height": "sizes.8" },
-      sm: { textStyle: "sm", px: "2.5", "--input-height": "sizes.9" },
-      md: { textStyle: "md", px: "3", "--input-height": "sizes.10" },
+      xs: { textStyle: "sm", px: "2", "--input-height": "sizes.7" },
+      sm: { textStyle: "sm", px: "2.5", "--input-height": "sizes.8" },
+      md: { textStyle: "md", px: "3", "--input-height": "sizes.9" },
       lg: { textStyle: "md", px: "3.5", "--input-height": "sizes.11" },
       xl: { textStyle: "lg", px: "4", "--input-height": "sizes.12" },
       "2xl": { textStyle: "3xl", px: "4.5", "--input-height": "sizes.16" },
