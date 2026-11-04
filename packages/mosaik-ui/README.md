@@ -150,6 +150,9 @@ Colors come in **palettes** (`neutral`, `indigo`, `blue`, `green`, `red`, `amber
 
 `colorPalette` picks a role or a palette for any component: `<Button colorPalette="danger">`.
 
+**Fonts:** none of its own. Text takes the page's font; `Code` and `Kbd` take the theme's `mono`
+(the system's monospace font unless your theme names one).
+
 **Dark mode** follows a `dark` class or `data-theme="dark"` on an ancestor, usually `<html>`.
 
 **Your brand**:

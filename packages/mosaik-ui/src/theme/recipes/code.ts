@@ -8,7 +8,7 @@ export const code = defineRecipe({
     display: "inline-flex",
     fontVariantNumeric: "tabular-nums",
     fontWeight: "medium",
-    fontFamily: "code",
+    fontFamily: "mono",
     gap: "1",
     lineHeight: "1",
   },
