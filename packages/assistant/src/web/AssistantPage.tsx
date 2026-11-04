@@ -1,13 +1,10 @@
 import { css, cx } from "@mosaik/styled-system/css"
 import { FRAME_TOP, FrameHeader } from "@mosaik/web-kit"
-import { useQuery } from "@tanstack/solid-query"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import { type JSX, Show } from "solid-js"
-import { assistant } from "./api"
 import { Conversation } from "./Conversation"
+import { ConversationHeading } from "./ConversationHeading"
 import { ConversationList } from "./ConversationList"
-import { ConversationMenu } from "./ConversationMenu"
-import { titleOrDefault } from "./view"
 
 const styles = {
   page: css({
@@ -41,7 +38,6 @@ const styles = {
   }),
   // On phones the arrow alone, so the title keeps the room (the button's label says where it goes).
   backLabel: css({ hideBelow: "sm" }),
-  title: css({ minW: "0", fontSize: "sm", fontWeight: "medium", truncate: true }),
 }
 
 /**
@@ -55,9 +51,6 @@ export const AssistantPage = (props: {
   /** Back to the page the person came from, with the conversation beside it; absent when they came straight here. */
   readonly onBack?: (() => void) | undefined
 }): JSX.Element => {
-  const conversations = useQuery(() => assistant.assistant.conversations.query())
-  const open = () => conversations.data?.find((each) => each.id === props.conversation)
-
   return (
     <div class={styles.page}>
       {/* In the shell's top bar: the way back, which conversation this is, and what can be done with it. */}
@@ -80,12 +73,7 @@ export const AssistantPage = (props: {
             </button>
           )}
         </Show>
-        <span class={styles.title}>
-          {props.conversation === null ? "New conversation" : titleOrDefault(open()?.title ?? "")}
-        </span>
-        <Show when={open()}>
-          {(conversation) => <ConversationMenu conversation={conversation()} onDeleted={() => props.onSelect(null)} />}
-        </Show>
+        <ConversationHeading conversation={props.conversation} onDeleted={() => props.onSelect(null)} />
       </FrameHeader>
       {/* On phones: the list until a conversation is open. */}
       {/* Starts below the frame's header, which overlays the page's top (`FRAME_TOP`). */}
