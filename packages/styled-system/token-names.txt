@@ -835,6 +835,7 @@ shadows.inset-sm
 shadows.inset-xs
 shadows.lg
 shadows.md
+shadows.raised
 shadows.sm
 shadows.xl
 shadows.xs

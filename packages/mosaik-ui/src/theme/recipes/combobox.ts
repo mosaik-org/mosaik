@@ -25,8 +25,10 @@ export const combobox = defineSlotRecipe({
       position: "relative",
     },
     content: {
-      background: "gray.surface.bg",
-      borderRadius: "l2",
+      // As a menu: floating over the page, a little of it showing through, blurred.
+      background: "gray.surface.bg/90",
+      backdropFilter: "blur(16px) saturate(1.5)",
+      borderRadius: "l3",
       boxShadow: "md",
       display: "flex",
       flexDirection: "column",

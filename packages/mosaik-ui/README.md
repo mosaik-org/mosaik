@@ -157,7 +157,7 @@ Colors come in **palettes** (`neutral`, `indigo`, `blue`, `green`, `red`, `amber
 
 **Your brand**:
 - **With Panda:** override a role's tokens in your config, or build from
-  `createPreset({ accent: "blue", radius: "md" })` (`@mosaik/mosaik-ui/preset`) with the library's
+  `createPreset({ accent: "blue", radius: "lg" })` (`@mosaik/mosaik-ui/preset`) with the library's
   `prefix`.
   - The preset alone produces the whole stylesheet: every recipe and palette, and the few styles the
     components set inline. A test keeps that true.

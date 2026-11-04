@@ -38,6 +38,7 @@ export const button = defineRecipe({
       solid: {
         bg: "colorPalette.solid.bg",
         color: "colorPalette.solid.fg",
+        boxShadow: "raised",
         _hover: {
           bg: "colorPalette.solid.bg.hover",
         },
@@ -49,6 +50,7 @@ export const button = defineRecipe({
         borderWidth: "1px",
         borderColor: "colorPalette.surface.border",
         color: "colorPalette.surface.fg",
+        boxShadow: "xs",
         _hover: {
           borderColor: "colorPalette.surface.border.hover",
         },
@@ -76,6 +78,7 @@ export const button = defineRecipe({
         colorPalette: "gray",
         borderWidth: "1px",
         borderColor: "colorPalette.outline.border",
+        boxShadow: "xs",
         color: "colorPalette.outline.fg",
         _hover: {
           bg: "colorPalette.outline.bg.hover",

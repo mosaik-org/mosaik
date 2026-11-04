@@ -7,6 +7,8 @@ export const dialog = defineSlotRecipe({
   base: {
     backdrop: {
       background: "black.a7",
+      // The page behind, out of focus: the dialog is what matters now.
+      backdropFilter: "blur(2px)",
       height: "100dvh",
       left: "0",
       position: "fixed",

@@ -8,7 +8,9 @@ export const menu = defineSlotRecipe({
     content: {
       "--menu-z-index": "zIndex.dropdown",
 
-      bg: "gray.surface.bg",
+      // A little of the page shows through, blurred: the menu floats over it.
+      bg: "gray.surface.bg/90",
+      backdropFilter: "blur(16px) saturate(1.5)",
       borderRadius: "l3",
       boxShadow: "md",
       display: "flex",

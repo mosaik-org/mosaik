@@ -24,10 +24,14 @@ export { alias, type PaletteName, palettes, type Roles, roleNames } from "./colo
  */
 export const prefix = "mk"
 
-/** The corner radius of controls (`l2`); smaller (`l1`) and larger (`l3`) parts follow one step away. */
-export type Radius = "none" | "xs" | "sm" | "md" | "lg" | "xl"
+/**
+ * The corner radius of controls (`l2`: buttons, inputs). Parts inside them (`l1`) are a step
+ * smaller; containers (`l3`: cards, dialogs, menus, alerts) two steps larger, so what holds controls
+ * reads as a surface of its own. `md` by default: 4 px, 6 px and 12 px.
+ */
+export type Radius = "none" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl"
 
-const RADII: ReadonlyArray<Radius> = ["none", "xs", "sm", "md", "lg", "xl"]
+const RADII: ReadonlyArray<Radius> = ["none", "xs", "sm", "md", "lg", "xl", "2xl"]
 
 export interface ThemeOptions extends Partial<Roles> {
   readonly radius?: Radius
@@ -51,7 +55,7 @@ const scales = { ...pandaPreset, theme: { ...pandaPreset.theme, tokens: pandaTok
 export const createPreset = (options: ThemeOptions = {}): Preset => {
   const { radius: _radius, staticCss: _static, ...chosen } = options
   const roles = { ...defaultRoles, ...chosen }
-  const radius = RADII.indexOf(options.radius ?? "sm")
+  const radius = RADII.indexOf(options.radius ?? "md")
   const radiusAt = (offset: number) => `{radii.${RADII[Math.max(0, Math.min(RADII.length - 1, radius + offset))]}}`
   return definePreset({
     name: "@mosaik/mosaik-ui",
@@ -82,7 +86,7 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
             error: { value: "{colors.danger.9}" },
           },
           shadows,
-          radii: { l1: { value: radiusAt(-1) }, l2: { value: radiusAt(0) }, l3: { value: radiusAt(1) } },
+          radii: { l1: { value: radiusAt(-1) }, l2: { value: radiusAt(0) }, l3: { value: radiusAt(2) } },
         },
       },
     },
