@@ -33,6 +33,7 @@ export const ratingGroup = defineSlotRecipe({
       "--clip-path": { base: "inset(0 50% 0 0)", _rtl: "inset(0 0 0 50%)" },
       _icon: {
         stroke: "currentColor",
+        fill: "currentColor",
         display: "inline-block",
         flexShrink: 0,
         position: "absolute",
@@ -55,6 +56,9 @@ export const ratingGroup = defineSlotRecipe({
       "&[data-half]": {
         "& [data-fg]": {
           color: "colorPalette.solid.bg",
+        },
+        // On the icon: its wrapper takes no room, the icon being absolutely placed.
+        "& [data-fg] svg": {
           clipPath: "var(--clip-path)",
         },
       },

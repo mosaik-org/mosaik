@@ -1,5 +1,5 @@
 import { RatingGroup, useRatingGroupContext, useRatingGroupItemContext } from "@ark-ui/solid/rating-group"
-import { type ComponentProps, For, type JSX, mergeProps, splitProps } from "solid-js"
+import { type ComponentProps, For, type JSX, splitProps } from "solid-js"
 import { createSlotRecipeContext, type HTMLStyledProps } from "../../styled-system/jsx"
 import { ratingGroup } from "../../styled-system/recipes"
 import { StarIcon } from "./icons"
@@ -25,15 +25,11 @@ interface ItemIndicatorProps extends HTMLStyledProps<"span"> {
 
 const StyledItemIndicator = withContext("span", "itemIndicator")
 
-const cloneIcon = (icon: JSX.Element, type: string) => {
-  if (!icon) return null
-  const props = { [`data-${type}`]: "", "aria-hidden": true, fill: "currentColor" }
-  if (typeof icon === "object" && "props" in icon) {
-    return { ...icon, props: mergeProps(icon.props || {}, props) }
-  }
-  return icon
-}
-
+/**
+ * The icon twice, stacked: the track (`data-bg`) and, over it, the part the rating fills
+ * (`data-fg`, half of it for a half). Each read of `icon` makes a new element, as Solid's JSX
+ * props are getters: one element can be in one place only.
+ */
 export const ItemIndicator = (props: ItemIndicatorProps) => {
   const [local, rest] = splitProps(props, ["icon"])
   const icon = () => local.icon ?? <StarIcon />
@@ -46,8 +42,12 @@ export const ItemIndicator = (props: ItemIndicatorProps) => {
       data-checked={item().checked ? "" : undefined}
       data-half={item().half ? "" : undefined}
     >
-      {cloneIcon(icon(), "bg")}
-      {cloneIcon(icon(), "fg")}
+      <span data-bg aria-hidden="true">
+        {icon()}
+      </span>
+      <span data-fg aria-hidden="true">
+        {icon()}
+      </span>
     </StyledItemIndicator>
   )
 }
