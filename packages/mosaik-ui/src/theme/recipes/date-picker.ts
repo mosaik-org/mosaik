@@ -19,7 +19,10 @@ export const datePicker = defineSlotRecipe({
       gap: "3",
       p: "4",
       width: "344px",
-      zIndex: "dropdown",
+      // Above dialogs (`modal`), which they open in too, as `popover`, the layer for what floats.
+      // Positioned, or its z-index is ignored and it stays under the dialog it opened in.
+      position: "relative",
+      zIndex: "calc({zIndex.popover} + var(--layer-index, 0))",
       _open: {
         animation: "fadeIn 0.25s ease-out",
       },

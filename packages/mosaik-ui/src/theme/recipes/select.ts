@@ -23,7 +23,10 @@ export const select = defineSlotRecipe({
       minWidth: "max(var(--reference-width), {sizes.40})",
       outline: 0,
       overflowY: "auto",
-      zIndex: "dropdown",
+      // Above dialogs (`modal`), which they open in too, as `popover`, the layer for what floats.
+      // Positioned, or its z-index is ignored and it stays under the dialog it opened in.
+      position: "relative",
+      zIndex: "calc({zIndex.popover} + var(--layer-index, 0))",
       _open: {
         animationStyle: "slide-fade-in",
         animationDuration: "fast",

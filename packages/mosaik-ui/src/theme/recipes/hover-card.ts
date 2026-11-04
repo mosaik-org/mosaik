@@ -19,7 +19,8 @@ export const hoverCard = defineSlotRecipe({
       position: "relative",
       textStyle: "sm",
       transformOrigin: "var(--transform-origin)",
-      zIndex: "popover",
+      // Above dialogs (`modal`), which they open in too, as `popover`, the layer for what floats.
+      zIndex: "calc({zIndex.popover} + var(--layer-index, 0))",
       _open: {
         animationStyle: "slide-fade-in",
         animationDuration: "fast",

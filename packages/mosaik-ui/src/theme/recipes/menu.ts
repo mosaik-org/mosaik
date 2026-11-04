@@ -6,7 +6,8 @@ export const menu = defineSlotRecipe({
   slots: menuAnatomy.keys(),
   base: {
     content: {
-      "--menu-z-index": "zIndex.dropdown",
+      // Above dialogs (`modal`), which menus open in too: the `popover` layer, for what floats.
+      "--menu-z-index": "zIndex.popover",
 
       // A little of the page shows through, blurred: the menu floats over it.
       bg: "gray.surface.bg/90",

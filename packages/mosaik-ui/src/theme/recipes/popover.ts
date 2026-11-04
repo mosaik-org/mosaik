@@ -20,7 +20,8 @@ export const popover = defineSlotRecipe({
       textStyle: "sm",
       transformOrigin: "var(--transform-origin)",
       width: "xs",
-      zIndex: "calc(var(--z-index-popover) + var(--layer-index, 0))",
+      // Above dialogs (`modal`), which they open in too, as `popover`, the layer for what floats.
+      zIndex: "calc({zIndex.popover} + var(--layer-index, 0))",
       _open: {
         animationStyle: "scale-fade-in",
         animationDuration: "fast",
