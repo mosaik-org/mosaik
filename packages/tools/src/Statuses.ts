@@ -1,5 +1,6 @@
 import type { Principal } from "@mosaik/core"
-import { type PersonStatus, statusSentence } from "@mosaik/platform/contract"
+import { statusSentence } from "@mosaik/core"
+import type { PersonStatus } from "@mosaik/platform/contract"
 import { PlatformInternalClient } from "@mosaik/platform/server"
 import { Context, Effect, Layer } from "effect"
 import type { InputSchema, ToolOutcome } from "./Tools"

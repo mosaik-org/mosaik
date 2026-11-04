@@ -3,15 +3,13 @@ import type { AnyApp } from "@mosaik/core"
 import { Badge, Button, Card, IconButton } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon } from "@mosaik/web-kit"
+import { AppIcon, StatusMark, useStatusSummary } from "@mosaik/web-kit"
 import { Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 import Lock from "lucide-solid/icons/lock"
 import Pin from "lucide-solid/icons/pin"
 import { type JSX, Match, Show, Switch } from "solid-js"
 import { appHref } from "../apps"
-import { useStatusSummary } from "../statuses/StatusesProvider"
-import { StatusMark } from "../statuses/StatusMark"
 
 const styles = {
   card: css({ display: "flex", flexDirection: "column", gap: "3", height: "full" }),

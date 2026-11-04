@@ -1,6 +1,6 @@
 import { defineApp, type PortalPage } from "@mosaik/core"
 import { describe, expect, it } from "vitest"
-import { appPageLinks } from "./appPages"
+import { appPageLinks, currentPage } from "./appPages"
 
 const crm = (pages?: ReadonlyArray<PortalPage<"view" | "deals.edit">>) =>
   defineApp({
@@ -34,5 +34,16 @@ describe("appPageLinks", () => {
   it("lists nothing when one page or none is left", () => {
     expect(appPageLinks(crm([{ title: "Deals", path: "/deals" }]), () => true)).toEqual([])
     expect(appPageLinks(crm(), () => true)).toEqual([])
+  })
+})
+
+describe("currentPage", () => {
+  const links = appPageLinks(app, () => true)
+  it("is the listed page open, the longest path that matches, the first page only on its own", () => {
+    expect(currentPage(links, "/crm")?.label).toBe("Overview")
+    expect(currentPage(links, "/crm/deals")?.label).toBe("Deals")
+    expect(currentPage(links, "/crm/deals/42")?.label).toBe("Deals")
+    expect(currentPage(links, "/crm/deals/import")?.label).toBe("Import")
+    expect(currentPage(links, "/crm/settings")).toBeUndefined()
   })
 })

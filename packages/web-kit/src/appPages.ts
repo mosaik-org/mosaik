@@ -16,3 +16,11 @@ export const appPageLinks = (app: AnyApp, can: (permission: string) => boolean):
     }))
   return links.length > 1 ? links : []
 }
+
+/** The page of `links` open at `pathname`: the one whose path is the longest that matches it. */
+export const currentPage = (links: ReadonlyArray<NavTabItem>, pathname: string): NavTabItem | undefined =>
+  links
+    .filter((link) =>
+      link.exact === true ? pathname === link.to : pathname === link.to || pathname.startsWith(`${link.to}/`),
+    )
+    .toSorted((a, b) => b.to.length - a.to.length)[0]

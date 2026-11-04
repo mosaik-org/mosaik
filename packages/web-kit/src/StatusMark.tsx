@@ -1,7 +1,8 @@
+import { usePageStatuses } from "@mosaik/client/solid"
 import { Spinner } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
-import { type JSX, Match, Show, Switch } from "solid-js"
-import { isQuiet, type StatusSummary } from "./model"
+import { type Accessor, createMemo, type JSX, Match, Show, Switch } from "solid-js"
+import { isQuiet, type StatusSummary, statusesAt, summarize } from "./statusSummary"
 
 const pill = cva({
   base: {
@@ -77,3 +78,9 @@ export const StatusMark = (props: { readonly summary: StatusSummary; readonly co
     </span>
   </Show>
 )
+
+/** What the shell's statuses come to at a path (with `below`, the paths under it too), kept live. */
+export const useStatusSummary = (path: Accessor<string>, below: Accessor<boolean>): Accessor<StatusSummary> => {
+  const statuses = usePageStatuses()
+  return createMemo(() => summarize(statusesAt(statuses(), path(), { below: below() })))
+}

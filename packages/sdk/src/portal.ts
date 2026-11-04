@@ -8,6 +8,8 @@ export {
   type Command,
   type CommandApp,
   defineSearchProvider,
+  FRAME_TOP,
+  FrameHeader,
   type NavTabItem,
   NavTabs,
   type PageLayout,

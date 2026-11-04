@@ -1,4 +1,5 @@
 import { css, cx } from "@mosaik/styled-system/css"
+import { FRAME_TOP } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import CircleAlert from "lucide-solid/icons/circle-alert"
 import { createEffect, createMemo, createSignal, For, type JSX, Match, on, Show, Switch } from "solid-js"
@@ -13,8 +14,10 @@ import { Welcome } from "./Welcome"
 
 const styles = {
   root: css({ display: "flex", flexDirection: "column", flex: "1", minHeight: "0" }),
-  scroller: css({ flex: "1", overflowY: "auto" }),
-  messages: css({ display: "flex", flexDirection: "column", gap: "4", p: "3", minHeight: "full" }),
+  // The messages fill it at least (an empty conversation does not scroll), and start below the
+  // frame's header on a full page (`FRAME_TOP`): they scroll under it, frosted.
+  scroller: css({ flex: "1", minHeight: "0", display: "flex", flexDirection: "column", overflowY: "auto" }),
+  messages: css({ display: "flex", flexDirection: "column", gap: "4", p: "3", flex: "1 0 auto" }),
   /** On the assistant's own page: a column people can read, centered. */
   readable: css({ maxWidth: "3xl", mx: "auto", width: "full", px: { base: "4", md: "6" }, py: "8", gap: "6" }),
   footer: css({ p: "3", flexShrink: "0" }),
@@ -118,7 +121,7 @@ export const Conversation = (props: {
 
   return (
     <div class={styles.root}>
-      <div class={styles.scroller} ref={scroller}>
+      <div class={styles.scroller} ref={scroller} style={{ "padding-top": FRAME_TOP }}>
         <div class={cx(styles.messages, props.readable === true && styles.readable)}>
           <Show when={items().length > 0 || state.busy} fallback={<Welcome enabled={enabled()} onPick={send} />}>
             <For each={items()}>

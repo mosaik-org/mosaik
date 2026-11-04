@@ -1,5 +1,6 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
+import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
 import { Button, Card, EmptyState, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
@@ -14,7 +15,6 @@ import { allApps, appHref } from "../apps"
 import { unreadPreviewQuery } from "../notifications/api"
 import { NotificationList, useInboxActions } from "../notifications/NotificationList"
 import { NeedsYou } from "../statuses/NeedsYou"
-import { useStatuses } from "../statuses/StatusesProvider"
 import { FEW_APPS, useMyApps } from "../workspace/myApps"
 import { readRecentPages } from "../workspace/recentPages"
 
@@ -139,7 +139,7 @@ const Personal = (props: { user: string }) => {
   const pageApp = (id: string | undefined) => allApps.find((app) => app.id === id)?.name
 
   // Without pins or history yet: a few apps to start from.
-  const statuses = useStatuses()
+  const statuses = usePageStatuses()
   const starters = () => (apps.pinned().length > 0 || apps.recent().length > 0 ? [] : apps.accessible())
 
   return (

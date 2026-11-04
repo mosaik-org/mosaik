@@ -156,8 +156,11 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
 
 - **Sidebar.** The user's pinned apps (in their order, kept by the Portal so they follow the user across
   devices), then all their other apps when they can open 8 or fewer, or else the 5 they used most recently.
-  The open app's pages are listed under it (from its manifest), and owners and admins get a *Manage*
-  section: *Access requests*, with a count of those waiting, and *Manage apps*.
+  Owners and admins get a *Manage* section: *Access requests*, with a count of those waiting, and
+  *Manage apps*.
+- **The top bar.** The open app's name and its pages, as tabs (from its manifest; those that do not fit
+  are under *More*, and on phones the app's name opens them), then search, the assistant, notifications
+  and the account. A page may show its own title and actions there instead (the assistant does).
 - **Statuses.** What waits for someone shows beside the app or page it is about: in the sidebar (a
   number, a spinner for work running, a dot for news or trouble), on All apps cards, in the Overview's
   *Needs you*, in the tab's title and in the command palette ("what needs me"). *Needs you* and the

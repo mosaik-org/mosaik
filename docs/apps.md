@@ -70,7 +70,7 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`, `markBusy`); no framework |
 | `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `useBusy`, `useStatus`, `<Toasts />` |
-| `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
+| `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
 | `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
 | `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
@@ -119,7 +119,7 @@ export const sales = defineApp({
     config: {                  // environment variables admins enter when the Portal runs the app's image
       PAYMENTS_URL: { label: "Payments API", kind: "url", description: "Base address of the payments API" },
     },
-    pages: [                   // listed under the app in the shell's sidebar while it is open
+    pages: [                   // tabs in the shell's top bar, beside the app's name
       { title: "Overview", path: "/" },
       { title: "Orders", path: "/orders" },
       { title: "Refunds", path: "/refunds", permission: "orders.refund" },
@@ -283,16 +283,26 @@ backend, so it registers the new bundle: reload the page to see a change.
   ```
 
   `noValidate` leaves the checks to the Schema, so people read its messages instead of the browser's.
-- **Frame.** `AppLayout` shows the app's name and icon from the manifest, and the page.
+- **Frame.** `AppLayout` shows the app's icon and name from the manifest, its pages as tabs and its
+  `actions` in the shell's top bar, and the page below; where there is no top bar (Core's console),
+  they show above the page, with the app's description.
+- **The top bar.** Its left side is the page's: what a page puts in `<FrameHeader>` shows there while
+  it is open (a title, navigation, buttons), with the shell's search, assistant and account on the
+  right. It stays the page's own, its data and handlers; the deepest page's wins, so a layout route can
+  show the app's name and a page replace it. Where there is no top bar (Core's console), it shows
+  nothing: keep what people need in the page too.
 - **Pages.** An app with several pages lists them in its manifest (`portal.pages`), in order, with paths
-  under its address (`/` is its first page). The shell lists them under the app in its sidebar while it is
-  open; where nothing lists them (Core's console), `AppLayout` shows them as tabs. A page with a
-  `permission` is listed only for people with it. An app of one page leaves them out.
+  under its address (`/` is its first page). `AppLayout` shows them as tabs in the top bar, with each
+  page's statuses, those that do not fit under *More*, and as a menu on the app's name on phones; where
+  there is no top bar (Core's console), as tabs above the page. A page with a `permission` is listed only
+  for people with it. An app of one page leaves them out.
 - **Width.** A page says how much of the screen it takes in its route: `staticData: { layout: "wide" }`.
   `contained` (the default) is a centered column, for forms, settings and text; `wide` takes the whole
   width with the usual padding, for tables and dashboards (Sales' orders); `full` goes edge to edge,
   without padding, filling the height, for maps, boards and editors. The deepest route that declares a
-  layout wins, so a layout route can set it for all its pages.
+  layout wins, so a layout route can set it for all its pages. A `full` page goes under the top bar,
+  which is frosted: start its content `FRAME_TOP` down (`style={{ "padding-top": FRAME_TOP }}` on the
+  page, or on a scroll area so what scrolls passes under the bar).
 - **State in the URL.** Filters, sorting and pagination live in typed search params: the route validates
   them with `searchValidator(Schema)`, ideally the same Schema as the API query. An installed app's page
   reads and writes them with `const [search, setSearch] = useSearchParams(Schema)`, since its routes are

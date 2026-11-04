@@ -1,15 +1,19 @@
-import type { StatusKey, StatusValue } from "@mosaik/core"
+import type { StatusKey, StatusTone, StatusValue } from "@mosaik/core"
 
 /**
- * The person's statuses, for the pages they concern: an app's page shows what waits for the person
- * there (a filter of the things waiting, a note), in its own way. The shell provides them; on a
- * standalone page, there are none.
+ * The person's statuses and the work going on in this tab, as the shell shows them: beside places
+ * in its navigation, and to the pages they concern, which show what waits there in their own way
+ * (a filter of the things waiting, a note). The shell provides them; on a standalone page, there
+ * are none.
  */
 export interface PageStatus {
-  /** `<app>:<name>`, as `app.status(name)` gives it. */
+  /** `<app>:<name>`, as `app.status(name)` gives it (`busy:<n>` for work in this tab). */
   readonly key: string
   readonly description: string
   readonly value: StatusValue
+  readonly tone: StatusTone
+  /** Where it belongs in navigation: an app (`/sales`), one of its pages (`/sales/orders`) or Core's. */
+  readonly path: string
   /** Where the things it is about are. */
   readonly link: string
 }

@@ -54,23 +54,6 @@ export class PersonStatus extends Schema.Class<PersonStatus>("@mosaik/platform/P
   updatedAt: Schema.DateTimeUtc,
 }) {}
 
-/** One sentence for a status, e.g. "Orders waiting for approval: 3" or "Importing orders (40%)". */
-export const statusSentence = (status: { readonly description: string; readonly value: StatusValue }): string => {
-  const { description, value } = status
-  switch (value._tag) {
-    case "count":
-      return `${description}: ${value.count}`
-    case "new":
-      return `New: ${description}`
-    case "running": {
-      const label = value.label ?? description
-      return value.progress === null ? label : `${label} (${Math.round(value.progress * 100)}%)`
-    }
-    case "health":
-      return value.label
-  }
-}
-
 /** Sent on the live stream: everything the person should see now, when connecting and on each change. */
 export class StatusSnapshot extends Schema.Class<StatusSnapshot>("@mosaik/platform/StatusSnapshot")({
   statuses: Schema.Array(PersonStatus),

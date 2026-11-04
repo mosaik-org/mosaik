@@ -18,6 +18,14 @@ declare module "@tanstack/solid-router" {
   }
 }
 
+/**
+ * Where a `full` page's content starts: below the frame's header, which overlays the page's top so
+ * what scrolls passes under it (frosted), as on every other page. A CSS length: pad the content
+ * by it, and give scroll areas starting at the top room for it. Zero where nothing overlays (Core's
+ * console).
+ */
+export const FRAME_TOP = "var(--mk-frame-top, 0px)"
+
 /** The layout of the page shown: from the deepest route that declares one, `contained` otherwise. */
 export const usePageLayout = (): Accessor<PageLayout> => {
   const matches = useMatches()

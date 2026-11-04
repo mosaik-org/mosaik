@@ -51,6 +51,23 @@ export const StatusValue = Schema.Union([
 ])
 export type StatusValue = typeof StatusValue.Type
 
+/** One sentence for a status, e.g. "Orders waiting for approval: 3" or "Importing orders (40%)". */
+export const statusSentence = (status: { readonly description: string; readonly value: StatusValue }): string => {
+  const { description, value } = status
+  switch (value._tag) {
+    case "count":
+      return `${description}: ${value.count}`
+    case "new":
+      return `New: ${description}`
+    case "running": {
+      const label = value.label ?? description
+      return value.progress === null ? label : `${label} (${Math.round(value.progress * 100)}%)`
+    }
+    case "health":
+      return value.label
+  }
+}
+
 /** Who a status value is for: one person, or everyone with a permission of the app. */
 export const StatusAudience = Schema.Union([
   Schema.TaggedStruct("user", { id: UserId }),

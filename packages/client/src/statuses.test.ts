@@ -5,6 +5,8 @@ const count = (key: string, n: number): PageStatus => ({
   key,
   description: "Orders waiting for approval",
   value: { _tag: "count", count: n },
+  tone: "attention",
+  path: "/sales/orders",
   link: "/sales/orders?status=pending",
 })
 

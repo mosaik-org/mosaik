@@ -4,9 +4,9 @@ import { managesAnyApp } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, appPageLinks } from "@mosaik/web-kit"
+import { AppIcon, StatusMark, type StatusSummary, useStatusSummary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
-import { Link, useLocation } from "@tanstack/solid-router"
+import { Link } from "@tanstack/solid-router"
 import ArrowDown from "lucide-solid/icons/arrow-down"
 import ArrowUp from "lucide-solid/icons/arrow-up"
 import Ellipsis from "lucide-solid/icons/ellipsis"
@@ -17,11 +17,8 @@ import Pin from "lucide-solid/icons/pin"
 import PinOff from "lucide-solid/icons/pin-off"
 import Settings2 from "lucide-solid/icons/settings-2"
 import Sparkles from "lucide-solid/icons/sparkles"
-import { type Accessor, createContext, createMemo, For, type JSX, Show, useContext } from "solid-js"
-import { appForPath, appHref } from "../apps"
-import { type StatusSummary, statusesAt, summarize } from "../statuses/model"
-import { useStatuses, useStatusSummary } from "../statuses/StatusesProvider"
-import { StatusMark } from "../statuses/StatusMark"
+import { type Accessor, createContext, For, type JSX, Show, useContext } from "solid-js"
+import { appHref } from "../apps"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
 
 /**
@@ -87,22 +84,6 @@ const styles = {
     opacity: "0",
     transition: "opacity 0.15s",
   }),
-  // The open app's pages, under its link.
-  pages: css({ display: "flex", flexDirection: "column", ml: "5", my: "1", pl: "2", borderLeftWidth: "1px" }),
-  page: css({
-    display: "flex",
-    alignItems: "center",
-    gap: "2",
-    px: "3",
-    py: "1.5",
-    borderRadius: "md",
-    fontSize: "sm",
-    color: "fg.muted",
-    transition: "background 0.15s, color 0.15s",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    "&[data-status=active]": { color: "accent.plain.fg", fontWeight: "medium" },
-  }),
   hint: css({ px: "3", fontSize: "xs", color: "fg.subtle", lineHeight: "relaxed" }),
   hintLink: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
 }
@@ -116,8 +97,6 @@ const NavLink = (props: {
   status?: StatusSummary
   onNavigate?: () => void
   actions?: JSX.Element
-  /** Below the link, e.g. the open app's pages. */
-  children?: JSX.Element
 }) => {
   const mode = useContext(ModeContext)
   return (
@@ -142,7 +121,6 @@ const NavLink = (props: {
           </div>
         </Show>
       </div>
-      <Show when={mode() !== "rail"}>{props.children}</Show>
     </div>
   )
 }
@@ -176,61 +154,19 @@ const Section = (props: { heading: string; children: JSX.Element }) => {
   )
 }
 
-/**
- * An app in the sidebar, with its pages under it while it is open (as its manifest lists them,
- * those the person may see). Statuses go on the pages listed; the app gets the rest, and all of
- * them while its pages are not listed.
- */
+/** An app in the sidebar, with what its statuses and its pages' come to. */
 const AppEntry = (props: { app: AnyApp; actions?: JSX.Element; onNavigate?: () => void }) => {
-  const principal = usePrincipal()
-  const location = useLocation()
-  const mode = useContext(ModeContext)
-  const statuses = useStatuses()
   const home = () => appHref(props.app)
-  const pages = () =>
-    mode() !== "rail" && appForPath(location().pathname)?.id === props.app.id
-      ? appPageLinks(props.app, (permission) => principal().can(permission))
-      : []
-  // The first page is the app's own address: its statuses stay with the app.
-  const listed = () =>
-    new Set(
-      pages()
-        .map((page) => page.to)
-        .filter((to) => to !== home()),
-    )
-  const own = createMemo(() =>
-    summarize(statusesAt(statuses(), home(), { below: true }).filter((status) => !listed().has(status.path))),
-  )
-  const ofPage = (to: string) => summarize(statusesAt(statuses(), to, { below: false }))
+  const status = useStatusSummary(home, () => true)
   return (
     <NavLink
       to={home()}
       icon={<AppIcon name={props.app.portal.icon} />}
       label={props.app.name}
-      status={own()}
+      status={status()}
       onNavigate={props.onNavigate}
       actions={props.actions}
-    >
-      <Show when={pages().length > 0}>
-        <nav class={styles.pages} aria-label={`${props.app.name} pages`}>
-          <For each={pages()}>
-            {(page) => (
-              <Link
-                to={page.to}
-                class={styles.page}
-                activeOptions={{ exact: page.exact ?? false }}
-                onClick={() => props.onNavigate?.()}
-              >
-                <span class={styles.label}>{page.label}</span>
-                <Show when={page.to !== home()}>
-                  <StatusMark summary={ofPage(page.to)} />
-                </Show>
-              </Link>
-            )}
-          </For>
-        </nav>
-      </Show>
-    </NavLink>
+    />
   )
 }
 
@@ -268,8 +204,9 @@ const PinnedActions = (props: { apps: MyAppsState; app: AnyApp; index: number; c
 
 /**
  * Navigation: the overview and the assistant; the principal's apps, the ones they pinned, then
- * either every other app (when they can open only a few) or the ones they used recently, with the
- * open app's pages under it; and for owners and admins, what they manage. "All apps" lists the rest.
+ * either every other app (when they can open only a few) or the ones they used recently (an app's
+ * pages are in the top bar, `AppLayout`); and for owners and admins, what they manage. "All apps"
+ * lists the rest.
  */
 export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) => {
   const apps = useMyApps()

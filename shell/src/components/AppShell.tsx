@@ -11,7 +11,8 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import {
-  FrameListsPages,
+  createFrameHeaderStack,
+  FrameHeaderProvider,
   PageMain,
   useCommandPalette,
   useCommands,
@@ -120,6 +121,19 @@ const styles = {
     color: "accent.solid.fg",
     fontSize: "sm",
   }),
+  content: css({
+    display: "flex",
+    flexDirection: "column",
+    minWidth: "0",
+    minHeight: "0",
+    // A `full` page starts under the header, which overlays it: what the page scrolls passes under
+    // the frosted header, as on other pages. The page knows where its content starts (`FRAME_TOP`).
+    "&[data-layout=full]": {
+      position: "relative",
+      "--mk-frame-top": "sizes.14",
+      "& > header": { position: "absolute", insetX: "0" },
+    },
+  }),
   header: css({
     position: "sticky",
     top: "0",
@@ -133,14 +147,27 @@ const styles = {
     bg: "canvas/85",
     backdropFilter: "blur(8px)",
   }),
+  // What the page puts in the header: the room left beside the frame's own buttons, cut short if it must.
+  // As tall as the header, so a page's tabs can mark the open one along its bottom edge.
+  pageHeader: css({
+    display: "flex",
+    alignItems: "center",
+    alignSelf: "stretch",
+    gap: "3",
+    flex: "1",
+    minW: "0",
+    overflow: "hidden",
+  }),
   search: css({
     display: "flex",
     alignItems: "center",
     gap: "2",
+    flexShrink: "0",
     h: "9",
     pl: "3",
     pr: "2",
-    minW: { base: "auto", md: "64" },
+    // A box with its shortcut where the bar has room; an icon where pages need it for their tabs.
+    minW: { base: "auto", xl: "56" },
     borderWidth: "1px",
     borderRadius: "l2",
     bg: "gray.2",
@@ -160,8 +187,8 @@ const SearchButton = () => {
   return (
     <button type="button" class={styles.search} onClick={palette.open} aria-label="Search (Ctrl+K)">
       <Search size={16} />
-      <span class={css({ flex: "1", textAlign: "start", hideBelow: "md" })}>Search…</span>
-      <span class={css({ display: "flex", gap: "1", hideBelow: "md" })}>
+      <span class={css({ flex: "1", textAlign: "start", hideBelow: "xl" })}>Search…</span>
+      <span class={css({ display: "flex", gap: "1", hideBelow: "xl" })}>
         <Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
         <Kbd>K</Kbd>
       </span>
@@ -252,6 +279,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
   const context = usePageContext()
   const assistantBrowser = useAssistantBrowser()
   const layout = usePageLayout()
+  const frameHeader = createFrameHeaderStack()
   const sidebar = createSidebarState()
   const sidebarMode = (): SidebarMode => (sidebar.rail() ? (sidebar.floating() ? "floating" : "rail") : "full")
 
@@ -319,15 +347,16 @@ export const AppShell = (props: { children: JSX.Element }) => {
             </div>
           </Show>
 
-          <div class={css({ display: "flex", flexDirection: "column", minWidth: "0", minHeight: "0" })}>
+          <div class={styles.content} data-layout={layout()}>
             <header class={styles.header}>
               <div class={css({ hideFrom: "md" })}>
                 <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
                   <Menu size={18} />
                 </IconButton>
               </div>
+              {/* The page's: its title, navigation, actions (`FrameHeader`). */}
+              <div class={styles.pageHeader}>{frameHeader.current()}</div>
               <SearchButton />
-              <div class={css({ flex: "1" })} />
               <Show when={assistantReady()}>
                 <IconButton
                   variant={assistantOpen() ? "subtle" : "plain"}
@@ -345,7 +374,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
               <UserMenu />
             </header>
             <PageMain>
-              <FrameListsPages>{props.children}</FrameListsPages>
+              <FrameHeaderProvider stack={frameHeader}>{props.children}</FrameHeaderProvider>
             </PageMain>
           </div>
 
