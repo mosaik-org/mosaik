@@ -3,7 +3,8 @@ import type { JSX } from "solid-js"
 /*
  * The few icons the components draw themselves (chevrons, check, close, ...), so the library needs
  * no icon package. Paths from Lucide (https://lucide.dev, ISC license, see LICENSE). Every slot that
- * shows one also takes any icon an app passes.
+ * shows one also takes any icon an app passes. Drawn at 1.5px, lighter than Lucide's 2px, as Geist's
+ * own icons are: they sit beside text rather than outweigh it.
  */
 
 export type IconProps = JSX.SvgSVGAttributes<SVGSVGElement>
@@ -16,7 +17,7 @@ const svg = (children: JSX.Element, props: IconProps) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
+    stroke-width="1.5"
     stroke-linecap="round"
     stroke-linejoin="round"
     aria-hidden="true"

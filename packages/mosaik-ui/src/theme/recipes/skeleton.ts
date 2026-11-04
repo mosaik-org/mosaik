@@ -41,15 +41,20 @@ export const skeleton = defineRecipe({
         animation: "pulse",
         animationDuration: "var(--duration, 1.2s)",
       },
+      // A highlight sweeping across, as content on its way; a gentle pulse where motion is reduced.
       shine: {
-        "--animate-from": "200%",
-        "--animate-to": "-200%",
-        "--start-color": "colors.gray.subtle.bg",
-        "--end-color": "colors.gray.subtle.bg.active",
-        backgroundImage:
-          "linear-gradient(270deg,var(--start-color),var(--end-color),var(--end-color),var(--start-color))",
-        backgroundSize: "400% 100%",
-        animation: "bg-position var(--duration, 5s) ease-in-out infinite",
+        "--animate-from": "150%",
+        "--animate-to": "-50%",
+        "--shine-color": { base: "colors.white.a10", _dark: "colors.white.a2" },
+        backgroundColor: "gray.subtle.bg.hover",
+        backgroundImage: "linear-gradient(90deg, transparent 30%, var(--shine-color) 50%, transparent 70%)",
+        backgroundSize: "200% 100%",
+        backgroundRepeat: "no-repeat",
+        animation: "bg-position var(--duration, 1.6s) ease-in-out infinite",
+        _motionReduce: {
+          backgroundImage: "none",
+          animation: "pulse",
+        },
       },
       none: {
         animation: "none",
@@ -58,7 +63,7 @@ export const skeleton = defineRecipe({
   },
 
   defaultVariants: {
-    variant: "pulse",
+    variant: "shine",
     loading: true,
   },
 })
