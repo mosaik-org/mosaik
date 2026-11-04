@@ -57,6 +57,7 @@ import { tabs } from "./tabs"
 import { tagsInput } from "./tags-input"
 import { text } from "./text"
 import { textarea } from "./textarea"
+import { themeChoice } from "./theme-choice"
 import { toast } from "./toast"
 import { toggleGroup } from "./toggle-group"
 import { tooltip } from "./tooltip"
@@ -83,6 +84,7 @@ export const slotRecipes = {
   emptyState,
   pageHeader,
   stat,
+  themeChoice,
   accordion,
   alert,
   avatar,

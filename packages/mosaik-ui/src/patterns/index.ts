@@ -8,6 +8,7 @@ export {
   type ResolvedTheme,
   THEME_STORAGE_KEY,
   type Theme,
+  ThemeChoice,
   type ThemeContextValue,
   ThemeProvider,
   ThemeToggle,

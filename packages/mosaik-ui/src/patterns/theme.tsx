@@ -1,3 +1,4 @@
+import { Menu as ArkMenu } from "@ark-ui/solid/menu"
 import {
   type Accessor,
   createContext,
@@ -10,6 +11,7 @@ import {
   useContext,
 } from "solid-js"
 import { Dynamic, Portal } from "solid-js/web"
+import { themeChoice } from "../../styled-system/recipes"
 import { IconButton } from "../components/icon-button"
 import { CheckIcon, MonitorIcon, MoonIcon, SunIcon } from "../components/icons"
 import * as Menu from "../components/menu"
@@ -119,5 +121,39 @@ export const ThemeToggle = () => {
         </Menu.Positioner>
       </Portal>
     </Menu.Root>
+  )
+}
+
+/**
+ * Light, Dark and System as one row of a menu (`ActionMenu`'s children), the one in use pressed:
+ * choosing one leaves the menu open, so the person sees what they chose. Ark's parts unstyled by
+ * the menu's recipe: a row of small buttons, not the menu's full-width items.
+ */
+export const ThemeChoice = () => {
+  const theme = useTheme()
+  const classes = themeChoice()
+  return (
+    <ArkMenu.RadioItemGroup
+      class={classes.root}
+      value={theme.theme()}
+      onValueChange={(details) => theme.setTheme(details.value as Theme)}
+    >
+      <ArkMenu.ItemGroupLabel class={classes.label}>Theme</ArkMenu.ItemGroupLabel>
+      <div class={classes.options}>
+        <For each={options}>
+          {(option) => (
+            <ArkMenu.RadioItem
+              value={option.value}
+              closeOnSelect={false}
+              class={classes.option}
+              aria-label={option.label}
+              title={option.label}
+            >
+              <Dynamic component={option.icon} />
+            </ArkMenu.RadioItem>
+          )}
+        </For>
+      </div>
+    </ArkMenu.RadioItemGroup>
   )
 }

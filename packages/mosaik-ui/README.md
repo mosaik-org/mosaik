@@ -129,11 +129,11 @@ For what most pages need, without composing parts:
 |---|---|
 | `Modal` | a dialog with a title, a body that scrolls and a footer: `<Modal open={open()} onOpenChange={setOpen} title="New user" footer={...}>` |
 | `ConfirmDialog` | asks before an action: `title`, `confirmLabel`, `tone="danger"`, `loading`, `onConfirm` |
-| `ActionMenu` | actions behind a button, such as a table row's "…": `trigger={(trigger) => <IconButton {...trigger()} />}`, `items` (with `danger`, `disabled`) |
+| `ActionMenu` | actions behind a button, such as a table row's "…": `trigger={(trigger) => <IconButton {...trigger()} />}`, `items` (with `danger`, `disabled`), and choices above them as children (`ThemeChoice`) |
 | `EmptyState`, `ErrorState` | instead of an empty list, or of what failed to load (with "Try again") |
 | `PageHeader` | a page's `<h1>`, its description, icon and actions |
 | `Stat` | a number in a card, with a trend and a hint |
-| `ThemeProvider`, `ThemeToggle`, `useTheme` | light, dark or the system's, kept across visits, on `<html class="dark">` |
+| `ThemeProvider`, `ThemeToggle`, `ThemeChoice`, `useTheme` | light, dark or the system's, kept across visits, on `<html class="dark">`: a button with its menu, or a row of an `ActionMenu` |
 | `toast` | `toast.success("Saved")`, `toast.error("Could not save", reason)`, shown by one `<Toaster />` |
 
 ## Theming

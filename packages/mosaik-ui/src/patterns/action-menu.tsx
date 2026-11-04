@@ -18,6 +18,8 @@ export interface ActionMenuProps {
   readonly items: ReadonlyArray<ActionMenuItem>
   /** Above the items, such as whose actions they are. */
   readonly header?: JSX.Element
+  /** Under the header, above the items: choices made in the menu, such as `ThemeChoice`. */
+  readonly children?: JSX.Element
 }
 
 /** A list of actions behind a button, such as a table row's "…" menu. */
@@ -31,6 +33,10 @@ export const ActionMenu = (props: ActionMenuProps) => (
           <Menu.ItemGroup>
             <Show when={props.header}>
               <Menu.ItemGroupLabel>{props.header}</Menu.ItemGroupLabel>
+            </Show>
+            <Show when={props.children}>
+              {props.children}
+              <Menu.Separator />
             </Show>
             <For each={props.items}>
               {(item) => (
