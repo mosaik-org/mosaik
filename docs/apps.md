@@ -231,7 +231,7 @@ through `@mosaik/sdk/client`, which works whatever the page is built with:
 - **Toasts:** `toast.success("Saved")`, `toast.error("Could not save", reason)`. They show with the
   shell's toasts. `useAction` uses them too.
 - **The theme:** `pageTheme()` and `onPageThemeChange(listener)`, or `usePageTheme()` in Solid, for
-  what CSS does not style (charts). People choose the theme in the shell, and every app follows it.
+  what CSS does not style (charts). People choose the theme in the shell (its account menu), and every app follows it.
 
 An installed app's `web/index.tsx` default-exports `defineWebApp`, built into its own bundle by
 `mosaikApp()` (`@mosaik/sdk/build/vite`) and served by its backend at `/apps/<id>/`. A built-in app's pages are

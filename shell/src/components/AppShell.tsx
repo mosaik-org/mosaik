@@ -8,7 +8,7 @@ import {
   setPanelOpen,
 } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
-import { IconButton, Kbd, ThemeToggle } from "@mosaik/mosaik-ui"
+import { IconButton, Kbd } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
 import {
   createFrameHeaderStack,
@@ -387,7 +387,6 @@ export const AppShell = (props: { children: JSX.Element }) => {
                   <Sparkles size={18} />
                 </IconButton>
               </Show>
-              <ThemeToggle />
               <Show when={principal().isAuthenticated}>
                 <NotificationBell />
               </Show>

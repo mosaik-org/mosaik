@@ -1,7 +1,7 @@
 import { AGENT_CONNECTIONS_PATH, signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { toast } from "@mosaik/client"
-import { ActionMenu, Avatar, Button } from "@mosaik/mosaik-ui"
+import { ActionMenu, Avatar, Button, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
@@ -43,9 +43,13 @@ export const UserMenu = () => {
     <Show
       when={principal().user}
       fallback={
-        <a href={signInUrl(`${location.pathname}${location.search}`)}>
-          <Button size="xs">Log in</Button>
-        </a>
+        // No account menu to choose the theme in.
+        <>
+          <ThemeToggle />
+          <a href={signInUrl(`${location.pathname}${location.search}`)}>
+            <Button size="xs">Log in</Button>
+          </a>
+        </>
       }
     >
       {(user) => (
@@ -60,7 +64,7 @@ export const UserMenu = () => {
             </button>
           )}
           header={
-            <div class={css({ px: "3", py: "2" })}>
+            <div class={css({ py: "2" })}>
               <div class={css({ fontWeight: "medium" })}>{user().name}</div>
               <div class={css({ fontSize: "xs", color: "fg.muted" })}>{user().email}</div>
             </div>
@@ -81,7 +85,9 @@ export const UserMenu = () => {
             },
             { value: "logout", label: "Sign out", icon: <LogOut size={16} />, onSelect: () => void logout() },
           ]}
-        />
+        >
+          <ThemeChoice />
+        </ActionMenu>
       )}
     </Show>
   )

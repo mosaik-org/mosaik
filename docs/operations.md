@@ -160,7 +160,8 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
   *Manage apps*.
 - **The top bar.** The open app's name and its pages, as tabs (from its manifest; those that do not fit
   are under *More*, and on phones the app's name opens them), then search, the assistant, notifications
-  and the account. A page may show its own title and actions there instead (the assistant does).
+  and the account, whose menu also holds the theme (Light, Dark or System; also in the command palette).
+  A page may show its own title and actions there instead (the assistant does).
 - **Statuses.** What waits for someone shows beside the app or page it is about: in the sidebar (a
   number, a spinner for work running, a dot for news or trouble), on All apps cards, in the Overview's
   *Needs you*, in the tab's title and in the command palette ("what needs me"). *Needs you* and the
