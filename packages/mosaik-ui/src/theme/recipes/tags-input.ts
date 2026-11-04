@@ -176,7 +176,7 @@ export const tagsInput = defineSlotRecipe({
     size: {
       xs: {
         root: {
-          "--tags-input-height": "sizes.7",
+          "--tags-input-height": "sizes.6",
           "--tags-input-px": "spacing.1.5",
           "--tags-input-item-height": "sizes.5",
           "--tags-input-item-px": "spacing.1",
@@ -189,7 +189,7 @@ export const tagsInput = defineSlotRecipe({
       },
       sm: {
         root: {
-          "--tags-input-height": "sizes.8",
+          "--tags-input-height": "sizes.7",
           "--tags-input-px": "spacing.1.5",
           "--tags-input-item-height": "sizes.6",
           "--tags-input-item-px": "spacing.1.5",
@@ -202,9 +202,9 @@ export const tagsInput = defineSlotRecipe({
       },
       md: {
         root: {
-          "--tags-input-height": "sizes.9",
+          "--tags-input-height": "sizes.8",
           "--tags-input-px": "spacing.1.5",
-          "--tags-input-item-height": "sizes.7",
+          "--tags-input-item-height": "sizes.6",
           "--tags-input-item-px": "spacing.2",
           _icon: { boxSize: "3.5" },
           textStyle: "sm",
@@ -215,7 +215,7 @@ export const tagsInput = defineSlotRecipe({
       },
       lg: {
         root: {
-          "--tags-input-height": "sizes.11",
+          "--tags-input-height": "sizes.10",
           "--tags-input-px": "spacing.1.5",
           "--tags-input-item-height": "sizes.8",
           "--tags-input-item-px": "spacing.2.5",

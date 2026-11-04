@@ -77,7 +77,7 @@ export const textarea = defineRecipe({
     size: {
       xs: { textStyle: "sm", px: "2", py: "5px", scrollPaddingBottom: "5px" },
       sm: { textStyle: "sm", px: "2.5", py: "7px", scrollPaddingBottom: "7px" },
-      md: { textStyle: "md", px: "3", py: "7px", scrollPaddingBottom: "7px" },
+      md: { textStyle: { base: "md", md: "sm" }, px: "2.5", py: "6px", scrollPaddingBottom: "6px" },
       lg: { textStyle: "md", px: "3.5", py: "9px", scrollPaddingBottom: "9px" },
       xl: { textStyle: "lg", px: "4", py: "9px", scrollPaddingBottom: "9px" },
     },

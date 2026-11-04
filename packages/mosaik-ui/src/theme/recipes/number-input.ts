@@ -79,7 +79,7 @@ export const numberInput = defineSlotRecipe({
       },
       md: {
         control: {
-          "--stepper-width": "sizes.6",
+          "--stepper-width": "sizes.5",
         },
         input: input.variants.size.md,
       },

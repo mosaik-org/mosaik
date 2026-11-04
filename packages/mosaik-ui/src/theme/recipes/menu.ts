@@ -105,10 +105,10 @@ export const menu = defineSlotRecipe({
         separator: { mx: "-1.5", my: "0.5" },
       },
       md: {
-        content: { p: "1", gap: "0.5", textStyle: "md" },
-        item: { px: "2", minH: "10", gap: "2", _icon: { boxSize: "4" } },
+        content: { p: "1", gap: "0.5", textStyle: "sm" },
+        item: { px: "2", minH: "8", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "2", height: "10" },
+        itemGroupLabel: { px: "2", height: "8" },
         separator: { mx: "-2", my: "0.5" },
       },
       lg: {

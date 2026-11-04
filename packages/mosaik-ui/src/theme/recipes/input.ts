@@ -85,10 +85,11 @@ export const input = {
     },
     size: {
       "2xs": { textStyle: "xs", px: "1.5", "--input-height": "sizes.7" },
-      xs: { textStyle: "sm", px: "2", "--input-height": "sizes.7" },
-      sm: { textStyle: "sm", px: "2.5", "--input-height": "sizes.8" },
-      md: { textStyle: "md", px: "3", "--input-height": "sizes.9" },
-      lg: { textStyle: "md", px: "3.5", "--input-height": "sizes.11" },
+      xs: { textStyle: "xs", px: "2", "--input-height": "sizes.6" },
+      sm: { textStyle: "sm", px: "2.5", "--input-height": "sizes.7" },
+      // 16px on phones, which zoom into a field set smaller when it is tapped.
+      md: { textStyle: { base: "md", md: "sm" }, px: "2.5", "--input-height": "sizes.8" },
+      lg: { textStyle: "md", px: "3.5", "--input-height": "sizes.10" },
       xl: { textStyle: "lg", px: "4", "--input-height": "sizes.12" },
       "2xl": { textStyle: "3xl", px: "4.5", "--input-height": "sizes.16" },
     },

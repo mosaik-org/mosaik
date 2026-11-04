@@ -44,9 +44,9 @@ export const checkbox = defineSlotRecipe({
         control: { boxSize: "4.5", _icon: { boxSize: "3" } },
       },
       md: {
-        root: { gap: "3" },
-        label: { textStyle: "md" },
-        control: { boxSize: "5", _icon: { boxSize: "3.5" } },
+        root: { gap: "2.5" },
+        label: { textStyle: "sm" },
+        control: { boxSize: "4", _icon: { boxSize: "3" } },
       },
       lg: {
         root: { gap: "3" },

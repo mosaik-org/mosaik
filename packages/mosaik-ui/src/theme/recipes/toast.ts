@@ -39,7 +39,7 @@ export const toast = defineSlotRecipe({
     actionTrigger: {
       color: "colorPalette.plain.fg",
       cursor: "pointer",
-      fontWeight: "semibold",
+      fontWeight: "medium",
       textStyle: "sm",
     },
     closeTrigger: {

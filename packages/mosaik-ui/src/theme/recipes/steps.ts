@@ -46,7 +46,7 @@ export const steps = defineSlotRecipe({
       borderWidth: "2px",
       borderColor: "border",
       color: "fg.muted",
-      fontWeight: "semibold",
+      fontWeight: "medium",
       boxSize: "var(--steps-size)",
       textStyle: "sm",
       _icon: { boxSize: "var(--steps-icon-size)" },

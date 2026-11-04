@@ -65,7 +65,7 @@ export const breadcrumb = defineSlotRecipe({
     size: {
       xs: { list: { gap: "1", textStyle: "xs" } },
       sm: { list: { gap: "1", textStyle: "sm" } },
-      md: { list: { gap: "1.5", textStyle: "md" } },
+      md: { list: { gap: "1.5", textStyle: "sm" } },
       lg: { list: { gap: "2", textStyle: "lg" } },
     },
   },

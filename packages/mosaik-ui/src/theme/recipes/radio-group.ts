@@ -68,9 +68,9 @@ export const radioGroup = defineSlotRecipe({
         itemText: { textStyle: "sm" },
       },
       md: {
-        item: { gap: "3" },
-        itemControl: { boxSize: "5" },
-        itemText: { textStyle: "md" },
+        item: { gap: "2.5" },
+        itemControl: { boxSize: "4" },
+        itemText: { textStyle: "sm" },
       },
       lg: {
         item: { gap: "3" },

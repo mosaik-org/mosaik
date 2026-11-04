@@ -74,7 +74,8 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
         keyframes,
         layerStyles,
         textStyles,
-        tokens: { colors, durations, easings, zIndex },
+        // 13px for the interface's text, as dense tools set it; `md` (16px) stays for reading.
+        tokens: { colors, durations, easings, zIndex, fontSizes: { sm: { value: "0.8125rem" } } },
         semanticTokens: {
           colors: {
             ...palettes,

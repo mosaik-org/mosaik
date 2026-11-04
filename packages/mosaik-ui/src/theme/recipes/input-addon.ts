@@ -34,7 +34,7 @@ export const inputAddon = defineRecipe({
     size: {
       xs: { textStyle: "sm", px: "2", _icon: { boxSize: "4" } },
       sm: { textStyle: "sm", px: "2.5", _icon: { boxSize: "4.5" } },
-      md: { textStyle: "md", px: "3", _icon: { boxSize: "5" } },
+      md: { textStyle: "sm", px: "2.5", _icon: { boxSize: "4" } },
       lg: { textStyle: "md", px: "3.5", _icon: { boxSize: "5" } },
       xl: { textStyle: "lg", px: "4", _icon: { boxSize: "5.5" } },
     },

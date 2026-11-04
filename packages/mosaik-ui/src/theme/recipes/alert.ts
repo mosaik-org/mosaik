@@ -27,7 +27,7 @@ export const alert = defineSlotRecipe({
       flexShrink: "0",
     },
     title: {
-      fontWeight: "semibold",
+      fontWeight: "medium",
     },
   },
   defaultVariants: {

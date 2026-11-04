@@ -18,7 +18,7 @@ export const accordion = defineSlotRecipe({
       color: "fg.default",
       cursor: "pointer",
       display: "flex",
-      fontWeight: "semibold",
+      fontWeight: "medium",
       gap: "3",
       justifyContent: "space-between",
       textAlign: "start",
@@ -78,10 +78,10 @@ export const accordion = defineSlotRecipe({
       md: {
         root: {
           "--accordion-padding-x": "spacing.4",
-          "--accordion-padding-y": "spacing.2.5",
+          "--accordion-padding-y": "spacing.2",
         },
         itemTrigger: {
-          textStyle: "md",
+          textStyle: "sm",
           py: "var(--accordion-padding-y)",
         },
       },

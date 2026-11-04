@@ -156,12 +156,12 @@ export const combobox = defineSlotRecipe({
           ...input.variants.size.md,
           pe: "14",
         },
-        content: { p: "1", gap: "0.5", textStyle: "md" },
+        content: { p: "1", gap: "0.5", textStyle: "sm" },
         indicatorGroup: { px: "3", _icon: { boxSize: "4" } },
-        item: { px: "2", minH: "10", gap: "2", _icon: { boxSize: "4" } },
+        item: { px: "2", minH: "8", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "2", height: "10" },
-        empty: { px: "2", minH: "10" },
+        itemGroupLabel: { px: "2", height: "8" },
+        empty: { px: "2", minH: "8" },
       },
       lg: {
         input: {

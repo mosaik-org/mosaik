@@ -33,7 +33,7 @@ export const tabs = defineSlotRecipe({
       alignItems: "center",
       cursor: "pointer",
       display: "flex",
-      fontWeight: "semibold",
+      fontWeight: "medium",
       outline: "0",
       position: "relative",
       _focusVisible: {
@@ -65,19 +65,19 @@ export const tabs = defineSlotRecipe({
     size: {
       xs: {
         list: { gap: "1" },
-        trigger: { h: "7", minW: "7", textStyle: "xs", px: "3", gap: "2" },
+        trigger: { h: "6", minW: "6", textStyle: "xs", px: "2.5", gap: "2" },
       },
       sm: {
         list: { gap: "1" },
-        trigger: { h: "8", minW: "8", textStyle: "sm", px: "3.5", gap: "2" },
+        trigger: { h: "7", minW: "7", textStyle: "sm", px: "3", gap: "2" },
       },
       md: {
         list: { gap: "1" },
-        trigger: { h: "9", minW: "9", textStyle: "sm", px: "4", gap: "2" },
+        trigger: { h: "8", minW: "8", textStyle: "sm", px: "3", gap: "2" },
       },
       lg: {
         list: { gap: "1" },
-        trigger: { h: "11", minW: "11", textStyle: "md", px: "4.5", gap: "2" },
+        trigger: { h: "10", minW: "10", textStyle: "md", px: "4.5", gap: "2" },
       },
     },
     variant: {
