@@ -14,7 +14,9 @@ const styles = {
     pl: "3.5",
     borderWidth: "1px",
     borderRadius: "l3",
-    bg: "gray.surface.bg",
+    // Translucent: what scrolls under it shows through, blurred.
+    bg: "gray.surface.bg/75",
+    backdropFilter: "blur(16px) saturate(1.5)",
     boxShadow: "xs",
     transition: "border-color 0.15s, box-shadow 0.15s",
     _focusWithin: { borderColor: "accent.solid.bg", boxShadow: "0 0 0 1px token(colors.accent.solid.bg)" },
@@ -41,6 +43,17 @@ const styles = {
     px: "1",
     fontSize: "xs",
     color: "fg.subtle",
+  }),
+  // Above the box, over the conversation: a frosted background of its own keeps it readable.
+  note: css({
+    alignSelf: "start",
+    px: "2",
+    py: "0.5",
+    borderRadius: "l2",
+    fontSize: "xs",
+    color: "fg.muted",
+    bg: "canvas/85",
+    backdropFilter: "blur(8px)",
   }),
 }
 
@@ -85,7 +98,7 @@ export const Composer = (props: {
         else props.onSend()
       }}
     >
-      <Show when={props.note}>{(note) => <span class={styles.hints}>{note()}</span>}</Show>
+      <Show when={props.note}>{(note) => <span class={styles.note}>{note()}</span>}</Show>
       <div class={styles.box}>
         <textarea
           ref={input}
