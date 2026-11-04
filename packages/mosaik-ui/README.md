@@ -138,12 +138,12 @@ For what most pages need, without composing parts:
 
 ## Theming
 
-Colors come in **palettes** (`neutral`, `indigo`, `blue`, `green`, `red`, `amber`, `orange`, `teal`,
+Colors come in **palettes** (`slate`, `neutral`, `indigo`, `blue`, `green`, `red`, `amber`, `orange`, `teal`,
 `violet`, `pink`), each a 12-step scale with the colors the recipes read (`solid.bg`, `subtle.fg`,
 `surface.border`, ...). Components use **roles**:
 
 - `accent`: primary actions, focus, selection; indigo;
-- `gray`: surfaces, borders and text; neutral;
+- `gray`: surfaces, borders and text; slate, a cool grey (`neutral` for a pure one);
 - `danger`: red;
 - `success`: green;
 - `warning`: amber.
@@ -152,6 +152,9 @@ Colors come in **palettes** (`neutral`, `indigo`, `blue`, `green`, `red`, `amber
 
 **Fonts:** none of its own. Text takes the page's font; `Code` and `Kbd` take the theme's `mono`
 (the system's monospace font unless your theme names one).
+
+**Focus** from the keyboard shows as a halo: a translucent ring in the accent colour around the
+control, and a field's border in the accent colour.
 
 **Dark mode** follows a `dark` class or `data-theme="dark"` on an ancestor, usually `<html>`.
 

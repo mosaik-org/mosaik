@@ -4,6 +4,7 @@ import { preset as pandaPreset } from "@pandacss/preset-panda"
 import { animationStyles } from "./animation-styles"
 import { alias, defaultRoles, type PaletteName, palettes, type Roles, roleNames } from "./colors"
 import { conditions } from "./conditions"
+import { focusRings } from "./focus-ring"
 import { globalCss } from "./global-css"
 import { keyframes } from "./keyframes"
 import { layerStyles } from "./layer-styles"
@@ -63,6 +64,7 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
     globalCss,
     conditions,
     staticCss: options.staticCss === false ? {} : staticCss,
+    utilities: { extend: focusRings },
     theme: {
       extend: {
         animationStyles,
@@ -82,7 +84,8 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
               subtle: { value: "{colors.gray.10}" },
             },
             canvas: { value: "{colors.gray.1}" },
-            border: { value: "{colors.gray.4}" },
+            // Translucent, as light as step 4 on the page: it blends into any surface below.
+            border: { value: "{colors.gray.a4}" },
             error: { value: "{colors.danger.9}" },
           },
           shadows,

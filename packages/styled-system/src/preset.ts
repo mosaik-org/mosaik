@@ -2,11 +2,11 @@ import { definePreset } from "@pandacss/dev"
 import { createPreset } from "@mosaik/mosaik-ui/preset"
 
 /**
- * Mosaik's theme for `@mosaik/mosaik-ui`: indigo for the accent, neutral grays, medium corners.
+ * Mosaik's theme for `@mosaik/mosaik-ui`: indigo for the accent, cool (slate) grays, medium corners.
  * Builds that make the kit's stylesheet (the shell, the console, this package) compile every recipe;
  * `mosaikTokensPreset` is the same theme without them, for apps' own styles.
  */
-const theme = { accent: "indigo", gray: "neutral", danger: "red", success: "green", warning: "amber", radius: "md" } as const
+const theme = { accent: "indigo", gray: "slate", danger: "red", success: "green", warning: "amber", radius: "md" } as const
 
 export const mosaikUiPreset = createPreset(theme)
 

@@ -6,6 +6,7 @@ import { neutral } from "./neutral"
 import { orange } from "./orange"
 import { pink } from "./pink"
 import { red } from "./red"
+import { slate } from "./slate"
 import { teal } from "./teal"
 import { violet } from "./violet"
 
@@ -14,7 +15,7 @@ import { violet } from "./violet"
  * colors every recipe variant reads (`solid.bg`, `subtle.fg`, `surface.border`, ...). Fewer than
  * Park UI's 31: each palette is about 60 CSS variables in light and dark, in every stylesheet.
  */
-export const palettes = { amber, blue, green, indigo, neutral, orange, pink, red, teal, violet }
+export const palettes = { amber, blue, green, indigo, neutral, orange, pink, red, slate, teal, violet }
 
 export type PaletteName = keyof typeof palettes
 
@@ -54,7 +55,7 @@ export interface Roles {
 
 export const defaultRoles: Roles = {
   accent: "indigo",
-  gray: "neutral",
+  gray: "slate",
   danger: "red",
   success: "green",
   warning: "amber",
