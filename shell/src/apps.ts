@@ -51,5 +51,8 @@ export const categoryOf = (app: AnyApp): string =>
   categoryOverrides()[app.id] ?? app.portal.category ?? DEFAULT_CATEGORY
 
 /** Who sent a notification: an app, or the platform itself. */
+/** The app a notification or status comes from, by its id (`platform` is Mosaik's own: none). */
+export const sourceApp = (id: string): AnyApp | undefined => allApps.find((app) => app.id === id)
+
 export const sourceName = (id: string): string =>
   id === "platform" ? "Mosaik" : (allApps.find((app) => app.id === id)?.name ?? id)

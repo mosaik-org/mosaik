@@ -1,20 +1,32 @@
 import { createEventStream } from "@mosaik/client/solid"
-import { Badge, Button, IconButton, Popover, Spinner } from "@mosaik/mosaik-ui"
+import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
-import { useQuery } from "@tanstack/solid-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
 import BellOff from "lucide-solid/icons/bell-off"
+import CheckCheck from "lucide-solid/icons/check-check"
+import Inbox from "lucide-solid/icons/inbox"
 import Settings from "lucide-solid/icons/settings"
-import { createEffect, createSignal, on, Show } from "solid-js"
+import { createEffect, createSignal, on, Show, Suspense } from "solid-js"
 import { Portal } from "solid-js/web"
-import { latestQuery } from "./api"
+import { inboxQuery, latestQuery } from "./api"
 import { NotificationList, severityToast, useInboxActions } from "./NotificationList"
 
 const styles = {
-  // The panel's own layout: a header, the list and a footer, edge to edge.
-  panel: css({ width: "22rem", maxWidth: "calc(100vw - 2rem)", p: "0", gap: "0", overflow: "hidden" }),
+  // A header and the list under it, edge to edge; no taller than about ten rows, the list
+  // scrolling under the header.
+  panel: css({
+    display: "flex",
+    flexDirection: "column",
+    width: "24rem",
+    maxWidth: "calc(100vw - 2rem)",
+    maxHeight: "min(32rem, calc(100dvh - 5rem))",
+    p: "0",
+    gap: "0",
+    overflow: "hidden",
+  }),
   trigger: css({ position: "relative" }),
   // On the button's corner, overhanging it so the bell stays in sight; a ring of the page's colour
   // keeps it apart from the icon.
@@ -25,38 +37,10 @@ const styles = {
     pointerEvents: "none",
     outline: "2px solid token(colors.canvas)",
   }),
-  header: css({
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "2",
-    px: "4",
-    py: "3",
-    borderBottomWidth: "1px",
-    borderColor: "border",
-  }),
+  header: css({ display: "flex", alignItems: "center", gap: "1", px: "4", py: "2.5", borderBottomWidth: "1px" }),
+  title: css({ flex: "1", display: "flex", alignItems: "center", gap: "2", fontSize: "sm", fontWeight: "semibold" }),
   list: css({ overflowY: "auto", minH: "0", flex: "1" }),
-  footer: css({
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    px: "4",
-    py: "2.5",
-    borderTopWidth: "1px",
-    borderColor: "border",
-    bg: "gray.2",
-    fontSize: "sm",
-  }),
-  link: css({ color: "accent.plain.fg", fontWeight: "medium", _hover: { textDecoration: "underline" } }),
-  empty: css({
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "2",
-    py: "10",
-    color: "fg.muted",
-    fontSize: "sm",
-  }),
+  loading: css({ display: "grid", placeItems: "center", py: "10" }),
 }
 
 /**
@@ -83,6 +67,12 @@ export const NotificationBell = () => {
 
   const label = () => (unread() > 0 ? `Notifications (${unread()} unread)` : "Notifications")
 
+  // What is new, and nothing else: everything, read or not, is on the notifications page. Loaded
+  // with the bell (the newest page, shared with that page's Unread tab), so opening never waits.
+  const inbox = useInfiniteQuery(() => inboxQuery(true))
+  const items = () => inbox.data?.pages[0]?.items ?? []
+  const close = () => setOpen(false)
+
   return (
     <Popover.Root
       open={open()}
@@ -105,62 +95,99 @@ export const NotificationBell = () => {
         <Popover.Positioner>
           <Popover.Content aria-label="Notifications" class={styles.panel}>
             <div class={styles.header}>
-              <span class={css({ fontWeight: "semibold" })}>Notifications</span>
+              <span class={styles.title}>
+                Notifications
+                <Show when={unread() > 0}>
+                  <Badge size="sm" colorPalette="gray">
+                    <span class={css({ srOnly: true })}>Unread: </span>
+                    {unread() > 99 ? "99+" : unread()}
+                  </Badge>
+                </Show>
+              </span>
               <Show when={unread() > 0}>
-                <Button
-                  size="xs"
-                  variant="plain"
-                  loading={actions.markAllRead.isPending}
-                  onClick={() => actions.markAllRead.mutate()}
-                >
-                  Mark all as read
-                </Button>
+                <Tooltip content="Mark all as read">
+                  {(tip) => (
+                    <IconButton
+                      {...tip()}
+                      size="xs"
+                      variant="plain"
+                      aria-label="Mark all as read"
+                      loading={actions.markAllRead.isPending}
+                      onClick={() => actions.markAllRead.mutate()}
+                    >
+                      <CheckCheck size={16} />
+                    </IconButton>
+                  )}
+                </Tooltip>
               </Show>
+              <Tooltip content="All notifications">
+                {(tip) => (
+                  <IconButton
+                    {...tip()}
+                    size="xs"
+                    variant="plain"
+                    aria-label="All notifications"
+                    asChild={(link) => (
+                      <Link to="/notifications" {...link()} onClick={close}>
+                        <Inbox size={16} />
+                      </Link>
+                    )}
+                  />
+                )}
+              </Tooltip>
+              <Tooltip content="Notification settings">
+                {(tip) => (
+                  <IconButton
+                    {...tip()}
+                    size="xs"
+                    variant="plain"
+                    aria-label="Notification settings"
+                    asChild={(link) => (
+                      <Link to="/notifications/settings" {...link()} onClick={close}>
+                        <Settings size={16} />
+                      </Link>
+                    )}
+                  />
+                )}
+              </Tooltip>
             </div>
             <div class={styles.list}>
-              <Show
-                when={latest.data}
+              {/* Its own boundary: a list waiting for its data shows a spinner here, and does not suspend
+                  the panel, which would then never be placed under its button. */}
+              <Suspense
                 fallback={
-                  <div class={styles.empty}>
+                  <div class={styles.loading}>
                     <Spinner />
                   </div>
                 }
               >
-                {(page) => (
+                <Show
+                  when={inbox.data}
+                  fallback={
+                    <div class={styles.loading}>
+                      <Spinner />
+                    </div>
+                  }
+                >
                   <NotificationList
-                    items={page().items}
+                    items={items()}
+                    lines={1}
                     onOpen={(item) => {
-                      setOpen(false)
+                      close()
                       actions.open(item)
                     }}
+                    onMarkRead={(item) => actions.markRead.mutate([item.id])}
+                    unreadOnly
                     empty={
-                      <div class={styles.empty}>
-                        <BellOff size={20} />
-                        You're all caught up.
-                      </div>
+                      <EmptyState
+                        icon={<BellOff />}
+                        title="You're all caught up"
+                        description="Nothing new since you last looked."
+                      />
                     }
                   />
-                )}
-              </Show>
-            </div>
-            <div class={styles.footer}>
-              <Link to="/notifications" class={styles.link} onClick={() => setOpen(false)}>
-                View all
-              </Link>
-              <Link
-                to="/notifications/settings"
-                class={css({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1.5",
-                  color: "fg.muted",
-                  _hover: { color: "fg.default" },
-                })}
-                onClick={() => setOpen(false)}
-              >
-                <Settings size={14} />
-                Settings
-              </Link>
+                </Show>
+              </Suspense>
             </div>
           </Popover.Content>
         </Popover.Positioner>

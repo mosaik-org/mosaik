@@ -355,6 +355,10 @@ yield* notify.send({
   included), resolved when the notification is sent.
 - **Channels.** Users choose per type at `/notifications/settings`; until they do, `defaultChannels` apply.
 - **In-app.** The bell shows the unread count and the newest items live, with a toast for each new one.
+  Its panel lists the unread ones (all of them are at `/notifications`), under the day they came:
+  each with your app's icon tinted by its `severity`, the title on one line and the start of the
+  body's first paragraph after your app's name. Write the title so it stands alone, and put the
+  gist first in the body.
 - **Failures.** A failed `send` returns `NotifyError` and is logged. Callers usually ignore it, so a
   notification never fails the action that triggered it.
 

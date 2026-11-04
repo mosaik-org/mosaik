@@ -88,6 +88,7 @@ function NotificationsPage() {
               <NotificationList
                 items={items()}
                 onOpen={actions.open}
+                onMarkRead={(item) => actions.markRead.mutate([item.id])}
                 empty={
                   <EmptyState
                     icon={<BellOff size={24} />}

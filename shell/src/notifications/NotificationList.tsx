@@ -1,44 +1,96 @@
-import { errorMessage, formatRelativeTime, toast } from "@mosaik/client"
+import { errorMessage, toast } from "@mosaik/client"
+import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import type { InboxItem, Severity } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
+import { AppIcon } from "@mosaik/web-kit"
 import { useMutation, useQueryClient } from "@tanstack/solid-query"
 import { useRouter } from "@tanstack/solid-router"
+import Bell from "lucide-solid/icons/bell"
+import Check from "lucide-solid/icons/check"
 import { For, type JSX, Show } from "solid-js"
-import { sourceName } from "../apps"
+import { sourceApp, sourceName } from "../apps"
 import { notificationKeys, notificationsApi } from "./api"
+import { groupByDay, shortAgo } from "./time"
 
-const dot = cva({
-  base: { flexShrink: "0", boxSize: "2", mt: "1.5", borderRadius: "full" },
+/** The sending app's icon on a tile tinted by how much the notification matters. */
+const tile = cva({
+  base: {
+    display: "grid",
+    placeItems: "center",
+    flexShrink: "0",
+    boxSize: "7",
+    borderRadius: "l2",
+    bg: "colorPalette.subtle.bg",
+    color: "colorPalette.subtle.fg",
+  },
   variants: {
     severity: {
-      info: { bg: "accent.solid.bg" },
-      success: { bg: "success.solid.bg" },
-      warning: { bg: "warning.solid.bg" },
-      critical: { bg: "danger.solid.bg" },
+      info: { colorPalette: "gray" },
+      success: { colorPalette: "success" },
+      warning: { colorPalette: "warning" },
+      critical: { colorPalette: "danger" },
     },
-    read: { true: { opacity: "0.25" } },
   },
 })
 
 const styles = {
+  groups: css({ display: "flex", flexDirection: "column", gap: "2", py: "2" }),
+  heading: css({
+    px: "4",
+    pb: "1",
+    fontSize: "xs",
+    fontWeight: "semibold",
+    color: "fg.subtle",
+    textTransform: "uppercase",
+    letterSpacing: "wider",
+  }),
+  row: css({
+    position: "relative",
+    _hover: { bg: "gray.subtle.bg" },
+    // The row's action shows on hover and keyboard focus, over its time and dot.
+    "&:hover > [data-actions], &:focus-within > [data-actions]": { opacity: "1", pointerEvents: "auto" },
+    // Where it shows, the time and the dot make way for it.
+    "&:has(> [data-actions]):is(:hover, :focus-within) [data-trailing]": { visibility: "hidden" },
+  }),
   item: css({
     display: "flex",
+    alignItems: "center",
     gap: "3",
     w: "full",
     px: "4",
-    py: "3",
+    py: "2",
     textAlign: "start",
     cursor: "pointer",
-    borderBottomWidth: "1px",
-    borderColor: "border",
-    _last: { borderBottomWidth: "0" },
-    _hover: { bg: "gray.subtle.bg" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
   }),
-  text: css({ display: "flex", flexDirection: "column", gap: "0.5", minW: "0", flex: "1" }),
-  title: css({ fontSize: "sm", lineHeight: "snug", "&[data-read=false]": { fontWeight: "semibold" } }),
-  body: css({ fontSize: "sm", color: "fg.muted", lineClamp: "2" }),
-  meta: css({ fontSize: "xs", color: "fg.subtle" }),
+  text: css({ display: "flex", flexDirection: "column", minW: "0", flex: "1" }),
+  line: css({ display: "flex", alignItems: "baseline", gap: "2", minW: "0" }),
+  title: css({
+    flex: "1",
+    minW: "0",
+    truncate: true,
+    fontSize: "sm",
+    fontWeight: "medium",
+    "&[data-unread=true]": { fontWeight: "semibold" },
+    "&[data-unread=false]": { color: "fg.muted", fontWeight: "normal" },
+  }),
+  time: css({ flexShrink: "0", fontSize: "xs", color: "fg.subtle", fontVariantNumeric: "tabular-nums" }),
+  preview: css({
+    fontSize: "xs",
+    color: "fg.muted",
+    "&[data-lines='1']": { truncate: true },
+    "&[data-lines='2']": { lineClamp: "2" },
+  }),
+  unread: css({ flexShrink: "0", boxSize: "2", borderRadius: "full", bg: "accent.solid.bg" }),
+  actions: css({
+    position: "absolute",
+    top: "50%",
+    insetEnd: "3",
+    transform: "translateY(-50%)",
+    opacity: "0",
+    pointerEvents: "none",
+    transition: "opacity 0.15s",
+  }),
 }
 
 /** First paragraph of the body, for previews. */
@@ -77,37 +129,107 @@ export const useInboxActions = () => {
   return { markRead, markAllRead, open, invalidate }
 }
 
+/** The sending app's icon; Mosaik's own (platform) notifications get the bell. */
+const SourceIcon = (props: { source: string }) => {
+  const app = () => sourceApp(props.source)
+  return (
+    <Show when={app()} fallback={<Bell size={14} />}>
+      {(found) => <AppIcon name={found().portal.icon} size={14} />}
+    </Show>
+  )
+}
+
+/**
+ * Notifications under the day they came, newest first: each with its app's icon (tinted by how
+ * much it matters), its title and time, and a line or two of what it says; unread ones bold, with
+ * a dot, and a way to mark them read without opening them.
+ */
 export const NotificationList = (props: {
   items: ReadonlyArray<InboxItem>
   onOpen: (item: InboxItem) => void
+  /** Marks one read where it is listed; without it, only opening it does. */
+  onMarkRead?: (item: InboxItem) => void
   empty: JSX.Element
-}) => (
-  <Show when={props.items.length > 0} fallback={props.empty}>
-    <ul class={css({ display: "flex", flexDirection: "column" })}>
-      <For each={props.items}>
-        {(item) => (
-          <li>
-            <button type="button" class={styles.item} onClick={() => props.onOpen(item)}>
-              <span
-                class={dot({ severity: item.content.severity ?? "info", read: item.readAt !== null })}
-                aria-hidden="true"
-              />
-              <span class={styles.text}>
-                <span class={styles.title} data-read={item.readAt !== null}>
-                  <Show when={item.readAt === null}>
-                    <span class={css({ srOnly: true })}>Unread: </span>
-                  </Show>
-                  {item.content.title}
-                </span>
-                <Show when={preview(item.content.body)}>{(text) => <span class={styles.body}>{text()}</span>}</Show>
-                <span class={styles.meta}>
-                  {sourceName(item.source)} · {formatRelativeTime(item.createdAt)}
-                </span>
-              </span>
-            </button>
-          </li>
-        )}
-      </For>
-    </ul>
-  </Show>
-)
+  /** How many lines of what it says each shows (1 in the bell's panel). */
+  lines?: 1 | 2
+  /** Only unread ones are listed (the bell's panel): nothing marks them apart. */
+  unreadOnly?: boolean
+}) => {
+  const now = Date.now()
+  const groups = () => groupByDay(props.items, (item) => item.createdAt.epochMilliseconds, now)
+  return (
+    <Show when={props.items.length > 0} fallback={props.empty}>
+      <div class={styles.groups}>
+        <For each={groups()}>
+          {(group) => (
+            <section aria-label={group.day}>
+              <h3 class={styles.heading}>{group.day}</h3>
+              <ul>
+                <For each={group.items}>
+                  {(item) => {
+                    const unread = () => item.readAt === null
+                    // Bold and a dot tell unread ones from the others, where there are others.
+                    const marked = () => unread() && props.unreadOnly !== true
+                    const what = () => preview(item.content.body)
+                    return (
+                      <li class={styles.row}>
+                        <button type="button" class={styles.item} onClick={() => props.onOpen(item)}>
+                          <span class={tile({ severity: item.content.severity ?? "info" })} aria-hidden="true">
+                            <SourceIcon source={item.source} />
+                          </span>
+                          <span class={styles.text}>
+                            <span class={styles.line}>
+                              <span class={styles.title} data-unread={props.unreadOnly === true ? undefined : unread()}>
+                                <Show when={marked()}>
+                                  <span class={css({ srOnly: true })}>Unread: </span>
+                                </Show>
+                                {item.content.title}
+                              </span>
+                              <time
+                                class={styles.time}
+                                data-trailing
+                                dateTime={new Date(item.createdAt.epochMilliseconds).toISOString()}
+                              >
+                                {shortAgo(item.createdAt.epochMilliseconds, now)}
+                              </time>
+                            </span>
+                            <span class={styles.preview} data-lines={props.lines ?? 2}>
+                              {sourceName(item.source)}
+                              <Show when={what()}>{(text) => <> · {text()}</>}</Show>
+                            </span>
+                          </span>
+                          <Show when={marked()}>
+                            <span class={styles.unread} data-trailing aria-hidden="true" />
+                          </Show>
+                        </button>
+                        <Show when={unread() && props.onMarkRead}>
+                          {(markRead) => (
+                            <div class={styles.actions} data-actions>
+                              <Tooltip content="Mark as read">
+                                {(trigger) => (
+                                  <IconButton
+                                    {...trigger()}
+                                    size="xs"
+                                    variant="plain"
+                                    aria-label={`Mark "${item.content.title}" as read`}
+                                    onClick={() => markRead()(item)}
+                                  >
+                                    <Check size={14} />
+                                  </IconButton>
+                                )}
+                              </Tooltip>
+                            </div>
+                          )}
+                        </Show>
+                      </li>
+                    )
+                  }}
+                </For>
+              </ul>
+            </section>
+          )}
+        </For>
+      </div>
+    </Show>
+  )
+}
