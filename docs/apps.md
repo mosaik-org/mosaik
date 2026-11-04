@@ -211,7 +211,9 @@ UI and Panda CSS, accessible, with dark mode); its README has the whole set:
 Styles name the theme's tokens:
 - surfaces and text: `canvas`, `fg.default`, `fg.muted`, `fg.subtle`, `border`;
 - grays: the `gray` palette, e.g. `gray.surface.bg`, `gray.subtle.bg`;
-- roles: `accent`, `danger`, `success`, `warning` (e.g. `accent.solid.bg`, `danger.plain.fg`, `success.subtle.bg`).
+- roles: `accent`, `danger`, `success`, `warning` (e.g. `accent.solid.bg`, `danger.plain.fg`, `success.subtle.bg`);
+- fonts: `body` (Geist) and `mono` (Geist Mono). The shell loads them; a standalone page gets them with
+  `@mosaik/sdk/ui/styles.css`. `@mosaik/mosaik-ui` alone names no font: a page on it keeps its own.
 
 `colorPalette` picks a role for a component, as in `<Badge colorPalette="success">`.
 

@@ -16,6 +16,7 @@
       "types": "./generated/patterns/index.d.ts",
       "default": "./generated/patterns/index.mjs"
     },
+    "./fonts.css": "./src/fonts.css",
     "./preset": "./src/preset.ts",
     "./recipes": {
       "types": "./generated/recipes/index.d.ts",
@@ -47,6 +48,8 @@
     "panda.config.ts"
   ],
   "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
     "@mosaik/mosaik-ui": "workspace:*"
   }
 }

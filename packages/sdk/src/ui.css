@@ -1,6 +1,7 @@
 /*
- * `@mosaik/sdk/ui/styles.css`: the UI kit's stylesheet (reset, tokens, every component of
+ * `@mosaik/sdk/ui/styles.css`: the UI kit's stylesheet (its fonts, reset, tokens, every component of
  * `@mosaik/sdk/ui`, `/table` and `/charts`), for a standalone app's page. Mounted apps never load
  * it: the shell has it already.
  */
+@import "@mosaik/styled-system/fonts.css";
 @import "@mosaik/styled-system/styles.css";

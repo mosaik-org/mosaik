@@ -14,8 +14,9 @@ export const mosaikUiPreset = createPreset(theme)
 export const mosaikTokensPreset = createPreset({ ...theme, staticCss: false })
 
 /**
- * What Mosaik adds to the library's theme: its fonts, base text size, and the colors of charts'
- * series (`chart.1`…`chart.6`, in order), on the theme's palettes so dark mode and a theme reach them.
+ * What Mosaik adds to the library's theme: its fonts (Geist, loaded by `fonts.css`), base text size,
+ * and the colors of charts' series (`chart.1`…`chart.6`, in order), on the theme's palettes so dark
+ * mode and a theme reach them.
  */
 export const mosaikPreset = definePreset({
   name: "mosaik",
@@ -35,8 +36,8 @@ export const mosaikPreset = definePreset({
     extend: {
       tokens: {
         fonts: {
-          body: { value: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" },
-          mono: { value: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace" },
+          body: { value: "'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" },
+          mono: { value: "'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace" },
         },
       },
       semanticTokens: {

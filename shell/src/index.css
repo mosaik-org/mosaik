@@ -1,1 +1,3 @@
 @layer reset, base, tokens, recipes, utilities;
+
+@import "@mosaik/styled-system/fonts.css";
