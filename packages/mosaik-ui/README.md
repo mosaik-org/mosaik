@@ -91,6 +91,7 @@ and `asChild`:
 | Navigation | `Tabs`, `Breadcrumb`, `Pagination`, `Steps`, `Accordion`, `Collapsible` |
 | Display | `Card`, `Alert`, `Badge`, `Avatar`, `Table`, `Code`, `Kbd`, `Heading`, `Text`, `DisplayValue`, `Image`, `Icon`, `Progress`, `Skeleton`, `Spinner`, `Loader`, `Carousel`, `ScrollArea`, `Splitter` |
 | Layout | `Group`, `AbsoluteCenter`, `Span` |
+| Collections | `createListCollection`, `useListCollection`, `useFilter`: the items `Select` and `Combobox` parts take |
 
 ## Fields
 
