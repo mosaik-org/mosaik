@@ -24,12 +24,15 @@ export const mosaikPreset = definePreset({
     extend: {
       "html, body": {
         fontFamily: "body",
-        fontSize: "sm",
         lineHeight: "1.5",
         WebkitFontSmoothing: "antialiased",
         colorScheme: "light",
         _dark: { colorScheme: "dark" },
       },
+      // The interface's text size on the body, not the root: the root keeps the browser's size (16px
+      // unless the person chose another), which every rem is measured against, so the library's
+      // sizes are the ones it was designed at, and a larger default font scales the whole page.
+      body: { fontSize: "sm" },
     },
   },
   theme: {

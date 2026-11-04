@@ -124,8 +124,12 @@ const styles = {
     fontSize: "lg",
     letterSpacing: "tight",
     whiteSpace: "nowrap",
+    // In the rail its right padding has no room: it is cut, not the logo.
+    overflow: "hidden",
   }),
   logo: css({
+    // Square at any width: the row never shrinks it.
+    flexShrink: "0",
     display: "grid",
     placeItems: "center",
     width: "7",
