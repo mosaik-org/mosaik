@@ -12,6 +12,7 @@ import { type CallStatus, replyParts, textOf } from "./view"
 const time = new Intl.DateTimeFormat(undefined, { timeStyle: "short" })
 
 const styles = {
+  // What the person wrote: grey, as the rest of the page; the accent stays for what acts.
   user: css({
     alignSelf: "flex-end",
     maxWidth: "85%",
@@ -19,8 +20,8 @@ const styles = {
     py: "2",
     borderRadius: "l3",
     borderBottomRightRadius: "l1",
-    bg: "accent.solid.bg",
-    color: "accent.solid.fg",
+    bg: "gray.subtle.bg",
+    color: "fg.default",
     whiteSpace: "pre-wrap",
     overflowWrap: "anywhere",
   }),

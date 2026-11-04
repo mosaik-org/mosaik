@@ -29,7 +29,7 @@ const styles = {
     minW: "0",
     color: "fg.default",
     cursor: "pointer",
-    _hover: { color: "accent.plain.fg" },
+    _hover: { color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", borderRadius: "l1" },
   }),
   page: css({ color: "fg.muted", truncate: true }),

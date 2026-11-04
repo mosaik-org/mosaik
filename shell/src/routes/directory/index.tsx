@@ -69,7 +69,11 @@ const styles = {
     cursor: "pointer",
     _hover: { bg: "gray.subtle.bg", color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "1px" },
-    "&[aria-pressed=true]": { bg: "accent.subtle.bg", color: "accent.plain.fg", borderColor: "accent.solid.bg" },
+    "&[aria-pressed=true]": {
+      bg: "gray.subtle.bg.hover",
+      color: "fg.default",
+      borderColor: "gray.surface.border.hover",
+    },
   }),
   count: css({ fontSize: "xs", color: "fg.subtle" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),

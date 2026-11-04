@@ -52,16 +52,11 @@ const styles = {
     color: "fg.muted",
     cursor: "pointer",
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    // Each state once, so hovering never hides which one is open or which ones wait.
-    "&:not([aria-current=true]):not([data-waiting=true]):hover": { bg: "gray.subtle.bg", color: "fg.default" },
-    // Waiting for the person: light blue, a little darker on hover.
-    "&[data-waiting=true]:not([aria-current=true])": {
-      bg: "accent.subtle.bg",
-      color: "fg.default",
-      _hover: { bg: "accent.subtle.bg.hover" },
-    },
-    // The open conversation: the strongest blue, waiting or not.
-    "&[aria-current=true]": { bg: "accent.subtle.bg.hover", color: "accent.plain.fg", fontWeight: "medium" },
+    "&:not([aria-current=true]):hover": { bg: "gray.subtle.bg", color: "fg.default" },
+    // Waiting for the person: as dark as the open one, with its clock (the one colour here).
+    "&[data-waiting=true]": { color: "fg.default" },
+    // The open conversation, waiting or not.
+    "&[aria-current=true]": { bg: "gray.subtle.bg.hover", color: "fg.default", fontWeight: "medium" },
   }),
   actions: css({
     position: "absolute",

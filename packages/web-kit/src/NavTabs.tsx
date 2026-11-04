@@ -36,7 +36,7 @@ const tab = css({
       bottom: "-1px",
       height: "2px",
       borderRadius: "full",
-      bg: "accent.solid.bg",
+      bg: "fg.default",
     },
   },
 })

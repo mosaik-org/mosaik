@@ -17,10 +17,11 @@ const styles = css({
   "& a[data-place]": {
     px: "2",
     borderRadius: "full",
-    bg: "accent.subtle.bg",
+    bg: "gray.subtle.bg",
+    color: "fg.default",
     textDecoration: "none",
     whiteSpace: "nowrap",
-    _hover: { bg: "accent.subtle.bg.hover" },
+    _hover: { bg: "gray.subtle.bg.hover" },
   },
   "& code": { fontFamily: "mono", fontSize: "0.85em", bg: "gray.3", px: "1", py: "0.5", borderRadius: "l1" },
   "& [data-code]": { position: "relative" },

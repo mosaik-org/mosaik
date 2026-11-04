@@ -4,8 +4,12 @@ import { css, cva } from "@mosaik/styled-system/css"
 import { type Accessor, createMemo, type JSX, Match, Show, Switch } from "solid-js"
 import { isQuiet, type StatusSummary, statusesAt, summarize } from "./statusSummary"
 
-/** The palette a status's tone shows in. */
-const palette = { attention: "accent", warning: "warning", danger: "danger" } as const
+/** How a status's count shows: what waits in grey, as other counts; warnings and trouble in their colour. */
+const badge = {
+  attention: { variant: "subtle", colorPalette: "gray" },
+  warning: { variant: "solid", colorPalette: "warning" },
+  danger: { variant: "solid", colorPalette: "danger" },
+} as const
 
 const dot = cva({
   base: { display: "block", width: "2", height: "2", borderRadius: "full", flexShrink: "0" },
@@ -48,7 +52,11 @@ export const StatusMark = (props: { readonly summary: StatusSummary; readonly co
     >
       <Switch fallback={<span class={dot({ tone: props.summary.tone })} />}>
         <Match when={props.summary.count > 0 && props.corner !== true}>
-          <Badge variant="solid" colorPalette={palette[props.summary.tone]} aria-hidden="true">
+          <Badge
+            variant={badge[props.summary.tone].variant}
+            colorPalette={badge[props.summary.tone].colorPalette}
+            aria-hidden="true"
+          >
             {props.summary.count > 99 ? "99+" : props.summary.count}
           </Badge>
         </Match>

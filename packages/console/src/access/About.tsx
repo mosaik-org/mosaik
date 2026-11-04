@@ -35,7 +35,7 @@ export const AppRoles = (props: { readonly about: AppAbout }) => (
               <span class={styles.roleName}>
                 {role.name}
                 <Show when={role.isOwner}>
-                  <Badge colorPalette="accent">decides who can use it</Badge>
+                  <Badge>decides who can use it</Badge>
                 </Show>
               </span>
               <RoleDetails role={role} appName={props.about.app.name} access={props.about.app.access} />

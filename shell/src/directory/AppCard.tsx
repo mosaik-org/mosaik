@@ -21,8 +21,8 @@ const styles = {
     width: "10",
     height: "10",
     borderRadius: "lg",
-    bg: "accent.subtle.bg",
-    color: "accent.plain.fg",
+    bg: "gray.subtle.bg",
+    color: "fg.muted",
     "&[data-available=false]": { bg: "gray.subtle.bg", color: "fg.subtle" },
   }),
   titles: css({ display: "flex", flexDirection: "column", gap: "0.5", flex: "1", minW: "0" }),
@@ -41,11 +41,11 @@ const styles = {
     gap: "1",
     fontSize: "sm",
     fontWeight: "medium",
-    color: "accent.plain.fg",
-    _hover: { textDecoration: "underline" },
+    color: "fg.muted",
+    _hover: { color: "fg.default" },
   }),
   note: css({ fontSize: "xs", color: "fg.subtle" }),
-  pinned: css({ color: "accent.plain.fg", fill: "currentColor" }),
+  pinned: css({ color: "fg.default", fill: "currentColor" }),
 }
 
 export interface AppCardProps {

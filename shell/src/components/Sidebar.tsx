@@ -86,7 +86,7 @@ const styles = {
     transition: "background 0.15s, color 0.15s",
     _hover: { bg: "gray.subtle.bg", color: "fg.default" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    "&[data-status=active]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
+    "&[data-status=active]": { bg: "gray.subtle.bg.hover", color: "fg.default" },
   }),
   // As tall as a line of the label beside it, so a row is as tall with its label (expanded) as without (rail).
   icon: css({ position: "relative", display: "flex", alignItems: "center", flexShrink: "0", height: "1lh" }),

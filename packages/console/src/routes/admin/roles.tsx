@@ -38,7 +38,7 @@ const styles = {
     textAlign: "left",
     cursor: "pointer",
     _hover: { bg: "gray.subtle.bg" },
-    "&[aria-current=true]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
+    "&[aria-current=true]": { bg: "gray.subtle.bg.hover", color: "fg.default" },
   }),
   meta: css({ fontSize: "xs", color: "fg.muted" }),
   heading: css({ px: "3", pt: "3", pb: "1", fontSize: "xs", fontWeight: "semibold", color: "fg.muted" }),

@@ -41,7 +41,7 @@ const styles = {
     alignItems: "start",
   }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  pinned: css({ color: "accent.plain.fg", fill: "currentColor" }),
+  pinned: css({ color: "fg.default", fill: "currentColor" }),
 }
 
 /** Open it, ask for it, or log in for it; and pin it. */

@@ -51,9 +51,7 @@ export const PermissionEditor = (props: PermissionEditorProps) => {
             <div class={styles.section}>
               <div class={styles.title}>Other grants</div>
               <div class={css({ display: "flex", gap: "2", flexWrap: "wrap" })}>
-                <For each={others()}>
-                  {(grant) => <Badge colorPalette="accent">{grant === "*" ? "Everything (*)" : grant}</Badge>}
-                </For>
+                <For each={others()}>{(grant) => <Badge>{grant === "*" ? "Everything (*)" : grant}</Badge>}</For>
               </div>
             </div>
           </Card.Body>

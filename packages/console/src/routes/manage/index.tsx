@@ -21,10 +21,15 @@ const styles = {
     gap: "4",
     gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)", xl: "repeat(3, 1fr)" },
   }),
-  app: css({ display: "flex", flexDirection: "column", gap: "1", _hover: { borderColor: "accent.solid.bg" } }),
+  app: css({
+    display: "flex",
+    flexDirection: "column",
+    gap: "1",
+    _hover: { borderColor: "gray.surface.border.hover" },
+  }),
   name: css({ fontWeight: "semibold", display: "flex", justifyContent: "space-between", gap: "2" }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  waiting: css({ fontSize: "sm", color: "accent.plain.fg" }),
+  waiting: css({ fontSize: "sm", fontWeight: "medium", color: "fg.default" }),
 }
 
 function ManagedApps() {
