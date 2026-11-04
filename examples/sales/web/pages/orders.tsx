@@ -121,12 +121,10 @@ export default function Orders() {
           items={STATUS_FILTERS}
           value={table.params().status ?? "all"}
           onValueChange={(value) => table.setFilters({ status: value === "all" ? undefined : (value as OrderStatus) })}
-          size="sm"
           class={css({ width: "40" })}
         />
         <Show when={(waiting()?.count ?? 0) > 0}>
           <Button
-            size="xs"
             variant={showingWaiting() ? "solid" : "outline"}
             aria-pressed={showingWaiting()}
             onClick={() => table.setFilters({ status: showingWaiting() ? undefined : "pending" })}
@@ -139,7 +137,7 @@ export default function Orders() {
         <QueryFreshness query={orders} source="orders database" />
         <Show when={canExport()}>
           <a href={exportUrl(table.params())} download="orders.csv">
-            <Button variant="outline" size="xs">
+            <Button variant="outline">
               <Download size={16} />
               Export CSV
             </Button>

@@ -38,7 +38,6 @@ export default function Overview() {
           items={RANGES}
           value={String(days())}
           onValueChange={(value) => setSearch(() => ({ days: Number(value) }))}
-          size="sm"
           class={css({ width: "44" })}
         />
       </div>

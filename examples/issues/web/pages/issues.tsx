@@ -132,7 +132,6 @@ export default function IssuesPage() {
           items={projectItems()}
           value={search().project ?? "all"}
           onValueChange={(value) => update({ project: value === "all" ? undefined : (value ?? undefined) })}
-          size="sm"
           class={css({ width: "56" })}
         />
         <SelectField
@@ -140,7 +139,6 @@ export default function IssuesPage() {
           items={CATEGORY_FILTERS}
           value={search().category ?? "open"}
           onValueChange={(value) => update({ category: value === "open" ? undefined : (value as StatusCategory) })}
-          size="sm"
           class={css({ width: "40" })}
         />
         <div class={css({ flex: "1" })} />
