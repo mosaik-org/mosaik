@@ -1,5 +1,5 @@
 import { createEventStream } from "@mosaik/client/solid"
-import { Button, IconButton, Popover, Spinner } from "@mosaik/mosaik-ui"
+import { Badge, Button, IconButton, Popover, Spinner } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
 import { useQuery } from "@tanstack/solid-query"
@@ -16,22 +16,14 @@ const styles = {
   // The panel's own layout: a header, the list and a footer, edge to edge.
   panel: css({ width: "22rem", maxWidth: "calc(100vw - 2rem)", p: "0", gap: "0", overflow: "hidden" }),
   trigger: css({ position: "relative" }),
+  // On the button's corner, overhanging it so the bell stays in sight; a ring of the page's colour
+  // keeps it apart from the icon.
   badge: css({
     position: "absolute",
-    top: "0.5",
-    insetEnd: "0.5",
-    display: "grid",
-    placeItems: "center",
-    minW: "18px",
-    h: "18px",
-    px: "1",
-    borderRadius: "full",
-    bg: "danger.solid.bg",
-    color: "white",
-    fontSize: "10px",
-    fontWeight: "bold",
-    lineHeight: "1",
+    top: "-1",
+    insetEnd: "-1",
     pointerEvents: "none",
+    outline: "2px solid token(colors.canvas)",
   }),
   header: css({
     display: "flex",
@@ -102,9 +94,9 @@ export const NotificationBell = () => {
           <IconButton {...trigger()} variant="plain" aria-label={label()} class={styles.trigger}>
             <Bell size={18} />
             <Show when={unread() > 0}>
-              <span class={styles.badge} aria-hidden="true">
+              <Badge variant="solid" colorPalette="danger" size="sm" class={styles.badge} aria-hidden="true">
                 {unread() > 99 ? "99+" : unread()}
-              </span>
+              </Badge>
             </Show>
           </IconButton>
         )}

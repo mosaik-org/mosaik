@@ -1,29 +1,11 @@
 import { usePageStatuses } from "@mosaik/client/solid"
-import { Spinner } from "@mosaik/mosaik-ui"
+import { Badge, Spinner } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
 import { type Accessor, createMemo, type JSX, Match, Show, Switch } from "solid-js"
 import { isQuiet, type StatusSummary, statusesAt, summarize } from "./statusSummary"
 
-const pill = cva({
-  base: {
-    display: "grid",
-    placeItems: "center",
-    minW: "5",
-    h: "5",
-    px: "1.5",
-    borderRadius: "full",
-    fontSize: "xs",
-    fontWeight: "semibold",
-    lineHeight: "1",
-  },
-  variants: {
-    tone: {
-      attention: { bg: "accent.solid.bg", color: "accent.solid.fg" },
-      warning: { bg: "warning.solid.bg", color: "warning.solid.fg" },
-      danger: { bg: "danger.solid.bg", color: "danger.solid.fg" },
-    },
-  },
-})
+/** The palette a status's tone shows in. */
+const palette = { attention: "accent", warning: "warning", danger: "danger" } as const
 
 const dot = cva({
   base: { display: "block", width: "2", height: "2", borderRadius: "full", flexShrink: "0" },
@@ -66,9 +48,9 @@ export const StatusMark = (props: { readonly summary: StatusSummary; readonly co
     >
       <Switch fallback={<span class={dot({ tone: props.summary.tone })} />}>
         <Match when={props.summary.count > 0 && props.corner !== true}>
-          <span class={pill({ tone: props.summary.tone })} aria-hidden="true">
+          <Badge variant="solid" colorPalette={palette[props.summary.tone]} aria-hidden="true">
             {props.summary.count > 99 ? "99+" : props.summary.count}
-          </span>
+          </Badge>
         </Match>
         <Match when={props.summary.running && props.summary.count === 0 && props.summary.tone === "attention"}>
           <Spinner size="xs" />

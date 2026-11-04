@@ -5,6 +5,8 @@ export const badge = defineRecipe({
   base: {
     display: "inline-flex",
     alignItems: "center",
+    // A count of one digit is a circle; longer content widens it into a pill.
+    justifyContent: "center",
     // A pill: a label, not a button.
     borderRadius: "full",
     lineHeight: "1",
@@ -40,11 +42,11 @@ export const badge = defineRecipe({
       },
     },
     size: {
-      sm: { fontSize: "xs", px: "1.5", h: "4.5", gap: "0.5", _icon: { boxSize: "2.5" } },
-      md: { fontSize: "xs", px: "2", h: "5", gap: "1", _icon: { boxSize: "3" } },
-      lg: { fontSize: "xs", px: "2.5", h: "5.5", gap: "1", _icon: { boxSize: "3.5" } },
-      xl: { fontSize: "sm", px: "2.5", h: "6", gap: "1.5", _icon: { boxSize: "4" } },
-      "2xl": { fontSize: "md", px: "3", h: "7", gap: "1.5", _icon: { boxSize: "4.5" } },
+      sm: { fontSize: "xs", px: "1.5", h: "4.5", minW: "4.5", gap: "0.5", _icon: { boxSize: "2.5" } },
+      md: { fontSize: "xs", px: "2", h: "5", minW: "5", gap: "1", _icon: { boxSize: "3" } },
+      lg: { fontSize: "xs", px: "2.5", h: "5.5", minW: "5.5", gap: "1", _icon: { boxSize: "3.5" } },
+      xl: { fontSize: "sm", px: "2.5", h: "6", minW: "6", gap: "1.5", _icon: { boxSize: "4" } },
+      "2xl": { fontSize: "md", px: "3", h: "7", minW: "7", gap: "1.5", _icon: { boxSize: "4.5" } },
     },
   },
 })
