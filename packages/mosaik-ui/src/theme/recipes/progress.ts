@@ -6,6 +6,8 @@ export const progress = defineSlotRecipe({
   className: "progress",
   base: {
     root: {
+      // Checked, chosen or filled in the accent: what the person set, or is doing.
+      colorPalette: "accent",
       textStyle: "sm",
       position: "relative",
     },

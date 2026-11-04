@@ -4,6 +4,8 @@ import { FIELD_HOVER } from "./input"
 export const textarea = defineRecipe({
   className: "textarea",
   base: {
+    // The focused field's border in the accent, as the focus ring around it.
+    colorPalette: "accent",
     appearance: "none",
     borderRadius: "l2",
     minWidth: "0",

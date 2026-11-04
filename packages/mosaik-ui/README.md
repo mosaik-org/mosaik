@@ -151,6 +151,12 @@ Colors come in **palettes** (`slate`, `neutral`, `indigo`, `blue`, `green`, `red
 
 `colorPalette` picks a role or a palette for any component: `<Button colorPalette="danger">`.
 
+**Grey unless something asks.** Components are grey by default: badges, tabs, keys, avatars,
+menus. The accent is kept for what acts and what the person set: the primary (solid) button,
+links, checked boxes, radios and switches, sliders, progress, steps, chosen days, focused fields
+and selected text. Rare like that, it shows where to look. Ask for it elsewhere with
+`colorPalette="accent"`.
+
 **Fonts:** none of its own. Text takes the page's font; `Code` and `Kbd` take the theme's `mono`
 (the system's monospace font unless your theme names one).
 

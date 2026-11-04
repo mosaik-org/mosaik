@@ -7,6 +7,8 @@ export const steps = defineSlotRecipe({
   slots: [...stepsAnatomy.keys(), "title", "description"],
   base: {
     root: {
+      // Checked, chosen or filled in the accent: what the person set, or is doing.
+      colorPalette: "accent",
       display: "flex",
       width: "full",
       gap: "6",

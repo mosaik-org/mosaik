@@ -6,6 +6,8 @@ export const slider = defineSlotRecipe({
   slots: sliderAnatomy.extendWith("markerIndicator").keys(),
   base: {
     root: {
+      // Checked, chosen or filled in the accent: what the person set, or is doing.
+      colorPalette: "accent",
       display: "flex",
       flexDirection: "column",
       gap: "1",

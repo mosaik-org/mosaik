@@ -6,6 +6,8 @@ export const checkbox = defineSlotRecipe({
   className: "checkbox",
   base: {
     root: {
+      // Checked, chosen or filled in the accent: what the person set, or is doing.
+      colorPalette: "accent",
       display: "inline-flex",
       gap: "2",
       alignItems: "center",

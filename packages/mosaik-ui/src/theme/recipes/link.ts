@@ -3,6 +3,8 @@ import { defineRecipe } from "@pandacss/dev"
 export const link = defineRecipe({
   className: "link",
   base: {
+    // A link in running text is the one place text is blue.
+    colorPalette: "accent",
     alignItems: "center",
     borderRadius: "l1",
     cursor: "pointer",

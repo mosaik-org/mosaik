@@ -6,6 +6,8 @@ export const tagsInput = defineSlotRecipe({
   slots: tagsInputAnatomy.keys(),
   base: {
     root: {
+      // Focus and a file dragged over in the accent, as the focus ring.
+      colorPalette: "accent",
       display: "flex",
       flexDirection: "column",
       gap: "1.5",

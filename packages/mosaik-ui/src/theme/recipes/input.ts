@@ -9,6 +9,8 @@ export const input = {
   className: "input",
   jsx: ["Input", "Field.Input"],
   base: {
+    // The focused field's border in the accent, as the focus ring around it.
+    colorPalette: "accent",
     appearance: "none",
     borderRadius: "l2",
     height: "var(--input-height)",

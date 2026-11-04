@@ -6,6 +6,8 @@ export const fileUpload = defineSlotRecipe({
   slots: fileUploadAnatomy.keys(),
   base: {
     root: {
+      // Focus and a file dragged over in the accent, as the focus ring.
+      colorPalette: "accent",
       alignItems: "flex-start",
       display: "flex",
       flexDirection: "column",

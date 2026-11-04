@@ -36,6 +36,8 @@ export const button = defineRecipe({
   variants: {
     variant: {
       solid: {
+        // The primary action, the accent's main use; `colorPalette` picks another (danger).
+        colorPalette: "accent",
         bg: "colorPalette.solid.bg",
         color: "colorPalette.solid.fg",
         boxShadow: "raised",

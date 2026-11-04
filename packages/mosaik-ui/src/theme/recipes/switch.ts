@@ -7,6 +7,8 @@ export const switchRecipe = defineSlotRecipe({
   slots: switchAnatomy.extendWith("indicator").keys(),
   base: {
     root: {
+      // Checked, chosen or filled in the accent: what the person set, or is doing.
+      colorPalette: "accent",
       display: "inline-flex",
       alignItems: "center",
       position: "relative",

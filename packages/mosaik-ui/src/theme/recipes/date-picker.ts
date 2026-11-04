@@ -6,11 +6,14 @@ export const datePicker = defineSlotRecipe({
   slots: datePickerAnatomy.keys(),
   base: {
     root: {
+      // The chosen days in the accent, here and in the calendar (portalled, so set there too).
+      colorPalette: "accent",
       display: "flex",
       flexDirection: "column",
       gap: "1.5",
     },
     content: {
+      colorPalette: "accent",
       background: "gray.surface.bg",
       borderRadius: "l3",
       boxShadow: "lg",
