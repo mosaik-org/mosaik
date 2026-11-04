@@ -32,7 +32,7 @@ export const switchRecipe = defineSlotRecipe({
       userSelect: "none",
       display: "grid",
       placeContent: "center",
-      transition: "inset-inline-start 0.12s ease",
+      transition: "inset-inline-start {durations.fast} {easings.standard}",
       insetInlineStart: "calc(var(--switch-x) - 2px)",
       _checked: {
         insetInlineStart: "2px",

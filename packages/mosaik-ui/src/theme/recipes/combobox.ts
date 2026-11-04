@@ -39,11 +39,11 @@ export const combobox = defineSlotRecipe({
       zIndex: "dropdown",
       _open: {
         animationStyle: "slide-fade-in",
-        animationDuration: "slow",
+        animationDuration: "fast",
       },
       _closed: {
         animationStyle: "slide-fade-out",
-        animationDuration: "fastest",
+        animationDuration: "faster",
       },
       "&[data-empty]:not(:has([data-scope=combobox][data-part=empty]))": {
         opacity: 0,

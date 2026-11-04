@@ -24,7 +24,7 @@ export const datePicker = defineSlotRecipe({
         animation: "fadeIn 0.25s ease-out",
       },
       _closed: {
-        animation: "fadeOut 0.2s ease-out",
+        animation: "fade-out {durations.fast} {easings.exit}",
       },
       _hidden: {
         display: "none",

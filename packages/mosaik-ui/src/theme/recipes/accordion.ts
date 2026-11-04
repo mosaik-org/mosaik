@@ -33,7 +33,7 @@ export const accordion = defineSlotRecipe({
       },
     },
     itemIndicator: {
-      transition: "rotate 0.2s",
+      transition: "rotate {durations.normal} {easings.standard}",
       transformOrigin: "center",
       color: "fg.subtle",
       _open: {

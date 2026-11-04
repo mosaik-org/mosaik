@@ -815,10 +815,13 @@ durations.slow
 durations.slower
 durations.slowest
 easings.default
+easings.enter
+easings.exit
 easings.in
 easings.in-out
 easings.linear
 easings.out
+easings.standard
 fontSizes.2xl
 fontSizes.2xs
 fontSizes.3xl

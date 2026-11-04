@@ -13,6 +13,7 @@ import { staticCss } from "./static-css"
 import { textStyles } from "./text-styles"
 import { colors } from "./tokens/colors"
 import { durations } from "./tokens/durations"
+import { easings } from "./tokens/easings"
 import { shadows } from "./tokens/shadows"
 import { zIndex } from "./tokens/z-index"
 
@@ -73,7 +74,7 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
         keyframes,
         layerStyles,
         textStyles,
-        tokens: { colors, durations, zIndex },
+        tokens: { colors, durations, easings, zIndex },
         semanticTokens: {
           colors: {
             ...palettes,

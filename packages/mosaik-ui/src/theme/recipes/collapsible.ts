@@ -9,7 +9,7 @@ export const collapsible = defineSlotRecipe({
       overflow: "hidden",
       _open: {
         animationName: "expand-height, fade-in",
-        animationDuration: "slow",
+        animationDuration: "normal",
       },
       _closed: {
         animationName: "collapse-height, fade-out",

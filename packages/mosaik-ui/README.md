@@ -156,6 +156,10 @@ Colors come in **palettes** (`slate`, `neutral`, `indigo`, `blue`, `green`, `red
 **Focus** from the keyboard shows as a halo: a translucent ring in the accent colour around the
 control, and a field's border in the accent colour.
 
+**Motion** has three easings: `enter` for what appears, `exit` for what leaves (quicker than
+arriving), `standard` for a change within a control. When the system asks for reduced motion, what
+slides or zooms in only fades: the keyframes scale their distances by `--motion`, 0 then.
+
 **Dark mode** follows a `dark` class or `data-theme="dark"` on an ancestor, usually `<html>`.
 
 **Your brand**:

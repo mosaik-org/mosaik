@@ -26,11 +26,11 @@ export const select = defineSlotRecipe({
       zIndex: "dropdown",
       _open: {
         animationStyle: "slide-fade-in",
-        animationDuration: "slow",
+        animationDuration: "fast",
       },
       _closed: {
         animationStyle: "slide-fade-out",
-        animationDuration: "fastest",
+        animationDuration: "faster",
       },
     },
     item: {

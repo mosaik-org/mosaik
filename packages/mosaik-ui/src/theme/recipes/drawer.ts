@@ -15,12 +15,12 @@ export const drawer = defineSlotRecipe({
       zIndex: "overlay",
       _open: {
         animationName: "fade-in",
-        animationTimingFunction: "emphasized-in",
-        animationDuration: "slow",
+        animationTimingFunction: "enter",
+        animationDuration: "slower",
       },
       _closed: {
         animationName: "fade-out",
-        animationTimingFunction: "emphasized-out",
+        animationTimingFunction: "exit",
         animationDuration: "normal",
       },
     },
@@ -46,12 +46,12 @@ export const drawer = defineSlotRecipe({
       bg: "gray.surface.bg",
       boxShadow: "lg",
       _open: {
-        animationDuration: "slowest",
-        animationTimingFunction: "cubic-bezier(0.05, 0.7, 0.1, 1.0)",
+        animationDuration: "slower",
+        animationTimingFunction: "enter",
       },
       _closed: {
         animationDuration: "normal",
-        animationTimingFunction: "cubic-bezier(0.3, 0.0, 0.8, 0.15)",
+        animationTimingFunction: "exit",
       },
     },
     header: {

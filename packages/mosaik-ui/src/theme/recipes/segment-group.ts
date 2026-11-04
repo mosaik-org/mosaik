@@ -44,7 +44,7 @@ export const segmentGroup = defineSlotRecipe({
         content: '""',
         position: "absolute",
         bg: "gray.surface.border",
-        transition: "opacity 0.2s",
+        transition: "opacity {durations.normal} {easings.standard}",
       },
 
       _horizontal: {

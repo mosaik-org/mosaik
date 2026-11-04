@@ -29,80 +29,80 @@ export const keyframes = defineKeyframes({
   },
   // slide from (full)
   "slide-from-left-full": {
-    from: { translate: "-100% 0" },
+    from: { translate: "calc(-100% * var(--motion, 1)) 0" },
     to: { translate: "0 0" },
   },
   "slide-from-right-full": {
-    from: { translate: "100% 0" },
+    from: { translate: "calc(100% * var(--motion, 1)) 0" },
     to: { translate: "0 0" },
   },
   "slide-from-top-full": {
-    from: { translate: "0 -100%" },
+    from: { translate: "0 calc(-100% * var(--motion, 1))" },
     to: { translate: "0 0" },
   },
   "slide-from-bottom-full": {
-    from: { translate: "0 100%" },
+    from: { translate: "0 calc(100% * var(--motion, 1))" },
     to: { translate: "0 0" },
   },
   // slide to (full)
   "slide-to-left-full": {
     from: { translate: "0 0" },
-    to: { translate: "-100% 0" },
+    to: { translate: "calc(-100% * var(--motion, 1)) 0" },
   },
   "slide-to-right-full": {
     from: { translate: "0 0" },
-    to: { translate: "100% 0" },
+    to: { translate: "calc(100% * var(--motion, 1)) 0" },
   },
   "slide-to-top-full": {
     from: { translate: "0 0" },
-    to: { translate: "0 -100%" },
+    to: { translate: "0 calc(-100% * var(--motion, 1))" },
   },
   "slide-to-bottom-full": {
     from: { translate: "0 0" },
-    to: { translate: "0 100%" },
+    to: { translate: "0 calc(100% * var(--motion, 1))" },
   },
   // slide from
   "slide-from-top": {
-    "0%": { translate: "0 -0.5rem" },
+    "0%": { translate: "0 calc(-0.5rem * var(--motion, 1))" },
     to: { translate: "0" },
   },
   "slide-from-bottom": {
-    "0%": { translate: "0 0.5rem" },
+    "0%": { translate: "0 calc(0.5rem * var(--motion, 1))" },
     to: { translate: "0" },
   },
   "slide-from-left": {
-    "0%": { translate: "-0.5rem 0" },
+    "0%": { translate: "calc(-0.5rem * var(--motion, 1)) 0" },
     to: { translate: "0" },
   },
   "slide-from-right": {
-    "0%": { translate: "0.5rem 0" },
+    "0%": { translate: "calc(0.5rem * var(--motion, 1)) 0" },
     to: { translate: "0" },
   },
   // slide to
   "slide-to-top": {
     "0%": { translate: "0" },
-    to: { translate: "0 -0.5rem" },
+    to: { translate: "0 calc(-0.5rem * var(--motion, 1))" },
   },
   "slide-to-bottom": {
     "0%": { translate: "0" },
-    to: { translate: "0 0.5rem" },
+    to: { translate: "0 calc(0.5rem * var(--motion, 1))" },
   },
   "slide-to-left": {
     "0%": { translate: "0" },
-    to: { translate: "-0.5rem 0" },
+    to: { translate: "calc(-0.5rem * var(--motion, 1)) 0" },
   },
   "slide-to-right": {
     "0%": { translate: "0" },
-    to: { translate: "0.5rem 0" },
+    to: { translate: "calc(0.5rem * var(--motion, 1)) 0" },
   },
   // scale
   "scale-in": {
-    from: { scale: "0.95" },
+    from: { scale: "calc(1 - 0.05 * var(--motion, 1))" },
     to: { scale: "1" },
   },
   "scale-out": {
     from: { scale: "1" },
-    to: { scale: "0.95" },
+    to: { scale: "calc(1 - 0.05 * var(--motion, 1))" },
   },
   "bg-position": {
     from: {

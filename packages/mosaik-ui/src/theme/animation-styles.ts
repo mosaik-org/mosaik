@@ -4,6 +4,7 @@ export const animationStyles: NonNullable<NonNullable<Preset["theme"]>["animatio
   "slide-fade-in": {
     value: {
       transformOrigin: "var(--transform-origin)",
+      animationTimingFunction: "enter",
       "&[data-placement^=top]": {
         animationName: "slide-from-bottom, fade-in",
       },
@@ -21,6 +22,7 @@ export const animationStyles: NonNullable<NonNullable<Preset["theme"]>["animatio
   "slide-fade-out": {
     value: {
       transformOrigin: "var(--transform-origin)",
+      animationTimingFunction: "exit",
       "&[data-placement^=top]": {
         animationName: "slide-to-bottom, fade-out",
       },
@@ -39,12 +41,14 @@ export const animationStyles: NonNullable<NonNullable<Preset["theme"]>["animatio
     value: {
       transformOrigin: "var(--transform-origin)",
       animationName: "scale-in, fade-in",
+      animationTimingFunction: "enter",
     },
   },
   "scale-fade-out": {
     value: {
       transformOrigin: "var(--transform-origin)",
       animationName: "scale-out, fade-out",
+      animationTimingFunction: "exit",
     },
   },
 })

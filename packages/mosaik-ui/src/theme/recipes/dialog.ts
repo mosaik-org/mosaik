@@ -17,12 +17,12 @@ export const dialog = defineSlotRecipe({
       zIndex: "var(--z-index)",
       _open: {
         animationName: "fade-in",
-        animationTimingFunction: "emphasized-in",
+        animationTimingFunction: "enter",
         animationDuration: "normal",
       },
       _closed: {
         animationName: "fade-out",
-        animationTimingFunction: "emphasized-out",
+        animationTimingFunction: "exit",
         animationDuration: "fast",
       },
     },
@@ -67,11 +67,14 @@ export const dialog = defineSlotRecipe({
       zIndex: "calc(var(--dialog-z-index) + var(--layer-index, 0))",
       py: { base: "4", md: "6" },
       gap: { base: "4", md: "6" },
+      // As its backdrop: arriving in 200ms, leaving in 150ms.
       _open: {
-        animationDuration: "slowest",
+        animationDuration: "normal",
+        animationTimingFunction: "enter",
       },
       _closed: {
-        animationDuration: "normal",
+        animationDuration: "fast",
+        animationTimingFunction: "exit",
       },
     },
     header: {
