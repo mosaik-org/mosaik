@@ -1,7 +1,8 @@
-import { AGENT_CONNECTIONS_PATH, signInUrl } from "@mosaik/auth/contract"
+import { AGENT_CONNECTIONS_PATH, admin, signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { toast } from "@mosaik/client"
-import { ActionMenu, Avatar, Button, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
+import { managesAnyApp } from "@mosaik/console"
+import { Avatar, Badge, Button, Menu, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
@@ -9,23 +10,42 @@ import Bell from "lucide-solid/icons/bell"
 import Bot from "lucide-solid/icons/bot"
 import LogOut from "lucide-solid/icons/log-out"
 import { Show } from "solid-js"
+import { Portal } from "solid-js/web"
+import { version } from "../../package.json"
 
-const trigger = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "2",
-  p: "1",
-  pr: "2",
-  borderRadius: "full",
-  cursor: "pointer",
-  _hover: { bg: "gray.subtle.bg" },
-  _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
-})
+const styles = {
+  // The avatar alone: the name is in the menu, and the top bar's room is the app's.
+  trigger: css({
+    display: "grid",
+    placeItems: "center",
+    borderRadius: "full",
+    cursor: "pointer",
+    outlineOffset: "2px",
+    // A ring around the avatar itself (its root, not its letters or image).
+    _hover: { "& [data-scope=avatar][data-part=root]": { boxShadow: "0 0 0 2px token(colors.gray.subtle.bg.hover)" } },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+  }),
+  content: css({ minW: "64" }),
+  // Who is signed in: the person first, then how to reach them and what they may do.
+  person: css({ display: "flex", alignItems: "center", gap: "3", px: "2", pt: "2", pb: "2.5" }),
+  who: css({ display: "flex", flexDirection: "column", minW: "0", flex: "1" }),
+  name: css({ fontSize: "sm", fontWeight: "semibold", color: "fg.default", truncate: true }),
+  email: css({ fontSize: "xs", color: "fg.muted", truncate: true }),
+  icon: css({ color: "fg.muted" }),
+  version: css({ px: "2", pt: "1", pb: "1.5", fontSize: "xs", color: "fg.subtle" }),
+}
 
+/**
+ * The signed-in person's menu, behind their avatar: who they are and what they may do, their
+ * settings, the theme, and signing out, apart from the rest. Signed out, the theme's toggle and
+ * "Log in" instead.
+ */
 export const UserMenu = () => {
   const principal = usePrincipal()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const role = () =>
+    principal().can(admin.accessPermission) ? "Admin" : managesAnyApp(principal()) ? "App owner" : undefined
 
   const logout = async () => {
     try {
@@ -53,41 +73,67 @@ export const UserMenu = () => {
       }
     >
       {(user) => (
-        <ActionMenu
-          trigger={(props) => (
-            <button type="button" {...props()} class={trigger} aria-label="Account menu">
-              <Avatar.Root size="sm">
-                <Avatar.Fallback name={user().name} />
-                <Avatar.Image src={user().image ?? undefined} />
-              </Avatar.Root>
-              <span class={css({ fontSize: "sm", fontWeight: "medium", hideBelow: "sm" })}>{user().name}</span>
-            </button>
-          )}
-          header={
-            <div class={css({ py: "2" })}>
-              <div class={css({ fontWeight: "medium" })}>{user().name}</div>
-              <div class={css({ fontSize: "xs", color: "fg.muted" })}>{user().email}</div>
-            </div>
-          }
-          items={[
-            {
-              value: "notifications",
-              label: "Notification settings",
-              icon: <Bell size={16} />,
-              onSelect: () => void navigate({ to: "/notifications/settings" }),
-            },
-            {
-              value: "agents",
-              label: "AI clients",
-              icon: <Bot size={16} />,
-              // Core's own page, outside the shell.
-              onSelect: () => location.assign(AGENT_CONNECTIONS_PATH),
-            },
-            { value: "logout", label: "Sign out", icon: <LogOut size={16} />, onSelect: () => void logout() },
-          ]}
-        >
-          <ThemeChoice />
-        </ActionMenu>
+        <Menu.Root positioning={{ placement: "bottom-end" }}>
+          <Menu.Trigger
+            asChild={(trigger) => (
+              <button
+                type="button"
+                {...trigger()}
+                class={styles.trigger}
+                aria-label={`Account menu: ${user().name}`}
+                title={user().name}
+              >
+                <Avatar.Root size="sm">
+                  <Avatar.Fallback name={user().name} />
+                  <Avatar.Image src={user().image ?? undefined} />
+                </Avatar.Root>
+              </button>
+            )}
+          />
+          <Portal>
+            <Menu.Positioner>
+              <Menu.Content class={styles.content}>
+                <div class={styles.person}>
+                  <Avatar.Root size="md">
+                    <Avatar.Fallback name={user().name} />
+                    <Avatar.Image src={user().image ?? undefined} />
+                  </Avatar.Root>
+                  <div class={styles.who}>
+                    <span class={styles.name}>{user().name}</span>
+                    <span class={styles.email}>{user().email}</span>
+                  </div>
+                  <Show when={role()}>
+                    {(label) => (
+                      <Badge size="sm" variant="surface" colorPalette="gray">
+                        {label()}
+                      </Badge>
+                    )}
+                  </Show>
+                </div>
+                <Menu.Separator />
+                <Menu.ItemGroup>
+                  <Menu.Item value="notifications" onSelect={() => void navigate({ to: "/notifications/settings" })}>
+                    <Bell size={16} class={styles.icon} />
+                    Notification settings
+                  </Menu.Item>
+                  {/* Core's own page, outside the shell. */}
+                  <Menu.Item value="agents" onSelect={() => location.assign(AGENT_CONNECTIONS_PATH)}>
+                    <Bot size={16} class={styles.icon} />
+                    AI clients
+                  </Menu.Item>
+                </Menu.ItemGroup>
+                <Menu.Separator />
+                <ThemeChoice />
+                <Menu.Separator />
+                <Menu.Item value="logout" onSelect={() => void logout()}>
+                  <LogOut size={16} class={styles.icon} />
+                  Sign out
+                </Menu.Item>
+                <div class={styles.version}>Mosaik {version}</div>
+              </Menu.Content>
+            </Menu.Positioner>
+          </Portal>
+        </Menu.Root>
       )}
     </Show>
   )
