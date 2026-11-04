@@ -8,7 +8,8 @@ const { withProvider, withContext } = createSlotRecipeContext(alert)
 
 export type RootProps = ComponentProps<typeof Root>
 export const Root = withProvider(ark.div, "root")
-export const Title = withContext(ark.h3, "title")
+/** Not a heading: an alert sits anywhere on a page, so it cannot know which level would fit there. */
+export const Title = withContext(ark.div, "title")
 export const Description = withContext(ark.div, "description")
 export const Content = withContext(ark.div, "content")
 
