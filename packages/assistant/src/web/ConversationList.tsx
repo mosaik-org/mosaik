@@ -10,8 +10,18 @@ import { ConversationMenu } from "./ConversationMenu"
 import { groupByDate, matchingConversations, titleOrDefault } from "./view"
 
 const styles = {
-  root: css({ display: "flex", flexDirection: "column", gap: "3", p: "3", flex: "1", minHeight: "0" }),
-  scroller: css({ display: "flex", flexDirection: "column", gap: "4", flex: "1", minHeight: "0", overflowY: "auto" }),
+  root: css({ display: "flex", flexDirection: "column", gap: "3", py: "3", flex: "1", minHeight: "0" }),
+  controls: css({ display: "flex", flexDirection: "column", gap: "3", px: "3" }),
+  // As wide as the column, its padding inside: the scrollbar runs along the column's edge, clear of the rows.
+  scroller: css({
+    display: "flex",
+    flexDirection: "column",
+    gap: "4",
+    flex: "1",
+    minHeight: "0",
+    px: "3",
+    overflowY: "auto",
+  }),
   group: css({ display: "flex", flexDirection: "column", gap: "0.5" }),
   heading: css({
     px: "3",
@@ -82,18 +92,20 @@ export const ConversationList = (props: {
 
   return (
     <nav class={styles.root} aria-label="Conversations">
-      <Button variant="outline" size="sm" onClick={() => props.onSelect(null)}>
-        <Plus size={14} /> New conversation
-      </Button>
-      <TextField
-        aria-label="Search conversations"
-        type="search"
-        size="sm"
-        placeholder="Search conversations"
-        startElement={<Search size={14} />}
-        value={query()}
-        onValueChange={setQuery}
-      />
+      <div class={styles.controls}>
+        <Button variant="outline" size="sm" onClick={() => props.onSelect(null)}>
+          <Plus size={14} /> New conversation
+        </Button>
+        <TextField
+          aria-label="Search conversations"
+          type="search"
+          size="sm"
+          placeholder="Search conversations"
+          startElement={<Search size={14} />}
+          value={query()}
+          onValueChange={setQuery}
+        />
+      </div>
       <div class={styles.scroller}>
         <Show when={!conversations.isPending} fallback={<Spinner size="sm" />}>
           <For
