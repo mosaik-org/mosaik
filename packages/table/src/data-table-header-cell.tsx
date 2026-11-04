@@ -1,3 +1,4 @@
+import { Table } from "@mosaik/mosaik-ui"
 import { cva } from "@mosaik/styled-system/css"
 import type { Header, RowData } from "@tanstack/solid-table"
 import ArrowDown from "lucide-solid/icons/arrow-down"
@@ -6,26 +7,16 @@ import ChevronsUpDown from "lucide-solid/icons/chevrons-up-down"
 import { type JSX, Match, Show, Switch } from "solid-js"
 import type { DataTableFeatures } from "./features"
 
+/**
+ * Where a column's content sits, for its header and its cells, which are mosaik-ui's `Table` parts
+ * (rows, lines, hover, padding and the header's type are the library's). Body cells are in the
+ * text's own colour: in a data table the data is what is read.
+ */
 export const cellRecipe = cva({
-  base: {
-    px: "4",
-    textAlign: "start",
-    whiteSpace: "nowrap",
-  },
   variants: {
     kind: {
-      header: {
-        h: "10",
-        bg: "gray.2",
-        color: "fg.muted",
-        fontSize: "xs",
-        fontWeight: "medium",
-        textTransform: "uppercase",
-        letterSpacing: "wider",
-        borderBottomWidth: "1px",
-        borderColor: "border",
-      },
-      body: { py: "2.5", color: "fg.default" },
+      header: {},
+      body: { color: "fg.default" },
     },
     align: {
       left: { textAlign: "start" },
@@ -88,7 +79,7 @@ export function DataTableHeaderCell<TData extends RowData>(props: DataTableHeade
   }
 
   return (
-    <th
+    <Table.Header
       scope="col"
       colSpan={props.header.colSpan}
       class={cellRecipe({ kind: "header", align: meta()?.align })}
@@ -114,6 +105,6 @@ export function DataTableHeaderCell<TData extends RowData>(props: DataTableHeade
           </button>
         </Show>
       </Show>
-    </th>
+    </Table.Header>
   )
 }

@@ -1,4 +1,4 @@
-import { Skeleton } from "@mosaik/mosaik-ui"
+import { Skeleton, Table } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
 import {
   createTable,
@@ -30,7 +30,6 @@ const styles = {
     overflow: "hidden",
   }),
   scroller: css({ overflowX: "auto" }),
-  table: css({ w: "full", borderCollapse: "collapse", fontSize: "sm" }),
   body: css({
     transition: "opacity 150ms",
     "&[aria-busy=true]": { opacity: "0.6" },
@@ -38,14 +37,8 @@ const styles = {
   empty: css({ py: "10", textAlign: "center", color: "fg.muted" }),
 }
 
+/** What a row adds to mosaik-ui's: opening something when clicked or chosen with the keyboard. */
 const rowRecipe = cva({
-  base: {
-    borderBottomWidth: "1px",
-    borderColor: "border",
-    _last: { borderBottomWidth: "0" },
-    _even: { bg: "gray.a2", _hover: { bg: "gray.subtle.bg" } },
-    _hover: { bg: "gray.subtle.bg" },
-  },
   variants: {
     clickable: {
       true: {
@@ -151,11 +144,11 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
   return (
     <div class={styles.root}>
       <div class={styles.scroller}>
-        <table class={styles.table}>
-          <thead>
+        <Table.Root>
+          <Table.Head>
             <For each={table.getHeaderGroups()}>
               {(headerGroup) => (
-                <tr>
+                <Table.Row>
                   <For each={headerGroup.headers}>
                     {(header) => (
                       <DataTableHeaderCell header={header}>
@@ -163,25 +156,25 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
                       </DataTableHeaderCell>
                     )}
                   </For>
-                </tr>
+                </Table.Row>
               )}
             </For>
-          </thead>
-          <tbody class={styles.body} aria-busy={props.loading ? "true" : undefined}>
+          </Table.Head>
+          <Table.Body class={styles.body} aria-busy={props.loading ? "true" : undefined}>
             <Show
               when={!showSkeleton()}
               fallback={
                 <Index each={Array.from({ length: SKELETON_ROW_COUNT })}>
                   {() => (
-                    <tr class={rowRecipe()}>
+                    <Table.Row>
                       <Index each={table.getAllLeafColumns()}>
                         {() => (
-                          <td class={cellRecipe()}>
+                          <Table.Cell class={cellRecipe()}>
                             <Skeleton height="1rem" />
-                          </td>
+                          </Table.Cell>
                         )}
                       </Index>
-                    </tr>
+                    </Table.Row>
                   )}
                 </Index>
               }
@@ -189,15 +182,15 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
               <For
                 each={rows()}
                 fallback={
-                  <tr>
-                    <td class={styles.empty} colSpan={leafColumnCount()}>
+                  <Table.Row>
+                    <Table.Cell class={styles.empty} colSpan={leafColumnCount()}>
                       {merged.emptyMessage}
-                    </td>
-                  </tr>
+                    </Table.Cell>
+                  </Table.Row>
                 }
               >
                 {(row) => (
-                  <tr
+                  <Table.Row
                     class={rowRecipe({ clickable: Boolean(props.onRowClick) })}
                     tabIndex={props.onRowClick ? 0 : undefined}
                     onClick={() => props.onRowClick?.(row.original)}
@@ -205,20 +198,20 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
                   >
                     <For each={row.getAllCells()}>
                       {(cell) => (
-                        <td
+                        <Table.Cell
                           class={cellRecipe({ align: cell.column.columnDef.meta?.align })}
                           style={{ width: cell.column.columnDef.meta?.width }}
                         >
                           <table.FlexRender cell={cell} />
-                        </td>
+                        </Table.Cell>
                       )}
                     </For>
-                  </tr>
+                  </Table.Row>
                 )}
               </For>
             </Show>
-          </tbody>
-        </table>
+          </Table.Body>
+        </Table.Root>
       </div>
       <DataTablePagination table={table} pageSizes={merged.pageSizes} />
     </div>
