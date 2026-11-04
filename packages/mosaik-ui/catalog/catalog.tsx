@@ -1,7 +1,9 @@
 import { type Component, createMemo, createSignal, For, onCleanup, Show } from "solid-js"
 import { Dynamic } from "solid-js/web"
 import { css } from "styled-system/css"
+import { Toaster } from "../src/components/toast"
 import { palettes } from "../src/theme/colors"
+import { App as Demo } from "./demo"
 
 /** Every example: `examples/<component>/<example>.tsx`, each exporting `App`. */
 const modules = import.meta.glob<{ App: Component }>("./examples/*/*.tsx", { eager: true })
@@ -26,7 +28,9 @@ for (const examples of components.values()) {
 }
 const names = [...components.keys()].sort()
 
-const fromHash = () => decodeURIComponent(location.hash.slice(2)) || names[0] || ""
+/** The demo: a screen of a made-up app built from the components, shown first. */
+const DEMO = "demo"
+const fromHash = () => decodeURIComponent(location.hash.slice(2)) || DEMO
 
 export const Catalog = () => {
   const [current, setCurrent] = createSignal(fromHash())
@@ -60,7 +64,7 @@ export const Catalog = () => {
         })}
       >
         <strong class={css({ textStyle: "lg", mb: "3" })}>Mosaik UI</strong>
-        <For each={names}>
+        <For each={[DEMO, ...names]}>
           {(name) => (
             <a
               href={`#/${name}`}
@@ -73,6 +77,8 @@ export const Catalog = () => {
                 color: "fg.muted",
                 _hover: { bg: "gray.subtle.bg" },
                 "&[aria-current=page]": { bg: "gray.subtle.bg.active", color: "fg.default", fontWeight: "medium" },
+                // The demo, apart from the components.
+                [`&[href="#/${DEMO}"]`]: { mb: "3" },
               })}
             >
               {title(name)}
@@ -104,6 +110,9 @@ export const Catalog = () => {
           </button>
         </header>
         <div class={css({ colorPalette: "accent" })} data-palette={accent()} style={{ ...paletteVars(accent()) }}>
+          <Show when={current() === DEMO}>
+            <Demo />
+          </Show>
           <For each={examples()}>
             {(example) => (
               <section id={example.name} data-example={`${current()}/${example.name}`} class={css({ mb: "8" })}>
@@ -116,11 +125,12 @@ export const Catalog = () => {
               </section>
             )}
           </For>
-          <Show when={examples().length === 0}>
+          <Show when={examples().length === 0 && current() !== DEMO}>
             <p>No examples.</p>
           </Show>
         </div>
       </main>
+      <Toaster />
     </div>
   )
 }

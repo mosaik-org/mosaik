@@ -1,9 +1,13 @@
 import type { Component } from "solid-js"
 import { renderToString } from "solid-js/web"
 import { describe, expect, it } from "vitest"
+import * as demo from "../catalog/demo"
 
 /** Every example renders to HTML on the server, as in a SolidStart app. */
-const examples = import.meta.glob<{ App: Component }>("../catalog/examples/*/*.tsx", { eager: true })
+const examples = {
+  ...import.meta.glob<{ App: Component }>("../catalog/examples/*/*.tsx", { eager: true }),
+  "examples/demo/index.tsx": demo,
+}
 
 describe.each(
   Object.entries(examples).map(
