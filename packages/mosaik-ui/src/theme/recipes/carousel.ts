@@ -49,7 +49,7 @@ export const carousel = defineSlotRecipe({
     inline: {
       true: {
         control: {
-          background: { _light: "white.a11", _dark: "black.a11" },
+          background: { base: "white.a11", _dark: "black.a11" },
           bottom: "3",
           left: "50%",
           p: "1",

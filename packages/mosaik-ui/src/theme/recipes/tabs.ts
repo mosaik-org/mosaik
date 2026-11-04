@@ -129,7 +129,7 @@ export const tabs = defineSlotRecipe({
       enclosed: {
         list: {
           bg: {
-            _light: "gray.2",
+            base: "gray.2",
             _dark: "gray.1",
           },
           boxShadow: "inset 0 0 0px 1px var(--shadow-color)",
@@ -146,11 +146,11 @@ export const tabs = defineSlotRecipe({
         indicator: {
           borderRadius: "l2",
           boxShadow: {
-            _light: "xs",
+            base: "xs",
             _dark: "none",
           },
           bg: {
-            _light: "white",
+            base: "white",
             _dark: "gray.2",
           },
         },

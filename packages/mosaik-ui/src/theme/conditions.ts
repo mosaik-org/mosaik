@@ -4,6 +4,9 @@
  */
 export const conditions = {
   extend: {
+    // For semantic tokens' values. Not in styles: `:root &` matches in dark mode too, so a style's
+    // `_light` ties with its `_dark` and the later rule wins. Style light as the `base` instead,
+    // which `_dark` overrides.
     light: ":root &, .light &, [data-theme=light] &",
     dark: ".dark &, [data-theme=dark] &",
     invalid: "&:is(:user-invalid, [data-invalid], [aria-invalid=true])",
