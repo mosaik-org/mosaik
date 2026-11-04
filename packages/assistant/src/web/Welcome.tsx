@@ -1,4 +1,5 @@
 import { usePrincipal } from "@mosaik/auth/web"
+import { Button } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { useQuery } from "@tanstack/solid-query"
 import Sparkles from "lucide-solid/icons/sparkles"
@@ -30,19 +31,15 @@ const styles = {
   title: css({ fontSize: "xl", fontWeight: "semibold", color: "fg.default" }),
   lead: css({ fontSize: "sm", color: "fg.muted" }),
   suggestions: css({ display: "grid", gridTemplateColumns: { base: "1fr", sm: "1fr 1fr" }, gap: "2", width: "full" }),
+  // A Button that wraps: a question may take two lines.
   suggestion: css({
-    px: "3.5",
+    h: "auto",
+    minH: "10",
     py: "2.5",
-    borderWidth: "1px",
-    borderRadius: "l3",
-    bg: "gray.surface.bg",
-    fontSize: "sm",
+    whiteSpace: "normal",
+    justifyContent: "flex-start",
     textAlign: "start",
-    color: "fg.default",
-    cursor: "pointer",
-    transition: "border-color 0.15s, background 0.15s",
-    _hover: { borderColor: "accent.solid.bg", bg: "accent.subtle.bg" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+    fontWeight: "normal",
   }),
 }
 
@@ -78,9 +75,9 @@ export const Welcome = (props: {
         <div class={styles.suggestions}>
           <For each={suggestions.data}>
             {(question) => (
-              <button type="button" class={styles.suggestion} onClick={() => props.onPick(question)}>
+              <Button variant="outline" class={styles.suggestion} onClick={() => props.onPick(question)}>
                 {question}
-              </button>
+              </Button>
             )}
           </For>
         </div>

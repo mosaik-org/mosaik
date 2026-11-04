@@ -17,9 +17,14 @@ export function NotFound() {
         title="Page not found"
         description="The page you are looking for does not exist."
         action={
-          <Link to={app === undefined ? "/" : appHref(app)}>
-            <Button variant="outline">{app === undefined ? "Back to Overview" : `Back to ${app.name}`}</Button>
-          </Link>
+          <Button
+            variant="outline"
+            asChild={(link) => (
+              <Link to={app === undefined ? "/" : appHref(app)} {...link()}>
+                {app === undefined ? "Back to Overview" : `Back to ${app.name}`}
+              </Link>
+            )}
+          />
         }
       />
     </div>

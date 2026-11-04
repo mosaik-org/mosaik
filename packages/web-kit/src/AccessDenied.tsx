@@ -29,9 +29,14 @@ export const AccessDenied = (props: {
       }
       action={
         props.action ?? (
-          <Link to="/">
-            <Button variant="outline">Back to Overview</Button>
-          </Link>
+          <Button
+            variant="outline"
+            asChild={(link) => (
+              <Link to="/" {...link()}>
+                Back to Overview
+              </Link>
+            )}
+          />
         )
       }
     />

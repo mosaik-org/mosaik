@@ -1,4 +1,5 @@
-import { css, cx } from "@mosaik/styled-system/css"
+import { Button } from "@mosaik/mosaik-ui"
+import { css } from "@mosaik/styled-system/css"
 import { FRAME_TOP, FrameHeader } from "@mosaik/web-kit"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import { type JSX, Show } from "solid-js"
@@ -25,17 +26,6 @@ const styles = {
     bg: "gray.1",
   }),
   main: css({ display: "flex", flexDirection: "column", minHeight: "0", minWidth: "0" }),
-  back: css({
-    display: "inline-flex",
-    alignItems: "center",
-    flexShrink: "0",
-    gap: "1",
-    fontSize: "sm",
-    whiteSpace: "nowrap",
-    color: "fg.muted",
-    cursor: "pointer",
-    _hover: { color: "fg.default" },
-  }),
   // On phones the arrow alone, so the title keeps the room (the button's label says where it goes).
   backLabel: css({ hideBelow: "sm" }),
 }
@@ -57,20 +47,28 @@ export const AssistantPage = (props: {
       <FrameHeader>
         {/* On phones the list is hidden while a conversation is open: the way back to it. */}
         <Show when={props.conversation !== null}>
-          <button
-            type="button"
-            class={cx(styles.back, css({ hideFrom: "md" }))}
+          <Button
+            variant="plain"
+            size="sm"
+            colorPalette="gray"
+            class={css({ hideFrom: "md" })}
             aria-label="Back to the conversations"
             onClick={() => props.onSelect(null)}
           >
             <ArrowLeft size={14} /> <span class={styles.backLabel}>Conversations</span>
-          </button>
+          </Button>
         </Show>
         <Show when={props.onBack}>
           {(back) => (
-            <button type="button" class={styles.back} aria-label="Back to the page" onClick={() => back()()}>
+            <Button
+              variant="plain"
+              size="sm"
+              colorPalette="gray"
+              aria-label="Back to the page"
+              onClick={() => back()()}
+            >
               <ArrowLeft size={14} /> <span class={styles.backLabel}>Back to the page</span>
-            </button>
+            </Button>
           )}
         </Show>
         <ConversationHeading conversation={props.conversation} onDeleted={() => props.onSelect(null)} />

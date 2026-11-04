@@ -80,9 +80,13 @@ function ShellLayout() {
                 <AccessDenied
                   description={`Ask for access on ${app().name}'s page: its owners decide who can use it.`}
                   action={
-                    <Link to="/directory/$app" params={{ app: app().id }}>
-                      <Button>Ask for access</Button>
-                    </Link>
+                    <Button
+                      asChild={(link) => (
+                        <Link to="/directory/$app" params={{ app: app().id }} {...link()}>
+                          Ask for access
+                        </Link>
+                      )}
+                    />
                   }
                 />
               )}

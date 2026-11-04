@@ -57,9 +57,14 @@ const Actions = (props: { app: AnyApp }) => {
   return (
     <div class={styles.actions}>
       <Show when={canManageApp(principal(), props.app.id)}>
-        <Link to="/manage/$app" params={{ app: props.app.id }}>
-          <Button variant="outline">Manage</Button>
-        </Link>
+        <Button
+          variant="outline"
+          asChild={(link) => (
+            <Link to="/manage/$app" params={{ app: props.app.id }} {...link()}>
+              Manage
+            </Link>
+          )}
+        />
       </Show>
       <Show when={available() && apps.canPin()}>
         <IconButton
@@ -73,14 +78,22 @@ const Actions = (props: { app: AnyApp }) => {
       </Show>
       <Switch>
         <Match when={available()}>
-          <Link to={appHref(props.app)}>
-            <Button>Open {props.app.name}</Button>
-          </Link>
+          <Button
+            asChild={(link) => (
+              <Link to={appHref(props.app)} {...link()}>
+                Open {props.app.name}
+              </Link>
+            )}
+          />
         </Match>
         <Match when={user() === undefined}>
-          <a href={signInUrl(`/directory/${props.app.id}`)}>
-            <Button>Log in</Button>
-          </a>
+          <Button
+            asChild={(link) => (
+              <a href={signInUrl(`/directory/${props.app.id}`)} {...link()}>
+                Log in
+              </a>
+            )}
+          />
         </Match>
         <Match when={latest()?.status === "pending"}>
           <Badge colorPalette="accent">Access requested</Badge>

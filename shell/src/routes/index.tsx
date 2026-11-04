@@ -171,9 +171,14 @@ const Personal = (props: { user: string }) => {
             title="No apps available yet"
             description="Find the app you need in All apps and ask for access."
             action={
-              <Link to="/directory">
-                <Button variant="outline">Browse all apps</Button>
-              </Link>
+              <Button
+                variant="outline"
+                asChild={(link) => (
+                  <Link to="/directory" {...link()}>
+                    Browse all apps
+                  </Link>
+                )}
+              />
             }
           />
         </Show>
@@ -246,9 +251,13 @@ const Visitor = () => {
               <div class={styles.name}>More apps are available after logging in</div>
               <div class={styles.hint}>Sign in with your company account or email.</div>
             </div>
-            <a href={signInUrl("/")}>
-              <Button>Log in</Button>
-            </a>
+            <Button
+              asChild={(link) => (
+                <a href={signInUrl("/")} {...link()}>
+                  Log in
+                </a>
+              )}
+            />
           </div>
         </Card.Body>
       </Card.Root>

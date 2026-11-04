@@ -99,9 +99,14 @@ function ManagedApp() {
                 description={params().app}
                 actions={
                   <Show when={principal().can(admin.perm("audit.view"))}>
-                    <Link to="/admin/audit" search={{ app: params().app }}>
-                      <Button variant="outline">Audit log</Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      asChild={(link) => (
+                        <Link to="/admin/audit" search={{ app: params().app }} {...link()}>
+                          Audit log
+                        </Link>
+                      )}
+                    />
                   </Show>
                 }
               />

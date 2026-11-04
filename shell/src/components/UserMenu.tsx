@@ -66,9 +66,14 @@ export const UserMenu = () => {
         // No account menu to choose the theme in.
         <>
           <ThemeToggle />
-          <a href={signInUrl(`${location.pathname}${location.search}`)}>
-            <Button size="xs">Log in</Button>
-          </a>
+          <Button
+            size="xs"
+            asChild={(link) => (
+              <a href={signInUrl(`${location.pathname}${location.search}`)} {...link()}>
+                Log in
+              </a>
+            )}
+          />
         </>
       }
     >

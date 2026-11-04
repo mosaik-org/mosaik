@@ -52,12 +52,16 @@ function NotificationsPage() {
                 Mark all as read
               </Button>
             </Show>
-            <Link to="/notifications/settings">
-              <Button variant="plain" size="xs">
-                <Settings size={16} />
-                Settings
-              </Button>
-            </Link>
+            <Button
+              variant="plain"
+              size="xs"
+              asChild={(link) => (
+                <Link to="/notifications/settings" {...link()}>
+                  <Settings size={16} />
+                  Settings
+                </Link>
+              )}
+            />
           </>
         }
       />
