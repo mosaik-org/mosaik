@@ -81,6 +81,19 @@ const styles = {
     "&[data-floating=true]": { position: "absolute", insetY: "0", left: "0", width: "240px", boxShadow: "lg" },
   }),
   sidebarFooter: css({ display: "flex", px: "3", py: "3", borderTopWidth: "1px" }),
+  // Padded like the links above it: its icon in their column.
+  sidebarToggle: css({
+    display: "flex",
+    alignItems: "center",
+    px: "3",
+    py: "2",
+    borderRadius: "md",
+    color: "fg.muted",
+    cursor: "pointer",
+    transition: "background 0.15s, color 0.15s",
+    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+  }),
   drawer: css({
     position: "fixed",
     inset: "0",
@@ -103,13 +116,14 @@ const styles = {
     gap: "2",
     flexShrink: "0",
     height: "14",
-    px: "6",
+    // The logo centred on the links' icons (18 px, after the sidebar's and the link's padding), so
+    // it stays in place when the sidebar collapses to a rail.
+    pl: "calc(token(spacing.3) + token(spacing.3) + 9px - token(sizes.7) / 2)",
+    pr: "6",
     fontWeight: "bold",
     fontSize: "lg",
     letterSpacing: "tight",
     whiteSpace: "nowrap",
-    // The logo alone, centred in the rail.
-    "&[data-rail=true]": { px: "4.5" },
   }),
   logo: css({
     display: "grid",
@@ -197,7 +211,7 @@ const SearchButton = () => {
 }
 
 const Brand = (props: { rail?: boolean }) => (
-  <Link to="/" class={styles.brand} data-rail={props.rail === true}>
+  <Link to="/" class={styles.brand}>
     <span class={styles.logo} aria-hidden="true">
       M
     </span>
@@ -215,11 +229,17 @@ const SidebarToggle = (props: { state: SidebarState }) => {
       : `${opens() ? "Open" : "Close"} the sidebar`
   return (
     <div class={styles.sidebarFooter}>
-      <IconButton variant="plain" size="sm" aria-label={label()} title={label()} onClick={() => props.state.toggle()}>
+      <button
+        type="button"
+        class={styles.sidebarToggle}
+        aria-label={label()}
+        title={label()}
+        onClick={() => props.state.toggle()}
+      >
         <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
           <PanelLeftOpen size={18} />
         </Show>
-      </IconButton>
+      </button>
     </div>
   )
 }

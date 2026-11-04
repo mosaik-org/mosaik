@@ -171,8 +171,8 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
   them to allow.
 - **Collapsing the sidebar.** Ctrl/⌘+B, the button at its foot or the command palette collapses it to a
   rail of icons, remembered in that browser. Narrower screens (below 1024 px) get the rail whatever was
-  chosen; resting the pointer on it, or moving focus into it, opens it over the page. Going to another
-  page never changes it.
+  chosen, and its button opens it over the page. Collapsed, each icon's name shows on hover. Going to
+  another page never changes it.
 - **All apps** (`/directory`). Every app by category, with search, *Most used* sorting and pinning. Apps the
   user can't open are listed too, with *Request access*. Apps declare a category; owners and admins can
   list an app under another one.

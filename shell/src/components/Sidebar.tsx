@@ -2,7 +2,7 @@ import { assistant } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
 import { managesAnyApp } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
-import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
+import { ActionMenu, IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { AppIcon, StatusMark, type StatusSummary, useStatusSummary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
@@ -33,9 +33,11 @@ export type SidebarMode = "full" | "rail" | "floating"
 const ModeContext = createContext<Accessor<SidebarMode>>((): SidebarMode => "full")
 
 const styles = {
-  nav: css({ display: "flex", flexDirection: "column", gap: "6", flex: "1", overflowY: "auto", px: "3", py: "4" }),
+  // Sections `gap` apart; the rail's line between them is centred on that space and the heading's.
+  nav: css({ display: "flex", flexDirection: "column", gap: "4", flex: "1", overflowY: "auto", px: "3", py: "4" }),
   section: css({ display: "flex", flexDirection: "column", gap: "0.5" }),
   heading: css({
+    position: "relative",
     px: "3",
     pb: "1.5",
     fontSize: "xs",
@@ -44,9 +46,21 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: "wider",
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    // In the rail, a line in its place, as tall as it, so nothing below moves when the sidebar
+    // collapses; the words, unseen, are still read out.
+    "&[data-rail=true]": {
+      color: "transparent",
+      // Midway between the section above and this one: half the nav's gap above the heading's middle.
+      _after: {
+        content: '""',
+        position: "absolute",
+        insetX: "2",
+        top: "calc(50% - token(spacing.4) / 2)",
+        borderTopWidth: "1px",
+      },
+    },
   }),
-  // In the rail, a section starts with a line instead of its heading.
-  divider: css({ mx: "2", mb: "2", borderTopWidth: "1px" }),
   row: css({
     position: "relative",
     // The actions show on hover and keyboard focus, and stay while their menu is open.
@@ -74,7 +88,8 @@ const styles = {
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
     "&[data-status=active]": { bg: "accent.subtle.bg", color: "accent.plain.fg" },
   }),
-  icon: css({ position: "relative", display: "flex", flexShrink: "0" }),
+  // As tall as a line of the label beside it, so a row is as tall with its label (expanded) as without (rail).
+  icon: css({ position: "relative", display: "flex", alignItems: "center", flexShrink: "0", height: "1lh" }),
   label: css({ flex: "1", minW: "0", truncate: true }),
   actions: css({
     position: "absolute",
@@ -102,19 +117,24 @@ const NavLink = (props: {
   return (
     <div>
       <div class={styles.row}>
-        <Link
-          to={props.to}
-          class={styles.link}
-          activeOptions={{ exact: props.exact ?? false }}
-          onClick={() => props.onNavigate?.()}
-        >
-          <span class={styles.icon}>
-            {props.icon}
-            <Show when={mode() === "rail" && props.status}>{(status) => <StatusMark summary={status()} corner />}</Show>
-          </span>
-          <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
-          <Show when={mode() !== "rail" && props.status}>{(status) => <StatusMark summary={status()} />}</Show>
-        </Link>
+        {/* In the rail, the label shows beside the icon on hover and focus. */}
+        <Tooltip content={props.label} disabled={mode() !== "rail"} positioning={{ placement: "right" }}>
+          <Link
+            to={props.to}
+            class={styles.link}
+            activeOptions={{ exact: props.exact ?? false }}
+            onClick={() => props.onNavigate?.()}
+          >
+            <span class={styles.icon}>
+              {props.icon}
+              <Show when={mode() === "rail" && props.status}>
+                {(status) => <StatusMark summary={status()} corner />}
+              </Show>
+            </span>
+            <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
+            <Show when={mode() !== "rail" && props.status}>{(status) => <StatusMark summary={status()} />}</Show>
+          </Link>
+        </Tooltip>
         <Show when={mode() === "full" && props.actions}>
           <div class={styles.actions} data-actions>
             {props.actions}
@@ -144,11 +164,9 @@ const Section = (props: { heading: string; children: JSX.Element }) => {
   const mode = useContext(ModeContext)
   return (
     <div class={styles.section}>
-      <Show when={mode() === "rail"}>
-        <div class={styles.divider} />
-      </Show>
-      {/* Read out in the rail too, where it does not show. */}
-      <div class={mode() === "rail" ? css({ srOnly: true }) : styles.heading}>{props.heading}</div>
+      <div class={styles.heading} data-rail={mode() === "rail"}>
+        {props.heading}
+      </div>
       {props.children}
     </div>
   )
