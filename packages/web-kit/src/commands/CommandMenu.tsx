@@ -60,10 +60,11 @@ const menu = sva({
     "footer",
   ],
   base: {
+    // Above everything on the page, the shell's sticky header included, as dialogs are.
     backdrop: {
       position: "fixed",
       inset: "0",
-      zIndex: "100",
+      zIndex: "modal",
       bg: "black.a7",
       backdropFilter: "blur(2px)",
       _open: { animation: "fade-in 120ms ease-out" },
@@ -72,7 +73,7 @@ const menu = sva({
     positioner: {
       position: "fixed",
       inset: "0",
-      zIndex: "100",
+      zIndex: "modal",
       display: "flex",
       justifyContent: "center",
       alignItems: "flex-start",
