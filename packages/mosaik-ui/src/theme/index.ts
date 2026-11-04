@@ -86,8 +86,10 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
               subtle: { value: "{colors.gray.10}" },
             },
             canvas: { value: "{colors.gray.1}" },
-            // Translucent, as light as step 4 on the page: it blends into any surface below.
-            border: { value: "{colors.gray.a4}" },
+            // The lines between and around things (cards, dividers, table rows): faint and
+            // translucent, as quiet tools draw them, blending into any surface below. Controls draw
+            // their own edges (`gray.outline.border`), which stay visible.
+            border: { value: "{colors.gray.a3}" },
             error: { value: "{colors.danger.9}" },
           },
           shadows,

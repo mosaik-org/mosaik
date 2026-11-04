@@ -58,7 +58,8 @@ export const checkbox = defineSlotRecipe({
     variant: {
       solid: {
         control: {
-          borderColor: "border",
+          // A control's edge, not a divider: visible however faint the lines around it.
+          borderColor: "gray.outline.border",
           _checked: {
             bg: "colorPalette.solid.bg",
             borderColor: "colorPalette.solid.bg",

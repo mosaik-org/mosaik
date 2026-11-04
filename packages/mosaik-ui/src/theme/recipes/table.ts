@@ -37,7 +37,8 @@ export const table = defineSlotRecipe({
       textAlign: "left",
       verticalAlign: "middle",
       boxShadow: "inset 0 -1px 0 0 var(--shadow-color)",
-      shadowColor: "border",
+      // A step stronger than the rows' lines: the header reads as one.
+      shadowColor: "gray.a4",
       _pinned: {
         position: "sticky",
         bg: "inherit",
@@ -63,6 +64,8 @@ export const table = defineSlotRecipe({
   defaultVariants: {
     size: "md",
     variant: "plain",
+    // Rows told apart by the pointer rather than by heavier lines.
+    interactive: true,
   },
   variants: {
     variant: {
@@ -79,7 +82,8 @@ export const table = defineSlotRecipe({
     },
     interactive: {
       true: {
-        body: { "& tr": { _hover: { bg: "gray.surface.bg.hover" } } },
+        // A tint, not a surface step: it shows on white cards and dark ones alike.
+        body: { "& tr": { _hover: { bg: "gray.subtle.bg" } } },
       },
     },
     columnBorder: {
@@ -102,8 +106,8 @@ export const table = defineSlotRecipe({
     size: {
       md: {
         root: { textStyle: "sm" },
-        header: { px: "3", py: "3" },
-        cell: { px: "3", py: "3" },
+        header: { px: "3", py: "2.5" },
+        cell: { px: "3", py: "2.5" },
       },
     },
   },
