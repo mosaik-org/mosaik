@@ -93,13 +93,13 @@ export const ConversationList = (props: {
   return (
     <nav class={styles.root} aria-label="Conversations">
       <div class={styles.controls}>
-        <Button variant="outline" size="sm" onClick={() => props.onSelect(null)}>
+        <Button variant="outline" size="md" onClick={() => props.onSelect(null)}>
           <Plus size={14} /> New conversation
         </Button>
         <TextField
           aria-label="Search conversations"
           type="search"
-          size="sm"
+          size="md"
           placeholder="Search conversations"
           startElement={<Search size={14} />}
           value={query()}
