@@ -10,7 +10,7 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@ark-ui/solid": "^5.39.3",
+    "@ark-ui/solid": "^5.40.0",
     "@mosaik/auth": "workspace:*",
     "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
