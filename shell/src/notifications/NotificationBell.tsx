@@ -1,7 +1,7 @@
 import { createEventStream } from "@mosaik/client/solid"
 import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
-import { css } from "@mosaik/styled-system/css"
+import { css, cva } from "@mosaik/styled-system/css"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -13,6 +13,29 @@ import { createEffect, createSignal, on, Show, Suspense } from "solid-js"
 import { Portal } from "solid-js/web"
 import { inboxQuery, latestQuery } from "./api"
 import { NotificationList, severityToast, useInboxActions } from "./NotificationList"
+
+/**
+ * That something is unread, on the bell's shoulder: a dot and no number, since a growing count nags
+ * and the panel has it. Red only for something critical, so that red can be trusted; a ring of the
+ * page's colour keeps it apart from the icon.
+ */
+const dot = cva({
+  base: {
+    position: "absolute",
+    top: "1.5",
+    insetEnd: "1.5",
+    boxSize: "2",
+    borderRadius: "full",
+    pointerEvents: "none",
+    outline: "2px solid token(colors.canvas)",
+  },
+  variants: {
+    critical: {
+      true: { bg: "danger.solid.bg" },
+      false: { bg: "accent.solid.bg" },
+    },
+  },
+})
 
 const styles = {
   // A header and the list under it, edge to edge; no taller than about ten rows, the list
@@ -28,15 +51,6 @@ const styles = {
     overflow: "hidden",
   }),
   trigger: css({ position: "relative" }),
-  // On the button's corner, overhanging it so the bell stays in sight; a ring of the page's colour
-  // keeps it apart from the icon.
-  badge: css({
-    position: "absolute",
-    top: "-1",
-    insetEnd: "-1",
-    pointerEvents: "none",
-    outline: "2px solid token(colors.canvas)",
-  }),
   header: css({ display: "flex", alignItems: "center", gap: "1", px: "4", py: "2.5", borderBottomWidth: "1px" }),
   title: css({ flex: "1", display: "flex", alignItems: "center", gap: "2", fontSize: "sm", fontWeight: "semibold" }),
   list: css({ overflowY: "auto", minH: "0", flex: "1" }),
@@ -44,7 +58,7 @@ const styles = {
 }
 
 /**
- * The header's notification bell: unread count, the newest items and live updates
+ * The header's notification bell: a dot for what is unread, the newest items and live updates
  * (a toast for every new notification). Rendered for logged-in users only.
  */
 export const NotificationBell = () => {
@@ -65,12 +79,16 @@ export const NotificationBell = () => {
     }),
   )
 
-  const label = () => (unread() > 0 ? `Notifications (${unread()} unread)` : "Notifications")
-
   // What is new, and nothing else: everything, read or not, is on the notifications page. Loaded
   // with the bell (the newest page, shared with that page's Unread tab), so opening never waits.
   const inbox = useInfiniteQuery(() => inboxQuery(true))
   const items = () => inbox.data?.pages[0]?.items ?? []
+  // Among the newest page: one older than that does not turn the bell red, and is rarely still news.
+  const critical = () => items().some((item) => item.content.severity === "critical")
+  const label = () => {
+    if (unread() === 0) return "Notifications"
+    return `Notifications (${unread()} unread${critical() ? ", some critical" : ""})`
+  }
   const close = () => setOpen(false)
 
   return (
@@ -84,9 +102,7 @@ export const NotificationBell = () => {
           <IconButton {...trigger()} variant="plain" aria-label={label()} class={styles.trigger}>
             <Bell size={18} />
             <Show when={unread() > 0}>
-              <Badge variant="solid" colorPalette="danger" size="sm" class={styles.badge} aria-hidden="true">
-                {unread() > 99 ? "99+" : unread()}
-              </Badge>
+              <span class={dot({ critical: critical() })} aria-hidden="true" />
             </Show>
           </IconButton>
         )}

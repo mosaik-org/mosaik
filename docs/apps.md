@@ -355,7 +355,9 @@ yield* notify.send({
 - **Audience.** A permission audience is everyone whose roles grant it (wildcards and the built-in roles
   included), resolved when the notification is sent.
 - **Channels.** Users choose per type at `/notifications/settings`; until they do, `defaultChannels` apply.
-- **In-app.** The bell shows the unread count and the newest items live, with a toast for each new one.
+- **In-app.** The bell shows a dot while something is unread, red if something `critical` is among
+  the newest, and the newest items live, with a toast for each new one. So keep `critical` for what
+  someone should look at now.
   Its panel lists the unread ones (all of them are at `/notifications`), under the day they came:
   each with your app's icon in its colour (a warning or a critical one in theirs), the title on one
   line and the start of the body's first paragraph after your app's name. Write the title so it
