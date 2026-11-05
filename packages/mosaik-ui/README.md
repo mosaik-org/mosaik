@@ -157,6 +157,10 @@ links, checked boxes, radios and switches, sliders, progress, steps, chosen days
 and selected text. Rare like that, it shows where to look. Ask for it elsewhere with
 `colorPalette="accent"`.
 
+**States** (paid, failed, healthy) are `<Badge variant="dot" colorPalette="success">`: a small
+coloured mark and words in the text's colour, so a column of them stays readable and calm. The
+other variants are for labels and counts.
+
 **Fonts:** none of its own. Text takes the page's font; `Code` and `Kbd` take the theme's `mono`
 (the system's monospace font unless your theme names one).
 

@@ -40,6 +40,19 @@ export const badge = defineRecipe({
         borderColor: "colorPalette.outline.border",
         color: "colorPalette.outline.fg",
       },
+      // A state, in a column of them: the colour says which in a small mark, and the words stay
+      // as readable as the text around them. Step 9, as a solid fill in grey would be black or white.
+      dot: {
+        bg: "gray.subtle.bg",
+        color: "fg.default",
+        _before: {
+          content: '""',
+          flexShrink: "0",
+          boxSize: "1.5",
+          borderRadius: "full",
+          bg: "colorPalette.9",
+        },
+      },
     },
     size: {
       sm: { fontSize: "xs", px: "1.5", h: "4.5", minW: "4.5", gap: "0.5", _icon: { boxSize: "2.5" } },

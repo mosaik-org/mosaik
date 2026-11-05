@@ -730,7 +730,7 @@ const EventsStatus = (props: { app: AdminApp }) => {
       {(events) => (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
           <Show when={events().pending > 0}>
-            <Badge colorPalette={events().lastError ? "danger" : "warning"}>
+            <Badge variant="dot" colorPalette={events().lastError ? "danger" : "warning"}>
               {events().pending} {events().pending === 1 ? "event" : "events"} waiting
             </Badge>
           </Show>
@@ -797,9 +797,12 @@ const columns = column.columns([
       return (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start", maxW: "sm" })}>
           <div class={css({ display: "flex", gap: "1", alignItems: "center" })}>
-            <Badge colorPalette={STATUS[app.status].tone}>{STATUS[app.status].label}</Badge>
+            <Badge variant="dot" colorPalette={STATUS[app.status].tone}>
+              {STATUS[app.status].label}
+            </Badge>
             <Show when={app.status === "active" || app.status === "pending"}>
               <Badge
+                variant="dot"
                 colorPalette={app.health === "healthy" ? "success" : app.health === "unhealthy" ? "danger" : "neutral"}
               >
                 {app.health}

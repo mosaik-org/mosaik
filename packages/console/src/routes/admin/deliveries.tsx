@@ -107,7 +107,9 @@ function Deliveries() {
       enableSorting: false,
       cell: (info) => (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
-          <Badge colorPalette={STATUS[info.getValue()].tone}>{STATUS[info.getValue()].label}</Badge>
+          <Badge variant="dot" colorPalette={STATUS[info.getValue()].tone}>
+            {STATUS[info.getValue()].label}
+          </Badge>
           <Show when={info.row.original.attempts > 1}>
             <span class={css({ fontSize: "xs", color: "fg.muted" })}>{info.row.original.attempts} attempts</span>
           </Show>

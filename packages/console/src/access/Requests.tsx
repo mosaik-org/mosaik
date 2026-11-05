@@ -144,10 +144,14 @@ const Decision = (props: { request: AccessRequest }) => (
   <div class={styles.person}>
     <Switch>
       <Match when={props.request.status === "approved"}>
-        <Badge colorPalette="success">{props.request.grantedRole?.name ?? "Approved"}</Badge>
+        <Badge variant="dot" colorPalette="success">
+          {props.request.grantedRole?.name ?? "Approved"}
+        </Badge>
       </Match>
       <Match when={props.request.status === "declined"}>
-        <Badge colorPalette="danger">Declined</Badge>
+        <Badge variant="dot" colorPalette="danger">
+          Declined
+        </Badge>
       </Match>
     </Switch>
     <span class={styles.muted}>

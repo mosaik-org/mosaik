@@ -20,5 +20,7 @@ const LABELS: Record<OrderStatus, string> = {
 export const statusLabel = (status: OrderStatus): string => LABELS[status]
 
 export const StatusBadge = (props: { status: OrderStatus }) => (
-  <Badge colorPalette={TONES[props.status]}>{LABELS[props.status]}</Badge>
+  <Badge variant="dot" colorPalette={TONES[props.status]}>
+    {LABELS[props.status]}
+  </Badge>
 )

@@ -100,7 +100,9 @@ export const AppCard = (props: AppCardProps) => {
               </Link>
             </Match>
             <Match when={props.request?.status === "pending"}>
-              <Badge colorPalette="accent">Access requested</Badge>
+              <Badge variant="dot" colorPalette="accent">
+                Access requested
+              </Badge>
             </Match>
             <Match when={props.onRequestAccess}>
               {(request) => (

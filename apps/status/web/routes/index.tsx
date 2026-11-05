@@ -52,7 +52,9 @@ const ServiceCard = (props: { service: ServiceStatus }) => (
       <div class={css({ display: "flex", flexDirection: "column", gap: "3" })}>
         <div class={css({ display: "flex", justifyContent: "space-between", alignItems: "center" })}>
           <span class={styles.name}>{props.service.name}</span>
-          <Badge colorPalette={STATE[props.service.state].tone}>{STATE[props.service.state].label}</Badge>
+          <Badge variant="dot" colorPalette={STATE[props.service.state].tone}>
+            {STATE[props.service.state].label}
+          </Badge>
         </div>
         <Chart height="56px" option={sparklineOption({ data: props.service.history })} />
         <div class={styles.meta}>

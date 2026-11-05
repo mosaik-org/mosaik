@@ -8,6 +8,9 @@ export const App = () => {
       <Badge variant="surface">Surface</Badge>
       <Badge variant="subtle">Subtle</Badge>
       <Badge variant="outline">Outline</Badge>
+      <Badge variant="dot" colorPalette="success">
+        Dot
+      </Badge>
     </Wrap>
   )
 }

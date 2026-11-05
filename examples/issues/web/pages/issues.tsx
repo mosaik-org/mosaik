@@ -49,7 +49,11 @@ const columns = column.columns([
   column.accessor("summary", { header: "Summary" }),
   column.accessor("status", {
     header: "Status",
-    cell: (info) => <Badge colorPalette={CATEGORY[info.row.original.statusCategory].tone}>{info.getValue()}</Badge>,
+    cell: (info) => (
+      <Badge variant="dot" colorPalette={CATEGORY[info.row.original.statusCategory].tone}>
+        {info.getValue()}
+      </Badge>
+    ),
   }),
   column.accessor("type", { header: "Type" }),
   column.accessor("priority", { header: "Priority", cell: (info) => info.getValue() ?? "—" }),

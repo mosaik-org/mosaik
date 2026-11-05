@@ -96,7 +96,9 @@ const Actions = (props: { app: AnyApp }) => {
           />
         </Match>
         <Match when={latest()?.status === "pending"}>
-          <Badge colorPalette="accent">Access requested</Badge>
+          <Badge variant="dot" colorPalette="accent">
+            Access requested
+          </Badge>
         </Match>
         <Match when={true}>
           <Button variant="outline" onClick={() => setRequesting(true)}>
