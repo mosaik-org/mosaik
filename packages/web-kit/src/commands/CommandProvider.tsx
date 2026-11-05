@@ -18,7 +18,7 @@ import {
 import { bestScore } from "../fuzzy"
 import { withTimeout } from "../loading"
 import { createDebounced } from "../primitives"
-import { CommandMenu, type CommandMenuGroup, type CommandMenuItem } from "./CommandMenu"
+import { CommandPalette, type PaletteGroup, type PaletteItem } from "./CommandPalette"
 import { sourcesToSearch } from "./scope"
 import type {
   Command,
@@ -98,7 +98,7 @@ const rememberRecent = (id: string) => {
 const isShortcut = (event: KeyboardEvent) => (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k"
 
 interface Entry {
-  readonly item: CommandMenuItem
+  readonly item: PaletteItem
   readonly run: () => unknown
   /** Selecting it changes what the palette shows instead of leaving it. */
   readonly keepOpen?: boolean
@@ -369,21 +369,21 @@ export const CommandProvider = (props: CommandProviderProps) => {
     }))
   })
 
-  const menuGroups = (): ReadonlyArray<CommandMenuGroup> =>
+  const paletteGroups = (): ReadonlyArray<PaletteGroup> =>
     groups().map((group) => ({ id: group.label, label: group.label, items: group.entries.map((entry) => entry.item) }))
 
-  const entryOf = (item: CommandMenuItem) =>
+  const entryOf = (item: PaletteItem) =>
     groups()
       .flatMap((group) => group.entries)
       .find((candidate) => candidate.item === item)
 
-  const select = (item: CommandMenuItem) => {
+  const select = (item: PaletteItem) => {
     const entry = entryOf(item)
     if (entry?.keepOpen !== true) setOpen(false)
     void entry?.run()
   }
 
-  const narrow = (item: CommandMenuItem) => {
+  const narrow = (item: PaletteItem) => {
     const app = entryOf(item)?.app
     if (app === undefined) return
     setScope(app)
@@ -393,12 +393,12 @@ export const CommandProvider = (props: CommandProviderProps) => {
   return (
     <CommandContext.Provider value={registry}>
       {props.children}
-      <CommandMenu
+      <CommandPalette
         open={open()}
         onOpenChange={setOpen}
         query={query()}
         onQueryChange={setQuery}
-        groups={menuGroups()}
+        groups={paletteGroups()}
         onSelect={select}
         onTab={narrow}
         scope={scope()?.name}
