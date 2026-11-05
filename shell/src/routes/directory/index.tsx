@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { EmptyState, Heading, Input, SelectField, SwitchField } from "@mosaik/mosaik-ui"
+import { EmptyState, Heading, Input, SelectField, SwitchField, Tabs } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { PageTitle, searchValidator } from "@mosaik/web-kit"
@@ -42,6 +42,9 @@ const SORTS: ReadonlyArray<{ value: DirectorySort; label: string }> = [
   { value: "popular", label: "Most used" },
 ]
 
+/** The tab for no category in particular: not a name admins would give a category. */
+const ALL_CATEGORIES = "__all__"
+
 const styles = {
   toolbar: css({ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "3" }),
   search: css({ position: "relative", flex: "1", minW: "56", maxW: "md" }),
@@ -54,27 +57,6 @@ const styles = {
     pointerEvents: "none",
   }),
   searchInput: css({ pl: "9" }),
-  chips: css({ display: "flex", flexWrap: "wrap", gap: "2" }),
-  chip: css({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "1.5",
-    px: "3",
-    py: "1",
-    borderRadius: "full",
-    borderWidth: "1px",
-    borderColor: "border",
-    fontSize: "sm",
-    color: "fg.muted",
-    cursor: "pointer",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "1px" },
-    "&[aria-pressed=true]": {
-      bg: "gray.subtle.bg.hover",
-      color: "fg.default",
-      borderColor: "gray.surface.border.hover",
-    },
-  }),
   count: css({ fontSize: "xs", color: "fg.subtle" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
   grid: css({
@@ -123,7 +105,7 @@ function Directory() {
   const sort = (): DirectorySort => search().sort ?? "name"
   const grouped = () => query().trim() === "" && search().category === undefined
 
-  // Category chips count what the other filters leave.
+  // Each category's tab counts what the other filters leave.
   const unfiltered = createMemo(() =>
     filterApps(all(), { query: query(), category: undefined, availableOnly: search().available === true }),
   )
@@ -193,29 +175,31 @@ function Directory() {
         />
       </div>
 
-      {/* biome-ignore lint/a11y/useSemanticElements: a group of toggle buttons, not form fields */}
-      <div class={styles.chips} role="group" aria-label="Categories">
-        <button
-          type="button"
-          class={styles.chip}
-          aria-pressed={search().category === undefined}
-          onClick={() => update({ category: undefined })}
-        >
-          All <span class={styles.count}>{unfiltered().length}</span>
-        </button>
-        <For each={categoryCounts(unfiltered())}>
-          {(entry) => (
-            <button
-              type="button"
-              class={styles.chip}
-              aria-pressed={search().category === entry.category}
-              onClick={() => update({ category: search().category === entry.category ? undefined : entry.category })}
-            >
-              {entry.category} <span class={styles.count}>{entry.count}</span>
-            </button>
-          )}
-        </For>
-      </div>
+      <Tabs.Root
+        variant="subtle"
+        colorPalette="gray"
+        size="sm"
+        value={search().category ?? ALL_CATEGORIES}
+        onValueChange={({ value }) => update({ category: value === ALL_CATEGORIES ? undefined : value })}
+      >
+        <Tabs.List aria-label="Categories">
+          <Tabs.Trigger value={ALL_CATEGORIES}>
+            All <span class={styles.count}>{unfiltered().length}</span>
+          </Tabs.Trigger>
+          {/* By name, not by count's object: the counts are worked out anew with every change of filter,
+              and a tab rebuilt under the keyboard would lose its focus. */}
+          <For each={categoryCounts(unfiltered()).map((entry) => entry.category)}>
+            {(category) => (
+              <Tabs.Trigger value={category}>
+                {category}{" "}
+                <span class={styles.count}>
+                  {categoryCounts(unfiltered()).find((entry) => entry.category === category)?.count}
+                </span>
+              </Tabs.Trigger>
+            )}
+          </For>
+        </Tabs.List>
+      </Tabs.Root>
 
       <Show
         when={shown().length > 0}
