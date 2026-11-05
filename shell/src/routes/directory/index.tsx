@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { EmptyState, Heading, Input, SelectField, SwitchField, Tabs } from "@mosaik/mosaik-ui"
+import { EmptyState, Heading, Input, SelectField, Tabs } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { PageTitle, searchValidator } from "@mosaik/web-kit"
@@ -28,7 +28,6 @@ const DirectorySearch = Schema.Struct({
   q: Schema.optional(Schema.String),
   category: Schema.optional(Schema.String),
   sort: Schema.optional(Schema.Literals(["name", "popular"])),
-  available: Schema.optional(Schema.Boolean),
 })
 
 export const Route = createFileRoute("/_app/directory/")({
@@ -105,16 +104,13 @@ function Directory() {
   const sort = (): DirectorySort => search().sort ?? "name"
   const grouped = () => query().trim() === "" && search().category === undefined
 
-  // Each category's tab counts what the other filters leave.
-  const unfiltered = createMemo(() =>
-    filterApps(all(), { query: query(), category: undefined, availableOnly: search().available === true }),
-  )
+  // Each category's tab counts what the search leaves.
+  const unfiltered = createMemo(() => filterApps(all(), { query: query(), category: undefined }))
   const shown = createMemo(() =>
     sortApps(
       filterApps(all(), {
         query: query(),
         category: search().category,
-        availableOnly: search().available === true,
       }),
       sort(),
     ),
@@ -165,13 +161,7 @@ function Directory() {
           items={SORTS}
           value={sort()}
           onValueChange={(value) => update({ sort: value === "name" ? undefined : (value ?? undefined) })}
-          size="sm"
           class={css({ width: "40" })}
-        />
-        <SwitchField
-          label="Only apps I can open"
-          checked={search().available === true}
-          onCheckedChange={(checked) => update({ available: checked || undefined })}
         />
       </div>
 

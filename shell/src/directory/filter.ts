@@ -18,18 +18,16 @@ export type DirectorySort = "name" | "popular"
 export interface DirectoryFilter {
   readonly query: string
   readonly category: string | undefined
-  readonly availableOnly: boolean
 }
 
 const searchable = (app: DirectoryApp) => `${app.name} ${app.id} ${app.category} ${app.description ?? ""}`.toLowerCase()
 
-/** Apps matching every word of the query, in the category, and open to the user if asked. */
+/** Apps matching every word of the query, in the category. */
 export const filterApps = (apps: ReadonlyArray<DirectoryApp>, filter: DirectoryFilter): ReadonlyArray<DirectoryApp> => {
   const words = filter.query.toLowerCase().split(/\s+/).filter(Boolean)
   return apps.filter(
     (app) =>
       (filter.category === undefined || app.category === filter.category) &&
-      (!filter.availableOnly || app.available) &&
       words.every((word) => searchable(app).includes(word)),
   )
 }

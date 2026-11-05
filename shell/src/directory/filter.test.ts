@@ -21,9 +21,9 @@ const ids = (list: ReadonlyArray<DirectoryApp>) => list.map((entry) => entry.id)
 
 describe("filterApps", () => {
   it("matches every word against name, id, category and description", () => {
-    expect(ids(filterApps(apps, { query: "sales deal", category: undefined, availableOnly: false }))).toEqual(["crm"])
-    expect(ids(filterApps(apps, { query: "", category: "Sales", availableOnly: true }))).toEqual(["crm"])
-    expect(filterApps(apps, { query: "  ", category: undefined, availableOnly: false })).toHaveLength(4)
+    expect(ids(filterApps(apps, { query: "sales deal", category: undefined }))).toEqual(["crm"])
+    expect(ids(filterApps(apps, { query: "", category: "Sales" }))).toEqual(["crm", "quotes"])
+    expect(filterApps(apps, { query: "  ", category: undefined })).toHaveLength(4)
   })
 })
 
