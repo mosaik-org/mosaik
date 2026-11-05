@@ -1,5 +1,5 @@
 import { IconButton } from "@mosaik/mosaik-ui"
-import { PhoneIcon } from "lucide-solid"
+import PhoneIcon from "lucide-solid/icons/phone"
 import { Wrap } from "styled-system/jsx"
 
 export const App = () => {

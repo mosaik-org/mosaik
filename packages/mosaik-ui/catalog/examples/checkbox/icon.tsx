@@ -1,5 +1,5 @@
 import { Checkbox } from "@mosaik/mosaik-ui"
-import { PlusIcon } from "lucide-solid"
+import PlusIcon from "lucide-solid/icons/plus"
 
 export const App = () => {
   return (

@@ -1,5 +1,5 @@
 import { FileUpload, Icon } from "@mosaik/mosaik-ui"
-import { UploadIcon } from "lucide-solid"
+import UploadIcon from "lucide-solid/icons/upload"
 import { Box } from "styled-system/jsx"
 
 export const App = () => {

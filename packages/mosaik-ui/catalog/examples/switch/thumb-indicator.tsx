@@ -1,5 +1,6 @@
 import { Switch } from "@mosaik/mosaik-ui"
-import { CheckIcon, XIcon } from "lucide-solid"
+import CheckIcon from "lucide-solid/icons/check"
+import XIcon from "lucide-solid/icons/x"
 
 export const App = () => {
   return (

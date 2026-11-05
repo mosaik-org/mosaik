@@ -1,5 +1,6 @@
 import { Carousel, IconButton, Text } from "@mosaik/mosaik-ui"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-solid"
+import ChevronDownIcon from "lucide-solid/icons/chevron-down"
+import ChevronUpIcon from "lucide-solid/icons/chevron-up"
 import { Center } from "styled-system/jsx"
 
 export const App = () => {

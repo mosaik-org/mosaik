@@ -1,5 +1,6 @@
 import { Button, Card, Field, Input, Text } from "@mosaik/mosaik-ui"
-import { KeyRoundIcon, MailIcon } from "lucide-solid"
+import KeyRoundIcon from "lucide-solid/icons/key-round"
+import MailIcon from "lucide-solid/icons/mail"
 import { Divider, HStack, Stack } from "styled-system/jsx"
 
 export const App = () => {

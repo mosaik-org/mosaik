@@ -2,9 +2,10 @@ import { Button, CloseButton, Dialog } from "@mosaik/mosaik-ui"
 import { For } from "solid-js"
 import { Portal } from "solid-js/web"
 import { Wrap } from "styled-system/jsx"
+import { dialog } from "styled-system/recipes"
 
 export const App = () => {
-  const presets = ["scale", "slide-in-bottom", "slide-in-top", "none"] as const
+  const presets = dialog.variantMap.motionPreset
 
   return (
     <Wrap gap="4">

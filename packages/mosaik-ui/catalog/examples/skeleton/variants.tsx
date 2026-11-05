@@ -1,17 +1,9 @@
-import { Skeleton, Text } from "@mosaik/mosaik-ui"
-import { Stack } from "styled-system/jsx"
+import { Skeleton } from "@mosaik/mosaik-ui"
+import { skeleton } from "styled-system/recipes"
+import { Showcase } from "../../showcase"
 
-export const App = () => {
-  return (
-    <Stack gap="4">
-      <Stack gap="1.5">
-        <Text textStyle="label">Pulse</Text>
-        <Skeleton flex="1" minH="5" variant="pulse" />
-      </Stack>
-      <Stack gap="1.5">
-        <Text textStyle="label">Shine</Text>
-        <Skeleton flex="1" minH="5" variant="shine" />
-      </Stack>
-    </Stack>
-  )
-}
+export const App = () => (
+  <Showcase values={skeleton.variantMap.variant} wide>
+    {(variant) => <Skeleton minH="5" variant={variant} />}
+  </Showcase>
+)

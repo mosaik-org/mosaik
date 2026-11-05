@@ -1,5 +1,5 @@
 import { Badge } from "@mosaik/mosaik-ui"
-import { StarIcon } from "lucide-solid"
+import StarIcon from "lucide-solid/icons/star"
 import { Wrap } from "styled-system/jsx"
 
 export const App = () => {

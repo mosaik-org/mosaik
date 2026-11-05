@@ -1,6 +1,7 @@
 import { useFileUploadContext } from "@ark-ui/solid/file-upload"
 import { Button, FileUpload, IconButton } from "@mosaik/mosaik-ui"
-import { ImageUpIcon, XIcon } from "lucide-solid"
+import ImageUpIcon from "lucide-solid/icons/image-up"
+import XIcon from "lucide-solid/icons/x"
 import { For } from "solid-js"
 
 export const App = () => {

@@ -25,7 +25,9 @@ import {
   Text,
   toast,
 } from "@mosaik/mosaik-ui"
-import { CheckIcon, MapPinIcon, RefreshCwIcon } from "lucide-solid"
+import CheckIcon from "lucide-solid/icons/check"
+import MapPinIcon from "lucide-solid/icons/map-pin"
+import RefreshCwIcon from "lucide-solid/icons/refresh-cw"
 import { createSignal, For, Show } from "solid-js"
 import { Portal } from "solid-js/web"
 import { css } from "styled-system/css"

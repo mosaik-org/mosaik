@@ -1,5 +1,5 @@
 import { InputGroup, NumberInput } from "@mosaik/mosaik-ui"
-import { DollarSignIcon } from "lucide-solid"
+import DollarSignIcon from "lucide-solid/icons/dollar-sign"
 
 export const App = () => {
   return (

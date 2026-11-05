@@ -1,20 +1,14 @@
 import { Progress } from "@mosaik/mosaik-ui"
-import { For } from "solid-js"
-import { Stack } from "styled-system/jsx"
+import { COLORS, Showcase } from "../../showcase"
 
-export const App = () => {
-  const colors = ["blue", "green", "amber", "red"] as const
-  return (
-    <Stack gap="4">
-      <For each={colors}>
-        {(color) => (
-          <Progress.Root defaultValue={42} colorPalette={color}>
-            <Progress.Track>
-              <Progress.Range />
-            </Progress.Track>
-          </Progress.Root>
-        )}
-      </For>
-    </Stack>
-  )
-}
+export const App = () => (
+  <Showcase values={COLORS} wide>
+    {(color) => (
+      <Progress.Root defaultValue={42} colorPalette={color} aria-label={`Progress in ${color}`}>
+        <Progress.Track>
+          <Progress.Range />
+        </Progress.Track>
+      </Progress.Root>
+    )}
+  </Showcase>
+)

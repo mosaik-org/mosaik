@@ -1,5 +1,7 @@
 import { Input, InputGroup } from "@mosaik/mosaik-ui"
-import { Euro, Info, User } from "lucide-solid"
+import Euro from "lucide-solid/icons/euro"
+import Info from "lucide-solid/icons/info"
+import User from "lucide-solid/icons/user"
 import { Stack } from "styled-system/jsx"
 
 export const App = () => {

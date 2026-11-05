@@ -1,5 +1,5 @@
 import { Breadcrumb } from "@mosaik/mosaik-ui"
-import { DotIcon } from "lucide-solid"
+import DotIcon from "lucide-solid/icons/dot"
 
 export const App = () => {
   return (

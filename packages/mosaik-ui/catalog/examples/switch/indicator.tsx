@@ -1,5 +1,6 @@
 import { Icon, Switch } from "@mosaik/mosaik-ui"
-import { MoonIcon, SunIcon } from "lucide-solid"
+import MoonIcon from "lucide-solid/icons/moon"
+import SunIcon from "lucide-solid/icons/sun"
 
 export const App = () => {
   return (

@@ -1,5 +1,5 @@
 import { Button, ButtonGroup, IconButton } from "@mosaik/mosaik-ui"
-import { ChevronDownIcon } from "lucide-solid"
+import ChevronDownIcon from "lucide-solid/icons/chevron-down"
 
 export const App = () => {
   return (

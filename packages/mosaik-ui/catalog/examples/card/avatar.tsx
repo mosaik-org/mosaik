@@ -1,5 +1,6 @@
 import { Avatar, Button, Card, Text } from "@mosaik/mosaik-ui"
-import { CheckIcon, XIcon } from "lucide-solid"
+import CheckIcon from "lucide-solid/icons/check"
+import XIcon from "lucide-solid/icons/x"
 import { HStack, Stack } from "styled-system/jsx"
 
 export const App = () => {

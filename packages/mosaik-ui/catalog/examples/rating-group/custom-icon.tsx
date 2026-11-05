@@ -1,5 +1,5 @@
 import { RatingGroup } from "@mosaik/mosaik-ui"
-import { HeartIcon } from "lucide-solid"
+import HeartIcon from "lucide-solid/icons/heart"
 
 export const App = () => {
   return (

@@ -1,5 +1,5 @@
 import { Button, FileUpload } from "@mosaik/mosaik-ui"
-import { ImageUpIcon } from "lucide-solid"
+import ImageUpIcon from "lucide-solid/icons/image-up"
 
 export const App = () => {
   return (

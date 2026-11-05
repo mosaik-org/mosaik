@@ -1,5 +1,5 @@
 import { Button, Steps } from "@mosaik/mosaik-ui"
-import { CheckIcon } from "lucide-solid"
+import CheckIcon from "lucide-solid/icons/check"
 import { For } from "solid-js"
 import { HStack } from "styled-system/jsx"
 

@@ -1,5 +1,6 @@
 import { Breadcrumb } from "@mosaik/mosaik-ui"
-import { ComponentIcon, FileIcon } from "lucide-solid"
+import ComponentIcon from "lucide-solid/icons/component"
+import FileIcon from "lucide-solid/icons/file"
 
 export const App = () => {
   return (

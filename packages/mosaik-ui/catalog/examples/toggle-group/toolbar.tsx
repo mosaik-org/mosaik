@@ -1,5 +1,8 @@
 import { ButtonGroup, IconButton, ToggleGroup } from "@mosaik/mosaik-ui"
-import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon } from "lucide-solid"
+import AlignCenterIcon from "lucide-solid/icons/text-align-center"
+import AlignRightIcon from "lucide-solid/icons/text-align-end"
+import AlignJustifyIcon from "lucide-solid/icons/text-align-justify"
+import AlignLeftIcon from "lucide-solid/icons/text-align-start"
 
 export const App = () => {
   return (

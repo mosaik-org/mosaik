@@ -1,9 +1,11 @@
 import { Avatar } from "@mosaik/mosaik-ui"
 import { For } from "solid-js"
 import { Wrap } from "styled-system/jsx"
+import { avatar } from "styled-system/recipes"
+import { bySize } from "../../showcase"
 
 export const App = () => {
-  const sizes = ["xs", "sm", "md", "lg", "xl", "2xl"] as const
+  const sizes = bySize(avatar.variantMap.size)
 
   return (
     <Wrap gap="4">

@@ -1,5 +1,5 @@
 import { InputGroup, NumberInput } from "@mosaik/mosaik-ui"
-import { ArrowLeftRightIcon } from "lucide-solid"
+import ArrowLeftRightIcon from "lucide-solid/icons/arrow-left-right"
 
 export const App = () => {
   return (

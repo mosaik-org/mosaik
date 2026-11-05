@@ -1,19 +1,13 @@
 import { RatingGroup } from "@mosaik/mosaik-ui"
-import { For } from "solid-js"
-import { Stack } from "styled-system/jsx"
+import { COLORS, Showcase } from "../../showcase"
 
-export const App = () => {
-  const colors = ["blue", "green", "amber", "red"] as const
-  return (
-    <Stack gap="4">
-      <For each={colors}>
-        {(color) => (
-          <RatingGroup.Root count={5} defaultValue={3} colorPalette={color}>
-            <RatingGroup.HiddenInput />
-            <RatingGroup.Control />
-          </RatingGroup.Root>
-        )}
-      </For>
-    </Stack>
-  )
-}
+export const App = () => (
+  <Showcase values={COLORS}>
+    {(color) => (
+      <RatingGroup.Root count={5} defaultValue={3} colorPalette={color} aria-label={`Rating in ${color}`}>
+        <RatingGroup.HiddenInput />
+        <RatingGroup.Control />
+      </RatingGroup.Root>
+    )}
+  </Showcase>
+)

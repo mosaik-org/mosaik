@@ -17,7 +17,10 @@ import {
   Tooltip,
   toast,
 } from "@mosaik/mosaik-ui"
-import { CoffeeIcon, DownloadIcon, PlusIcon, RefreshCwIcon } from "lucide-solid"
+import CoffeeIcon from "lucide-solid/icons/coffee"
+import DownloadIcon from "lucide-solid/icons/download"
+import PlusIcon from "lucide-solid/icons/plus"
+import RefreshCwIcon from "lucide-solid/icons/refresh-cw"
 import { createSignal, Show } from "solid-js"
 import { Box, Grid, HStack, Stack } from "styled-system/jsx"
 import { ORDERS, PRODUCTS } from "./data"

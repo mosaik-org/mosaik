@@ -1,5 +1,7 @@
 import { ButtonGroup, Editable, IconButton } from "@mosaik/mosaik-ui"
-import { CheckIcon, EditIcon, XIcon } from "lucide-solid"
+import CheckIcon from "lucide-solid/icons/check"
+import EditIcon from "lucide-solid/icons/square-pen"
+import XIcon from "lucide-solid/icons/x"
 
 export const App = () => {
   return (

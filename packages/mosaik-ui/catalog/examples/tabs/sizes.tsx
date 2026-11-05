@@ -1,9 +1,11 @@
 import { Tabs } from "@mosaik/mosaik-ui"
 import { For } from "solid-js"
 import { Stack } from "styled-system/jsx"
+import { tabs } from "styled-system/recipes"
+import { bySize } from "../../showcase"
 
 export const App = () => {
-  const sizes = ["sm", "md", "lg"] as const
+  const sizes = bySize(tabs.variantMap.size)
 
   return (
     <Stack gap="4">

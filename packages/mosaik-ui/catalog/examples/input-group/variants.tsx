@@ -1,5 +1,6 @@
 import { Input, InputGroup } from "@mosaik/mosaik-ui"
-import { EuroIcon, InfoIcon } from "lucide-solid"
+import EuroIcon from "lucide-solid/icons/euro"
+import InfoIcon from "lucide-solid/icons/info"
 import { For } from "solid-js/web"
 import { Stack } from "styled-system/jsx"
 

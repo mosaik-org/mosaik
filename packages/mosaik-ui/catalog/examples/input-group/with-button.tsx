@@ -1,5 +1,5 @@
 import { IconButton, Input, InputGroup } from "@mosaik/mosaik-ui"
-import { SearchIcon } from "lucide-solid"
+import SearchIcon from "lucide-solid/icons/search"
 
 export const App = () => {
   return (

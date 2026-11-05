@@ -22,19 +22,17 @@ import {
   ToggleGroup,
   toast,
 } from "@mosaik/mosaik-ui"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  EllipsisIcon,
-  EyeIcon,
-  InboxIcon,
-  LayoutGridIcon,
-  ListIcon,
-  RotateCcwIcon,
-  SearchIcon,
-  SlidersHorizontalIcon,
-  TrashIcon,
-} from "lucide-solid"
+import ChevronLeftIcon from "lucide-solid/icons/chevron-left"
+import ChevronRightIcon from "lucide-solid/icons/chevron-right"
+import EllipsisIcon from "lucide-solid/icons/ellipsis"
+import EyeIcon from "lucide-solid/icons/eye"
+import InboxIcon from "lucide-solid/icons/inbox"
+import LayoutGridIcon from "lucide-solid/icons/layout-grid"
+import ListIcon from "lucide-solid/icons/list"
+import RotateCcwIcon from "lucide-solid/icons/rotate-ccw"
+import SearchIcon from "lucide-solid/icons/search"
+import SlidersHorizontalIcon from "lucide-solid/icons/sliders-horizontal"
+import TrashIcon from "lucide-solid/icons/trash"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { Portal } from "solid-js/web"
 import { css } from "styled-system/css"

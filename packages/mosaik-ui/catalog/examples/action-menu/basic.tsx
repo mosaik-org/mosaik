@@ -1,5 +1,7 @@
 import { ActionMenu, IconButton } from "@mosaik/mosaik-ui"
-import { EllipsisIcon, PencilIcon, TrashIcon } from "lucide-solid"
+import EllipsisIcon from "lucide-solid/icons/ellipsis"
+import PencilIcon from "lucide-solid/icons/pencil"
+import TrashIcon from "lucide-solid/icons/trash"
 
 export const App = () => (
   <ActionMenu

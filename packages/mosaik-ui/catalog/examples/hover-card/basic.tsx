@@ -1,5 +1,5 @@
 import { Avatar, HoverCard, Icon, Link, Text } from "@mosaik/mosaik-ui"
-import { MapPinIcon } from "lucide-solid"
+import MapPinIcon from "lucide-solid/icons/map-pin"
 import { Portal } from "solid-js/web"
 import { HStack, Stack } from "styled-system/jsx"
 

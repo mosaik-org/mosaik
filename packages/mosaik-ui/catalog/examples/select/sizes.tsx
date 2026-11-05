@@ -3,9 +3,11 @@ import { Select } from "@mosaik/mosaik-ui"
 import { For } from "solid-js"
 import { Portal } from "solid-js/web"
 import { Stack } from "styled-system/jsx"
+import { select } from "styled-system/recipes"
+import { bySize } from "../../showcase"
 
 export const App = () => {
-  const sizes = ["sm", "md", "lg"] as const
+  const sizes = bySize(select.variantMap.size)
   return (
     <Stack gap="4">
       <For each={sizes}>

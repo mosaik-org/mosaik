@@ -1,5 +1,5 @@
 import { Breadcrumb, IconButton, Menu } from "@mosaik/mosaik-ui"
-import { EllipsisIcon } from "lucide-solid"
+import EllipsisIcon from "lucide-solid/icons/ellipsis"
 import { For } from "solid-js"
 import { Portal } from "solid-js/web"
 

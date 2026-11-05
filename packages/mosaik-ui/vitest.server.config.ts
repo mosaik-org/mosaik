@@ -13,6 +13,8 @@ export default defineConfig({
   },
   test: {
     name: "mosaik-ui-server",
+    // The tests list the examples with `import.meta.glob`: cached, a new example would go untested.
+    fsModuleCache: false,
     root: import.meta.dirname,
     environment: "node",
     include: ["test/**/*.server.test.{ts,tsx}"],

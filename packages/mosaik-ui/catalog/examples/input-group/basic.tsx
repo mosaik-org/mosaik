@@ -1,5 +1,5 @@
 import { Input, InputGroup } from "@mosaik/mosaik-ui"
-import { EuroIcon } from "lucide-solid"
+import EuroIcon from "lucide-solid/icons/euro"
 
 export const App = () => {
   return (

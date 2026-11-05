@@ -1,5 +1,5 @@
 import { Button, EmptyState, ErrorState } from "@mosaik/mosaik-ui"
-import { InboxIcon } from "lucide-solid"
+import InboxIcon from "lucide-solid/icons/inbox"
 
 export const App = () => (
   <>

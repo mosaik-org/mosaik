@@ -1,5 +1,5 @@
 import { Button, Menu } from "@mosaik/mosaik-ui"
-import { ChevronRightIcon } from "lucide-solid"
+import ChevronRightIcon from "lucide-solid/icons/chevron-right"
 import { Portal } from "solid-js/web"
 
 export const App = () => {

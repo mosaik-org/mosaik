@@ -1,9 +1,11 @@
 import { Button, Menu } from "@mosaik/mosaik-ui"
 import { For } from "solid-js"
 import { Wrap } from "styled-system/jsx"
+import { menu } from "styled-system/recipes"
+import { bySize } from "../../showcase"
 
 export const App = () => {
-  const sizes = ["xs", "sm", "md", "lg"] as const
+  const sizes = bySize(menu.variantMap.size)
 
   return (
     <Wrap gap="4">

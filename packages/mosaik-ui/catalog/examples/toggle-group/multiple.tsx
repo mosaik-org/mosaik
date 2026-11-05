@@ -1,5 +1,7 @@
 import { ButtonGroup, IconButton, ToggleGroup } from "@mosaik/mosaik-ui"
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-solid"
+import BoldIcon from "lucide-solid/icons/bold"
+import ItalicIcon from "lucide-solid/icons/italic"
+import UnderlineIcon from "lucide-solid/icons/underline"
 
 export const App = () => {
   return (

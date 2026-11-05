@@ -1,5 +1,5 @@
 import { Button, FileUpload } from "@mosaik/mosaik-ui"
-import { WebcamIcon } from "lucide-solid"
+import WebcamIcon from "lucide-solid/icons/webcam"
 
 export const App = () => {
   return (

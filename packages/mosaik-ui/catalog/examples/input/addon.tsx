@@ -1,5 +1,6 @@
 import { Group, Input, InputAddon } from "@mosaik/mosaik-ui"
-import { AtSign, Euro } from "lucide-solid"
+import AtSign from "lucide-solid/icons/at-sign"
+import Euro from "lucide-solid/icons/euro"
 import { Stack } from "styled-system/jsx"
 
 export const App = () => {

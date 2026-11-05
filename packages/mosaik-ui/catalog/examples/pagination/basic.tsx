@@ -1,5 +1,6 @@
 import { ButtonGroup, IconButton, Pagination } from "@mosaik/mosaik-ui"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-solid"
+import ChevronLeftIcon from "lucide-solid/icons/chevron-left"
+import ChevronRightIcon from "lucide-solid/icons/chevron-right"
 
 export const App = () => {
   return (

@@ -15,6 +15,8 @@ export default defineConfig({
   },
   test: {
     name: "mosaik-ui",
+    // The tests list the examples with `import.meta.glob`: cached, a new example would go untested.
+    fsModuleCache: false,
     root: import.meta.dirname,
     environment: "jsdom",
     include: ["src/**/*.test.tsx", "test/**/*.test.tsx"],

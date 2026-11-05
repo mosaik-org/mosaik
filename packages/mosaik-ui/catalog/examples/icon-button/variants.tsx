@@ -1,5 +1,5 @@
 import { IconButton } from "@mosaik/mosaik-ui"
-import { SearchIcon } from "lucide-solid"
+import SearchIcon from "lucide-solid/icons/search"
 import { Wrap } from "styled-system/jsx"
 
 export const App = () => {

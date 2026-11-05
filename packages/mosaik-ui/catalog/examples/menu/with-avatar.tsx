@@ -1,5 +1,7 @@
 import { Avatar, Menu } from "@mosaik/mosaik-ui"
-import { LogOutIcon, Settings2Icon, UserIcon } from "lucide-solid"
+import LogOutIcon from "lucide-solid/icons/log-out"
+import Settings2Icon from "lucide-solid/icons/settings-2"
+import UserIcon from "lucide-solid/icons/user"
 
 export const App = () => {
   return (

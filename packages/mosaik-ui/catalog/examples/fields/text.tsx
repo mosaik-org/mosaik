@@ -1,5 +1,5 @@
 import { PasswordField, TextareaField, TextField } from "@mosaik/mosaik-ui"
-import { MailIcon } from "lucide-solid"
+import MailIcon from "lucide-solid/icons/mail"
 import { createSignal } from "solid-js"
 import { Stack } from "styled-system/jsx"
 

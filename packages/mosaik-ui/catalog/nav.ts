@@ -1,0 +1,71 @@
+/**
+ * The catalog's sidebar, grouped as the README lists the components. `test/catalog.test.ts` fails
+ * when an example's folder is in no group, so a new component cannot go missing from the sidebar.
+ */
+export const GROUPS: ReadonlyArray<{ readonly label: string; readonly items: ReadonlyArray<string> }> = [
+  {
+    label: "Actions",
+    items: ["button", "icon-button", "close-button", "toggle", "toggle-group", "link", "clipboard"],
+  },
+  {
+    label: "Form controls",
+    items: [
+      "field",
+      "fieldset",
+      "input",
+      "input-group",
+      "input-addon",
+      "textarea",
+      "password-input",
+      "number-input",
+      "pin-input",
+      "checkbox",
+      "radio-group",
+      "radio-card-group",
+      "switch",
+      "select",
+      "combobox",
+      "tags-input",
+      "slider",
+      "rating-group",
+      "segment-group",
+      "date-picker",
+      "color-picker",
+      "file-upload",
+      "editable",
+    ],
+  },
+  { label: "Ready-made fields", items: ["fields"] },
+  {
+    label: "Overlays",
+    items: ["dialog", "modal", "confirm-dialog", "drawer", "popover", "hover-card", "tooltip", "menu", "action-menu"],
+  },
+  {
+    label: "Search and feedback",
+    items: ["command", "toast", "alert", "empty-state", "progress", "skeleton", "spinner", "loader"],
+  },
+  { label: "Navigation", items: ["tabs", "breadcrumb", "pagination", "steps", "accordion", "collapsible"] },
+  {
+    label: "Display",
+    items: [
+      "card",
+      "badge",
+      "avatar",
+      "table",
+      "stat",
+      "code",
+      "kbd",
+      "heading",
+      "text",
+      "span",
+      "display-value",
+      "image",
+      "icon",
+      "carousel",
+      "scroll-area",
+      "splitter",
+    ],
+  },
+  { label: "Layout", items: ["group", "absolute-center"] },
+  { label: "Theme", items: ["theme"] },
+]

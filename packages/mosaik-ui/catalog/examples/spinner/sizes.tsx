@@ -1,15 +1,8 @@
 import { Spinner } from "@mosaik/mosaik-ui"
-import { Wrap } from "styled-system/jsx"
+import { spinner } from "styled-system/recipes"
+import { bySize, Showcase } from "../../showcase"
 
-export const App = () => {
-  return (
-    <Wrap gap="4">
-      <Spinner size="xs" />
-      <Spinner size="sm" />
-      <Spinner size="md" />
-      <Spinner size="lg" />
-      <Spinner size="xl" />
-      <Spinner size="2xl" />
-    </Wrap>
-  )
-}
+/** `inherit` takes the size of the text around it. */
+export const App = () => (
+  <Showcase values={bySize(spinner.variantMap.size)}>{(size) => <Spinner size={size} />}</Showcase>
+)

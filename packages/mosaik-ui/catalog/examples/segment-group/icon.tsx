@@ -1,5 +1,7 @@
 import { SegmentGroup } from "@mosaik/mosaik-ui"
-import { Grid2X2Icon, ListIcon, TableIcon } from "lucide-solid"
+import Grid2X2Icon from "lucide-solid/icons/grid-2x2"
+import ListIcon from "lucide-solid/icons/list"
+import TableIcon from "lucide-solid/icons/table"
 import { HStack } from "styled-system/jsx"
 
 export const App = () => {
