@@ -3,8 +3,8 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { managesAnyApp } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { ActionMenu, IconButton, Tooltip } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/styled-system/css"
-import { AppIcon, StatusMark, type StatusSummary, useStatusSummary } from "@mosaik/web-kit"
+import { css, cx } from "@mosaik/styled-system/css"
+import { AppIcon, appColorClass, StatusMark, type StatusSummary, useStatusSummary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import ArrowDown from "lucide-solid/icons/arrow-down"
@@ -88,6 +88,8 @@ const styles = {
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
     "&[data-status=active]": { bg: "gray.subtle.bg.hover", color: "fg.default" },
   }),
+  // An app's icon is grey like the rest of the list, in the app's colour while it is the open one.
+  appIcon: css({ "[data-status=active] &": { color: "colorPalette.plain.fg" } }),
   // As tall as a line of the label beside it, so a row is as tall with its label (expanded) as without (rail).
   icon: css({ position: "relative", display: "flex", alignItems: "center", flexShrink: "0", height: "1lh" }),
   label: css({ flex: "1", minW: "0", truncate: true }),
@@ -104,6 +106,8 @@ const styles = {
 }
 
 const NavLink = (props: {
+  /** On the icon: what colours it. */
+  iconClass?: string
   to: string
   exact?: boolean
   icon: JSX.Element
@@ -125,7 +129,7 @@ const NavLink = (props: {
             activeOptions={{ exact: props.exact ?? false }}
             onClick={() => props.onNavigate?.()}
           >
-            <span class={styles.icon}>
+            <span class={cx(styles.icon, props.iconClass)}>
               {props.icon}
               <Show when={mode() === "rail" && props.status}>
                 {(status) => <StatusMark summary={status()} corner />}
@@ -180,6 +184,7 @@ const AppEntry = (props: { app: AnyApp; actions?: JSX.Element; onNavigate?: () =
     <NavLink
       to={home()}
       icon={<AppIcon name={props.app.portal.icon} />}
+      iconClass={cx(appColorClass(props.app), styles.appIcon)}
       label={props.app.name}
       status={status()}
       onNavigate={props.onNavigate}

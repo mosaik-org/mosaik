@@ -4,7 +4,7 @@ import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
 import { Button, Card, EmptyState, Heading, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon } from "@mosaik/web-kit"
+import { AppTile, appColor } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
@@ -45,16 +45,6 @@ const styles = {
     transition: "border-color 0.15s",
     _hover: { borderColor: "gray.surface.border.hover" },
   }),
-  icon: css({
-    display: "grid",
-    placeItems: "center",
-    flexShrink: "0",
-    width: "10",
-    height: "10",
-    borderRadius: "lg",
-    bg: "gray.subtle.bg",
-    color: "fg.muted",
-  }),
   tileText: css({ display: "flex", flexDirection: "column", gap: "0.5", minW: "0" }),
   name: css({ fontWeight: "semibold", truncate: true }),
   description: css({ color: "fg.muted", fontSize: "sm", truncate: true }),
@@ -86,13 +76,11 @@ const styles = {
   muted: css({ px: "4", py: "6", fontSize: "sm", color: "fg.muted", textAlign: "center" }),
 }
 
-const AppTile = (props: { app: AnyApp }) => (
+const AppCard = (props: { app: AnyApp }) => (
   <Link to={appHref(props.app)} class={styles.tileLink}>
     <Card.Root class={styles.tile}>
       <Card.Body flexDirection="row" alignItems="center" gap="3">
-        <div class={styles.icon}>
-          <AppIcon name={props.app.portal.icon} size={20} />
-        </div>
+        <AppTile name={props.app.portal.icon} color={appColor(props.app)} />
         <div class={styles.tileText}>
           <span class={styles.name}>{props.app.name}</span>
           <span class={styles.description} title={props.app.description}>
@@ -118,7 +106,7 @@ const Section = (props: { title: string; aside?: JSX.Element; children: JSX.Elem
 const AppSection = (props: { title: string; apps: ReadonlyArray<AnyApp>; aside?: JSX.Element }) => (
   <Section title={props.title} aside={props.aside}>
     <div class={styles.grid}>
-      <For each={props.apps}>{(app) => <AppTile app={app} />}</For>
+      <For each={props.apps}>{(app) => <AppCard app={app} />}</For>
     </div>
   </Section>
 )

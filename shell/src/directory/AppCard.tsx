@@ -3,7 +3,7 @@ import type { AnyApp } from "@mosaik/core"
 import { Badge, Button, Card, IconButton } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, StatusMark, useStatusSummary } from "@mosaik/web-kit"
+import { AppTile, appColor, StatusMark, useStatusSummary } from "@mosaik/web-kit"
 import { Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 import Lock from "lucide-solid/icons/lock"
@@ -14,17 +14,6 @@ import { appHref } from "../apps"
 const styles = {
   card: css({ display: "flex", flexDirection: "column", gap: "3", height: "full" }),
   header: css({ display: "flex", alignItems: "flex-start", gap: "3" }),
-  icon: css({
-    display: "grid",
-    placeItems: "center",
-    flexShrink: "0",
-    width: "10",
-    height: "10",
-    borderRadius: "lg",
-    bg: "gray.subtle.bg",
-    color: "fg.muted",
-    "&[data-available=false]": { bg: "gray.subtle.bg", color: "fg.subtle" },
-  }),
   titles: css({ display: "flex", flexDirection: "column", gap: "0.5", flex: "1", minW: "0" }),
   name: css({
     fontWeight: "semibold",
@@ -90,9 +79,7 @@ export const AppCard = (props: AppCardProps) => {
     <Card.Root class={styles.card}>
       <Card.Body gap="4">
         <div class={styles.header}>
-          <div class={styles.icon} data-available={props.available}>
-            <AppIcon name={props.app.portal.icon} size={20} />
-          </div>
+          <AppTile name={props.app.portal.icon} color={props.available ? appColor(props.app) : undefined} />
           <div class={styles.titles}>
             <span class={css({ display: "flex", alignItems: "center", gap: "2" })}>
               <Link to="/directory/$app" params={{ app: props.app.id }} class={styles.name}>

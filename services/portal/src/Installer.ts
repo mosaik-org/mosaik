@@ -476,6 +476,7 @@ export class Installer extends Context.Service<
                       name: app.manifest.name,
                       description: app.manifest.description,
                       icon: app.manifest.portal.icon,
+                      color: app.manifest.portal.color,
                       category: app.manifest.portal.category,
                       pages: listedPages(app.manifest),
                       version: app.manifest.version,

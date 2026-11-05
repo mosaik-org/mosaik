@@ -1,8 +1,8 @@
 import { errorMessage, toast } from "@mosaik/client"
 import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import type { InboxItem, Severity } from "@mosaik/notifications/contract"
-import { css, cva } from "@mosaik/styled-system/css"
-import { AppIcon } from "@mosaik/web-kit"
+import { css, cva, cx } from "@mosaik/styled-system/css"
+import { AppIcon, appColorClass } from "@mosaik/web-kit"
 import { useMutation, useQueryClient } from "@tanstack/solid-query"
 import { useRouter } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -12,7 +12,10 @@ import { sourceApp, sourceName } from "../apps"
 import { notificationKeys, notificationsApi } from "./api"
 import { groupByDay, shortAgo } from "./time"
 
-/** The sending app's icon on a tile tinted by how much the notification matters. */
+/**
+ * The sending app's icon on a tile: in the app's colour, as everywhere it shows, unless the
+ * notification warns or is critical, which take their own; Mosaik's own (platform) in grey.
+ */
 const tile = cva({
   base: {
     display: "grid",
@@ -25,13 +28,19 @@ const tile = cva({
   },
   variants: {
     severity: {
-      info: { colorPalette: "gray" },
-      success: { colorPalette: "success" },
       warning: { colorPalette: "warning" },
       critical: { colorPalette: "danger" },
     },
   },
 })
+
+/** The tile's class: the severity's colour when it alarms, otherwise the app's (grey for none). */
+const tileClass = (item: InboxItem): string => {
+  const severity = item.content.severity
+  if (severity === "warning" || severity === "critical") return tile({ severity })
+  const app = sourceApp(item.source)
+  return cx(tile(), app === undefined ? undefined : appColorClass(app))
+}
 
 const styles = {
   groups: css({ display: "flex", flexDirection: "column", gap: "2", py: "2" }),
@@ -174,7 +183,7 @@ export const NotificationList = (props: {
                     return (
                       <li class={styles.row}>
                         <button type="button" class={styles.item} onClick={() => props.onOpen(item)}>
-                          <span class={tile({ severity: item.content.severity ?? "info" })} aria-hidden="true">
+                          <span class={tileClass(item)} aria-hidden="true">
                             <SourceIcon source={item.source} />
                           </span>
                           <span class={styles.text}>

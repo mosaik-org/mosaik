@@ -19,7 +19,7 @@ const manifest = (changes: Partial<ConstructorParameters<typeof AppManifest>[0]>
     storage: false,
     settings: [],
     statuses: [],
-    portal: new PortalManifest({ icon: null, category: null, config: [], pages: [], web: null }),
+    portal: new PortalManifest({ icon: null, color: null, category: null, config: [], pages: [], web: null }),
     ...changes,
   })
 
@@ -37,6 +37,7 @@ describe("manifestProblems", () => {
         manifest({
           portal: new PortalManifest({
             icon: null,
+            color: null,
             category: null,
             config: [
               { name: "MOSAIK_APP_KEY", label: null, description: "", kind: "text", required: true, secret: true },
@@ -56,7 +57,7 @@ describe("manifestProblems", () => {
           permissions: [
             new ManifestPermission({ key: "crm:view", description: "", dangerous: false, defaultRoles: [] }),
           ],
-          portal: new PortalManifest({ icon: null, category: null, config: [], pages, web: null }),
+          portal: new PortalManifest({ icon: null, color: null, category: null, config: [], pages, web: null }),
         }),
       )
     expect(withPages([{ title: "Deals", path: "/deals", permission: "view" }])).toEqual([])

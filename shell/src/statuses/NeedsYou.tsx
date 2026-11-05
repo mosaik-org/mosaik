@@ -2,7 +2,7 @@ import { usePageStatuses } from "@mosaik/client/solid"
 import { statusSentence } from "@mosaik/core"
 import { Card } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, StatusMark, summarize } from "@mosaik/web-kit"
+import { AppIcon, appColor, StatusMark, summarize } from "@mosaik/web-kit"
 import { Link } from "@tanstack/solid-router"
 import CircleDot from "lucide-solid/icons/circle-dot"
 import { For, type JSX } from "solid-js"
@@ -40,7 +40,11 @@ export const NeedsYou = (): JSX.Element => {
             return (
               <Link {...linkTarget(status.link)} class={styles.item}>
                 <span class={styles.icon}>
-                  {app === undefined ? <CircleDot size={16} /> : <AppIcon name={app.portal.icon} size={16} />}
+                  {app === undefined ? (
+                    <CircleDot size={16} />
+                  ) : (
+                    <AppIcon name={app.portal.icon} size={16} color={appColor(app)} />
+                  )}
                 </span>
                 <span class={styles.text}>
                   <span class={css({ truncate: true })}>{statusSentence(status)}</span>

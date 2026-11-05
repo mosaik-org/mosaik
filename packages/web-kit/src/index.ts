@@ -1,5 +1,5 @@
 export { AccessDenied } from "./AccessDenied"
-export { AppIcon, type AppIconName, type AppIconProps, appIconNames } from "./AppIcon"
+export { AppIcon, type AppIconName, type AppIconProps, AppTile, appIconNames } from "./AppIcon"
 export { AppLayout, type AppLayoutProps } from "./AppLayout"
 export {
   type Action,
@@ -11,6 +11,7 @@ export {
   type Keyed,
   useAction,
 } from "./api"
+export { appColor, appColorClass, appPalette, type Colored } from "./appColor"
 export { appPageLinks, currentPage } from "./appPages"
 export * from "./commands"
 export { FrameHeader, FrameHeaderProvider, useHasFrameHeader } from "./FrameHeader"

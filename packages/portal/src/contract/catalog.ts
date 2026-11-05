@@ -10,6 +10,8 @@ export class PublicApp extends Schema.Class<PublicApp>("@mosaik/portal/PublicApp
   name: Schema.String,
   description: Schema.NullOr(Schema.String),
   icon: Schema.NullOr(Schema.String),
+  /** Its icon's colour, as its manifest names it (see `appColors` in `@mosaik/core`). */
+  color: Schema.NullOr(Schema.String),
   /** The category the app declares. */
   category: Schema.NullOr(Schema.String),
   /** The app's pages, in the order navigation lists them. */

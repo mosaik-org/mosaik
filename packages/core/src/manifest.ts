@@ -79,12 +79,26 @@ export interface PortalPage<Permission extends string = string> {
 }
 
 /**
+ * The colours an app's icon can take, so that apps tell apart at a glance while the interface
+ * around them stays grey. Each is one of the theme's palettes.
+ */
+export const appColors = ["amber", "blue", "green", "indigo", "orange", "pink", "teal", "violet"] as const
+
+export type AppColor = (typeof appColors)[number]
+
+/** Whether a name (from a manifest another app built) is one of {@link appColors}. */
+export const isAppColor = (name: string | null | undefined): name is AppColor =>
+  (appColors as ReadonlyArray<string | null | undefined>).includes(name)
+
+/**
  * How the Portal lists and runs the app. Core's services ignore it; a standalone app (on its own
  * address, without the Portal) leaves it out.
  */
 export interface PortalSpec<Permission extends string = string> {
   /** Name of a lucide icon, e.g. `chart-line`. */
   readonly icon?: string
+  /** Its icon's colour, e.g. `teal`; without one, a colour picked from the app's id (the same each time). */
+  readonly color?: AppColor
   /** Where the directory lists the app, e.g. `Sales` (its owners and admins can change it). */
   readonly category?: string
   /** Environment variables admins enter when the Portal runs the app's image, keyed by name (e.g. `JIRA_URL`). */

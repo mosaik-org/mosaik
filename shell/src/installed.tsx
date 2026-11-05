@@ -1,5 +1,5 @@
 import { sessionQueryOptions } from "@mosaik/auth/web"
-import { type AnyApp, defineApp } from "@mosaik/core"
+import { type AnyApp, defineApp, isAppColor } from "@mosaik/core"
 import type { Catalog, PublicApp } from "@mosaik/portal/contract"
 import type { WebApp } from "@mosaik/portal/web"
 import { type SearchProvider, withTimeout } from "@mosaik/web-kit"
@@ -55,6 +55,7 @@ const toApp = (app: PublicApp): AnyApp => {
     permissions: Object.fromEntries(permissions.map((name) => [name, { description: "" }])),
     portal: {
       ...(app.icon === null ? {} : { icon: app.icon }),
+      ...(isAppColor(app.color) ? { color: app.color } : {}),
       ...(app.category === null ? {} : { category: app.category }),
       pages,
     },

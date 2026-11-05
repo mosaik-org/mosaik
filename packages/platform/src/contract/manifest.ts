@@ -98,6 +98,8 @@ export type PortalPageManifest = typeof PortalPageManifest.Type
 /** How the Portal lists and runs the app; Core stores it with the manifest but does not use it. */
 export class PortalManifest extends Schema.Class<PortalManifest>("@mosaik/platform/PortalManifest")({
   icon: Schema.NullOr(Schema.String),
+  /** One of `appColors` (`@mosaik/core`); the Portal picks one for an unknown name. */
+  color: Schema.NullOr(Schema.String),
   /** Where the directory lists the app (its owners and admins can change it). */
   category: Schema.NullOr(Schema.String),
   /** Settings admins enter when the Portal runs the app's image. */
@@ -178,6 +180,7 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
     storage: app.storage,
     portal: new PortalManifest({
       icon: app.portal.icon ?? null,
+      color: app.portal.color ?? null,
       category: app.portal.category ?? null,
       config: Object.entries<ConfigSpec>(app.portal.config ?? {}).map(([name, spec]) => ({
         name,

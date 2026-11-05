@@ -5,7 +5,7 @@ import type { AnyApp } from "@mosaik/core"
 import { Badge, Button, IconButton, PageHeader } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, QueryBoundary } from "@mosaik/web-kit"
+import { AppIcon, appColorClass, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
@@ -145,6 +145,7 @@ function AppPage() {
             title={app.name}
             description={app.description}
             icon={<AppIcon name={app.portal.icon} size={20} />}
+            class={appColorClass(app)}
             actions={<Actions app={app} />}
           />
           <About app={app} />

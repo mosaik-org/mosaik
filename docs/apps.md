@@ -71,7 +71,7 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`, `markBusy`); no framework |
 | `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `useBusy`, `useStatus`, `<Toasts />` |
 | `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
-| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
+| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `AppTile`, `appColor`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
 | `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
 
@@ -115,6 +115,7 @@ export const sales = defineApp({
   storage: true,               // files kept by the platform (see Files)
   portal: {
     icon: "chart-line",
+    color: "teal",             // its icon's colour, one of `appColors`; without it, one picked from the id
     category: "Sales",         // where All apps lists it (owners and admins can change it)
     config: {                  // environment variables admins enter when the Portal runs the app's image
       PAYMENTS_URL: { label: "Payments API", kind: "url", description: "Base address of the payments API" },
@@ -356,9 +357,9 @@ yield* notify.send({
 - **Channels.** Users choose per type at `/notifications/settings`; until they do, `defaultChannels` apply.
 - **In-app.** The bell shows the unread count and the newest items live, with a toast for each new one.
   Its panel lists the unread ones (all of them are at `/notifications`), under the day they came:
-  each with your app's icon tinted by its `severity`, the title on one line and the start of the
-  body's first paragraph after your app's name. Write the title so it stands alone, and put the
-  gist first in the body.
+  each with your app's icon in its colour (a warning or a critical one in theirs), the title on one
+  line and the start of the body's first paragraph after your app's name. Write the title so it
+  stands alone, and put the gist first in the body.
 - **Failures.** A failed `send` returns `NotifyError` and is logged. Callers usually ignore it, so a
   notification never fails the action that triggered it.
 
