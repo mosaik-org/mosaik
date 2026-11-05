@@ -22,4 +22,4 @@ export const Indicator = (props: ComponentProps<typeof PasswordInput.Indicator>)
   </PasswordInput.Indicator>
 )
 
-export { PasswordInputContext as Context } from "@ark-ui/solid/password-input"
+export { PasswordInputContext as Context, usePasswordInput } from "@ark-ui/solid/password-input"

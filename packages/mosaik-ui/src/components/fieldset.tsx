@@ -15,4 +15,4 @@ export const ErrorText = withContext(Fieldset.ErrorText, "errorText")
 export const Content = withContext(ark.div, "content")
 export const Control = withContext(ark.div, "control")
 
-export { FieldsetContext as Context } from "@ark-ui/solid/fieldset"
+export { FieldsetContext as Context, useFieldset } from "@ark-ui/solid/fieldset"

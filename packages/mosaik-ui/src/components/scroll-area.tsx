@@ -21,4 +21,4 @@ export const Scrollbar = (props: ComponentProps<typeof StyledScrollbar>) => (
 )
 export const Viewport = withContext(ScrollArea.Viewport, "viewport")
 
-export { ScrollAreaContext as Context } from "@ark-ui/solid/scroll-area"
+export { ScrollAreaContext as Context, useScrollArea } from "@ark-ui/solid/scroll-area"

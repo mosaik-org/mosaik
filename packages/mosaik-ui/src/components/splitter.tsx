@@ -11,4 +11,4 @@ export const RootProvider = withProvider(Splitter.RootProvider, "root")
 export const Panel = withContext(Splitter.Panel, "panel")
 export const ResizeTrigger = withContext(Splitter.ResizeTrigger, "resizeTrigger")
 
-export { SplitterContext as Context } from "@ark-ui/solid/splitter"
+export { SplitterContext as Context, useSplitter } from "@ark-ui/solid/splitter"

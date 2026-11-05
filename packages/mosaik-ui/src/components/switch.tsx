@@ -17,7 +17,7 @@ export const Control = withContext(Switch.Control, "control", {
   defaultProps: () => ({ children: <Thumb /> }),
 })
 
-export { SwitchContext as Context } from "@ark-ui/solid/switch"
+export { SwitchContext as Context, useSwitch } from "@ark-ui/solid/switch"
 
 interface IndicatorProps extends ComponentProps<typeof StyledIndicator> {
   fallback?: JSX.Element | undefined

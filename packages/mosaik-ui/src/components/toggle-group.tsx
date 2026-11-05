@@ -10,4 +10,4 @@ export const Root = withProvider(ToggleGroup.Root, "root")
 export const RootProvider = withProvider(ToggleGroup.RootProvider, "root")
 export const Item = withContext(ToggleGroup.Item, "item")
 
-export { ToggleGroupContext as Context } from "@ark-ui/solid/toggle-group"
+export { ToggleGroupContext as Context, useToggleGroup } from "@ark-ui/solid/toggle-group"

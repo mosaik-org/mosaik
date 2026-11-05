@@ -8,6 +8,7 @@ const { withProvider, withContext } = createSlotRecipeContext(slider)
 
 // `orientation` is both a variant and how it behaves: the recipe would keep it from the slider.
 export const Root = withProvider(Slider.Root, "root", { forwardProps: ["orientation"] })
+export const RootProvider = withProvider(Slider.RootProvider, "root", { forwardProps: ["orientation"] })
 export const Control = withContext(Slider.Control, "control")
 export const DraggingIndicator = withContext(Slider.DraggingIndicator, "draggingIndicator")
 export const Label = withContext(Slider.Label, "label")
@@ -20,7 +21,7 @@ export const Track = withContext(Slider.Track, "track")
 export const ValueText = withContext(Slider.ValueText, "valueText")
 export const HiddenInput = Slider.HiddenInput
 
-export { SliderContext as Context } from "@ark-ui/solid/slider"
+export { SliderContext as Context, useSlider } from "@ark-ui/solid/slider"
 
 export type RootProps = ComponentProps<typeof Root>
 export type MarkerGroupProps = ComponentProps<typeof MarkerGroup>

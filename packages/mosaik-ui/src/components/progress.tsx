@@ -16,3 +16,5 @@ export const Range = withContext(Progress.Range, "range")
 export const Track = withContext(Progress.Track, "track")
 export const ValueText = withContext(Progress.ValueText, "valueText")
 export const View = withContext(Progress.View, "view")
+
+export { useProgress } from "@ark-ui/solid/progress"

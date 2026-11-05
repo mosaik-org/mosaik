@@ -25,7 +25,7 @@ export const ItemPreview = withContext(TagsInput.ItemPreview, "itemPreview")
 export const ItemText = withContext(TagsInput.ItemText, "itemText")
 export const Label = withContext(TagsInput.Label, "label")
 
-export { TagsInputContext as Context } from "@ark-ui/solid/tags-input"
+export { TagsInputContext as Context, useTagsInput } from "@ark-ui/solid/tags-input"
 
 export interface TagsInputItemsProps extends Omit<ItemProps, "value" | "index"> {}
 

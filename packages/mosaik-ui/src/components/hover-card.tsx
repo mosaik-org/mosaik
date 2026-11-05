@@ -14,4 +14,4 @@ export const Content = withContext(HoverCard.Content, "content")
 export const Positioner = withContext(HoverCard.Positioner, "positioner")
 export const Trigger = withContext(HoverCard.Trigger, "trigger")
 
-export { HoverCardContext as Context } from "@ark-ui/solid/hover-card"
+export { HoverCardContext as Context, useHoverCard } from "@ark-ui/solid/hover-card"

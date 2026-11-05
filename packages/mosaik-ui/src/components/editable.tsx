@@ -17,4 +17,4 @@ export const Label = withContext(Editable.Label, "label")
 export const Preview = withContext(Editable.Preview, "preview")
 export const SubmitTrigger = withContext(Editable.SubmitTrigger, "submitTrigger")
 
-export { EditableContext as Context } from "@ark-ui/solid/editable"
+export { EditableContext as Context, useEditable } from "@ark-ui/solid/editable"

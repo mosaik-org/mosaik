@@ -18,4 +18,4 @@ export const ItemIndicator = withContext(Accordion.ItemIndicator, "itemIndicator
 export const ItemTrigger = withContext(Accordion.ItemTrigger, "itemTrigger")
 export const ItemBody = withContext(ark.div, "itemBody")
 
-export { AccordionContext as Context } from "@ark-ui/solid/accordion"
+export { AccordionContext as Context, useAccordion } from "@ark-ui/solid/accordion"

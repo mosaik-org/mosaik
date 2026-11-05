@@ -17,4 +17,4 @@ export const HiddenInput = PinInput.HiddenInput
 export const Input = withContext(PinInput.Input, "input")
 export const Label = withContext(PinInput.Label, "label")
 
-export { PinInputContext as Context } from "@ark-ui/solid/pin-input"
+export { PinInputContext as Context, usePinInput } from "@ark-ui/solid/pin-input"

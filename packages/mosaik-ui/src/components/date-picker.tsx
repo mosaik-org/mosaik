@@ -32,4 +32,4 @@ export const ViewControl = withContext(DatePicker.ViewControl, "viewControl")
 export const ViewTrigger = withContext(DatePicker.ViewTrigger, "viewTrigger")
 export const YearSelect = withContext(DatePicker.YearSelect, "yearSelect")
 
-export { DatePickerContext as Context } from "@ark-ui/solid/date-picker"
+export { DatePickerContext as Context, useDatePicker } from "@ark-ui/solid/date-picker"

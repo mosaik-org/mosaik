@@ -15,7 +15,7 @@ export const Ellipsis = withContext(Pagination.Ellipsis, "ellipsis")
 export const PrevTrigger = withContext(Pagination.PrevTrigger, "prevTrigger")
 export const NextTrigger = withContext(Pagination.NextTrigger, "nextTrigger")
 
-export { PaginationContext as Context } from "@ark-ui/solid/pagination"
+export { PaginationContext as Context, usePagination } from "@ark-ui/solid/pagination"
 
 export interface PaginationItemsProps extends JSX.HTMLAttributes<HTMLElement> {
   /**

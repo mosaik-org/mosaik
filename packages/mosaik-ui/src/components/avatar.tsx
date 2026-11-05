@@ -17,7 +17,7 @@ export const Image = withContext(Avatar.Image, "image", {
     }) as const,
 })
 
-export { AvatarContext as Context } from "@ark-ui/solid/avatar"
+export { AvatarContext as Context, useAvatar } from "@ark-ui/solid/avatar"
 
 export interface FallbackProps extends ComponentProps<typeof StyledFallback> {
   /**

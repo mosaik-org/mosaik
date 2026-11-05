@@ -22,4 +22,4 @@ export const Progress = withContext(Steps.Progress, "progress")
 export const Title = withContext(ark.div, "title")
 export const Description = withContext(ark.div, "description")
 
-export { StepsContext as Context, StepsItemContext as ItemContext } from "@ark-ui/solid/steps"
+export { StepsContext as Context, StepsItemContext as ItemContext, useSteps } from "@ark-ui/solid/steps"

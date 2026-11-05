@@ -35,4 +35,4 @@ export const ValueSwatch = ColorPicker.ValueSwatch
 export const ValueText = withContext(ColorPicker.ValueText, "valueText")
 export const View = withContext(ColorPicker.View, "view")
 
-export { ColorPickerContext as Context } from "@ark-ui/solid/color-picker"
+export { ColorPickerContext as Context, useColorPicker } from "@ark-ui/solid/color-picker"

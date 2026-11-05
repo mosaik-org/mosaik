@@ -29,7 +29,7 @@ export const ItemSizeText = withContext(FileUpload.ItemSizeText, "itemSizeText")
 export const Label = withContext(FileUpload.Label, "label")
 export const Trigger = withContext(FileUpload.Trigger, "trigger")
 
-export { FileUploadContext as Context } from "@ark-ui/solid/file-upload"
+export { FileUploadContext as Context, useFileUpload } from "@ark-ui/solid/file-upload"
 
 interface ItemsBaseProps {
   showSize?: boolean | undefined

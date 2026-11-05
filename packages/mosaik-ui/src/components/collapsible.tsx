@@ -12,4 +12,4 @@ export const Content = withContext(Collapsible.Content, "content")
 export const Indicator = withContext(Collapsible.Indicator, "indicator")
 export const Trigger = withContext(Collapsible.Trigger, "trigger")
 
-export { CollapsibleContext as Context } from "@ark-ui/solid/collapsible"
+export { CollapsibleContext as Context, useCollapsible } from "@ark-ui/solid/collapsible"

@@ -17,6 +17,7 @@ export const HiddenInput = RatingGroup.HiddenInput
 export {
   RatingGroupContext as Context,
   RatingGroupItemContext as ItemContext,
+  useRatingGroup,
 } from "@ark-ui/solid/rating-group"
 
 interface ItemIndicatorProps extends HTMLStyledProps<"span"> {

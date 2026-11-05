@@ -14,6 +14,7 @@ type StyleProps = SelectVariantProps & HTMLStyledProps<"div">
 export type RootProps<T extends CollectionItem> = Assign<SelectRootProps<T>, StyleProps>
 
 export const Root = withProvider(Select.Root, "root") as Select.RootComponent<StyleProps>
+export const RootProvider = withProvider(Select.RootProvider, "root") as Select.RootProviderComponent<StyleProps>
 
 export const ClearTrigger = withContext(Select.ClearTrigger, "clearTrigger", {
   defaultProps: () => ({ children: <XIcon />, "aria-label": "Clear" }),
@@ -39,6 +40,7 @@ export {
   SelectContext as Context,
   SelectItemContext as ItemContext,
   type SelectValueChangeDetails as ValueChangeDetails,
+  useSelect,
 } from "@ark-ui/solid/select"
 
 const StyledItemIndicator = withContext(Select.ItemIndicator, "itemIndicator")

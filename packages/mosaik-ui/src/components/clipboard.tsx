@@ -14,7 +14,7 @@ export const Input = withContext(Clipboard.Input, "input")
 export const Label = withContext(Clipboard.Label, "label")
 export const Trigger = withContext(Clipboard.Trigger, "trigger")
 
-export { ClipboardContext as Context } from "@ark-ui/solid/clipboard"
+export { ClipboardContext as Context, useClipboard } from "@ark-ui/solid/clipboard"
 
 type IndicatorProps = ComponentProps<typeof StyledIndicator>
 

@@ -30,4 +30,4 @@ export const Control = withContext(NumberInput.Control, "control", {
   }),
 })
 
-export { NumberInputContext as Context } from "@ark-ui/solid/number-input"
+export { NumberInputContext as Context, useNumberInput } from "@ark-ui/solid/number-input"

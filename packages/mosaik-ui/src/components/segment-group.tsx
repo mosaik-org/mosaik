@@ -19,7 +19,7 @@ export const ItemHiddenInput = SegmentGroup.ItemHiddenInput
 export const ItemText = withContext(SegmentGroup.ItemText, "itemText")
 export const Label = withContext(SegmentGroup.Label, "label")
 
-export { SegmentGroupContext as Context } from "@ark-ui/solid/segment-group"
+export { SegmentGroupContext as Context, useSegmentGroup } from "@ark-ui/solid/segment-group"
 
 interface Item {
   value: string

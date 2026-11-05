@@ -32,4 +32,4 @@ export const IndicatorGroup = (props: ComponentProps<typeof StyledIndicatorGroup
   )
 }
 
-export { CarouselContext as Context } from "@ark-ui/solid/carousel"
+export { CarouselContext as Context, useCarousel } from "@ark-ui/solid/carousel"

@@ -15,4 +15,4 @@ export const ItemText = withContext(RadioGroup.ItemText, "itemText")
 export const Label = withContext(RadioGroup.Label, "label")
 export const ItemHiddenInput = RadioGroup.ItemHiddenInput
 
-export { RadioGroupContext as Context } from "@ark-ui/solid/radio-group"
+export { RadioGroupContext as Context, useRadioGroup } from "@ark-ui/solid/radio-group"

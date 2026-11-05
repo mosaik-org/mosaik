@@ -17,4 +17,4 @@ export const RequiredIndicator = withContext(Field.RequiredIndicator, "requiredI
 /** Beside the error's words, in their colour and size: an error should not rest on its colour alone. */
 export const ErrorIcon = (props: IconProps) => <CircleAlertIcon {...props} />
 
-export { FieldContext as Context } from "@ark-ui/solid/field"
+export { FieldContext as Context, useField } from "@ark-ui/solid/field"

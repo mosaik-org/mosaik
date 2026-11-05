@@ -19,6 +19,7 @@ export const HiddenInput = Checkbox.HiddenInput
 export {
   type CheckboxCheckedState as CheckedState,
   CheckboxGroupProvider as GroupProvider,
+  useCheckbox,
 } from "@ark-ui/solid/checkbox"
 
 export const Indicator = (props: HTMLStyledProps<"svg">) => {
