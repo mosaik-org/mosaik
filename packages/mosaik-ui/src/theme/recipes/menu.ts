@@ -32,9 +32,19 @@ export const menu = defineSlotRecipe({
         animationDuration: "faster",
       },
     },
+    arrow: {
+      "--arrow-size": "sizes.2",
+      "--arrow-background": "colors.gray.surface.bg",
+    },
+    // An edge, as `Popover`'s: on a surface of its own color it would not show.
+    arrowTip: {
+      borderTopWidth: "0.5px",
+      borderInlineStartWidth: "0.5px",
+    },
     item: {
       alignItems: "center",
       borderRadius: "l2",
+      cursor: "pointer",
       display: "flex",
       flex: "0 0 auto",
       outline: "0",
@@ -93,16 +103,16 @@ export const menu = defineSlotRecipe({
     size: {
       xs: {
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1", minH: "8", gap: "2", _icon: { boxSize: "3.5" } },
+        item: { px: "1", minH: "6", gap: "2", _icon: { boxSize: "3.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1", height: "8" },
+        itemGroupLabel: { px: "1", height: "6" },
         separator: { mx: "-1", my: "0.5" },
       },
       sm: {
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1.5", minH: "9", gap: "2", _icon: { boxSize: "4" } },
+        item: { px: "1.5", minH: "7", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1.5", height: "9" },
+        itemGroupLabel: { px: "1.5", height: "7" },
         separator: { mx: "-1.5", my: "0.5" },
       },
       md: {
@@ -114,9 +124,9 @@ export const menu = defineSlotRecipe({
       },
       lg: {
         content: { p: "1", gap: "0.5", textStyle: "md" },
-        item: { px: "2.5", minH: "11", gap: "2", _icon: { boxSize: "4.5" } },
+        item: { px: "2.5", minH: "10", gap: "2", _icon: { boxSize: "4.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "2.5", height: "11" },
+        itemGroupLabel: { px: "2.5", height: "10" },
         separator: { mx: "-2.5", my: "0.5" },
       },
       xl: {

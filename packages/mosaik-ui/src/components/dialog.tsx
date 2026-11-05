@@ -1,6 +1,6 @@
 import { Dialog, useDialogContext } from "@ark-ui/solid/dialog"
 import { ark } from "@ark-ui/solid/factory"
-import type { ComponentProps } from "solid-js"
+import { type ComponentProps, splitProps } from "solid-js"
 import { createSlotRecipeContext, styled } from "../../styled-system/jsx"
 import { dialog } from "../../styled-system/recipes"
 
@@ -28,8 +28,21 @@ const StyledButton = styled(ark.button)
 
 export const ActionTrigger = (props: ComponentProps<typeof StyledButton>) => {
   const dialog = useDialogContext()
+  const [local, rest] = splitProps(props, ["onClick"])
 
-  return <StyledButton {...props} onClick={() => dialog().setOpen(false)} />
+  return (
+    <StyledButton
+      // In a form, closing the dialog should not also submit it.
+      type="button"
+      {...rest}
+      onClick={(event) => {
+        // The caller's first, while what it may read is still on the page.
+        if (typeof local.onClick === "function") local.onClick(event)
+        else local.onClick?.[0](local.onClick[1], event)
+        dialog().setOpen(false)
+      }}
+    />
+  )
 }
 
 export { DialogContext as Context } from "@ark-ui/solid/dialog"

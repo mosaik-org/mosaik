@@ -14,8 +14,10 @@ export const Root = withRootProvider(Menu.Root, {
 export const RootProvider = withRootProvider(Menu.RootProvider, {
   defaultProps: () => ({ unmountOnExit: true, lazyMount: true }),
 })
-export const Arrow = withContext(Menu.Arrow, "arrow")
 export const ArrowTip = withContext(Menu.ArrowTip, "arrowTip")
+export const Arrow = withContext(Menu.Arrow, "arrow", {
+  defaultProps: () => ({ children: <ArrowTip /> }),
+})
 export const CheckboxItem = withContext(Menu.CheckboxItem, "item")
 export const Content = withContext(Menu.Content, "content")
 export const ContextTrigger = withContext(Menu.ContextTrigger, "contextTrigger")

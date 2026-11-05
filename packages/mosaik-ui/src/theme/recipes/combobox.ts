@@ -134,11 +134,11 @@ export const combobox = defineSlotRecipe({
           pe: "12",
         },
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1", minH: "8", gap: "2", _icon: { boxSize: "3.5" } },
+        item: { px: "1", minH: "6", gap: "2", _icon: { boxSize: "3.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1", height: "8" },
+        itemGroupLabel: { px: "1", height: "6" },
         indicatorGroup: { px: "2", _icon: { boxSize: "3.5" } },
-        empty: { px: "1", minH: "8" },
+        empty: { px: "1", minH: "6" },
       },
       sm: {
         input: {
@@ -146,11 +146,11 @@ export const combobox = defineSlotRecipe({
           pe: "14",
         },
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1.5", minH: "9", gap: "2", _icon: { boxSize: "4" } },
+        item: { px: "1.5", minH: "7", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1.5", height: "9" },
+        itemGroupLabel: { px: "1.5", height: "7" },
         indicatorGroup: { px: "2.5", _icon: { boxSize: "4" } },
-        empty: { px: "1.5", minH: "9" },
+        empty: { px: "1.5", minH: "7" },
       },
       md: {
         input: {
@@ -170,11 +170,11 @@ export const combobox = defineSlotRecipe({
           pe: "16",
         },
         content: { p: "1", gap: "0.5", textStyle: "md" },
-        item: { px: "2.5", minH: "11", gap: "2", _icon: { boxSize: "4.5" } },
+        item: { px: "2.5", minH: "10", gap: "2", _icon: { boxSize: "4.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "2.5", height: "11" },
+        itemGroupLabel: { px: "2.5", height: "10" },
         indicatorGroup: { px: "3.5", _icon: { boxSize: "4.5" } },
-        empty: { px: "2.5", minH: "11" },
+        empty: { px: "2.5", minH: "10" },
       },
       xl: {
         input: {

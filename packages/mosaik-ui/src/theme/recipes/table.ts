@@ -34,7 +34,7 @@ export const table = defineSlotRecipe({
       _last: { "& td": { boxShadow: "none" } },
     },
     header: {
-      textAlign: "left",
+      textAlign: "start",
       verticalAlign: "middle",
       boxShadow: "inset 0 -1px 0 0 var(--shadow-color)",
       // A step stronger than the rows' lines: the header reads as one.
