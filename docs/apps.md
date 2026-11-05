@@ -269,7 +269,7 @@ backend, so it registers the new bundle: reload the page to see a change.
 - **Forms.** `createForm({ schema, initial, onSubmit })` checks a form with a Schema, usually the API's own
   payload Schema, so the form refuses what the server would:
   - `{...form.field("email")}` on a `TextField` binds the value and shows the field's problem once it was
-    left or a submit was tried; the Schema's check messages are what people read;
+    edited and left, or a submit was tried; the Schema's check messages are what people read;
   - `form.submit` validates, then calls `onSubmit` with the decoded value (for a `Schema.Class`, the instance
     the API client sends);
   - `form.error()` is why the last submit failed (the API's answer, such as a conflict), `form.submitting()`

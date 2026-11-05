@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "@effect/vitest"
 import { Schema } from "effect"
 import { createRoot } from "solid-js"
@@ -39,6 +40,45 @@ describe("createForm", () => {
         expect(form.field("name").errorText).toBeUndefined()
         await form.submit()
         expect(form.field("name").errorText).toBe("Required")
+      },
+    )
+  })
+
+  it("shows nothing for a field left as it was, until a submit", async () => {
+    await withForm(
+      () => undefined,
+      async (form) => {
+        form.field("name").onBlur()
+        expect(form.field("name").errorText).toBeUndefined()
+        await form.submit()
+        expect(form.field("name").errorText).toBe("Required")
+      },
+    )
+  })
+
+  it("shows a field emptied again, as it was edited", async () => {
+    await withForm(
+      () => undefined,
+      async (form) => {
+        form.field("name").onValueChange("Ada")
+        form.field("name").onValueChange("")
+        form.field("name").onBlur()
+        expect(form.field("name").errorText).toBe("Required")
+      },
+    )
+  })
+
+  it("waits for the release when pressing elsewhere took the focus, so the click still lands", async () => {
+    await withForm(
+      () => undefined,
+      async (form) => {
+        form.field("email").onValueChange("not an email")
+        document.dispatchEvent(new Event("pointerdown"))
+        form.field("email").onBlur()
+        expect(form.field("email").errorText).toBeUndefined()
+        document.dispatchEvent(new Event("pointerup", { bubbles: true }))
+        await new Promise((resolve) => setTimeout(resolve))
+        expect(form.field("email").errorText).toBe("Invalid email address")
       },
     )
   })

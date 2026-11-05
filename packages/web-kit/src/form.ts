@@ -12,7 +12,7 @@ export interface FieldBinding<V> {
   readonly value: V
   readonly onValueChange: (value: V) => void
   readonly onBlur: () => void
-  /** Shown once the field was left or a submit was tried. */
+  /** Shown once the field was edited and left, or a submit was tried. */
   readonly errorText: string | undefined
 }
 
@@ -51,6 +51,32 @@ const snapshot = (value: unknown): unknown =>
       ? Object.fromEntries(Object.keys(value).map((key) => [key, snapshot((value as Record<string, unknown>)[key])]))
       : value
 
+let pressing = false
+let trackingPresses = false
+
+/**
+ * A field loses focus when the pointer goes down elsewhere, before it comes up. An error shown then
+ * moves what is under the pointer, so the release lands somewhere else and the click is lost: it
+ * waits for the release, and for the click that follows from it.
+ */
+const afterPress = (show: () => void) => {
+  if (!pressing) return show()
+  const release = () => {
+    window.removeEventListener("pointerup", release)
+    window.removeEventListener("pointercancel", release)
+    setTimeout(show)
+  }
+  window.addEventListener("pointerup", release)
+  window.addEventListener("pointercancel", release)
+}
+
+const trackPresses = () => {
+  if (trackingPresses || typeof document === "undefined") return
+  trackingPresses = true
+  document.addEventListener("pointerdown", () => (pressing = true), true)
+  for (const end of ["pointerup", "pointercancel"]) document.addEventListener(end, () => (pressing = false), true)
+}
+
 /** Where an issue belongs: its first path segment (the field), or the form itself. */
 const fieldOf = (path: ReadonlyArray<PropertyKey | { readonly key: PropertyKey }> | undefined): string => {
   const first = path?.[0]
@@ -83,6 +109,10 @@ export const createForm = <S extends Schema.ConstraintDecoder<unknown>>(options:
   const [submitting, setSubmitting] = createSignal(false)
   const [error, setError] = createSignal<string>()
 
+  // Passing through a field is not a mistake: nothing shows for one left as it was, until a submit.
+  const edited = new Set<string>()
+  trackPresses()
+
   const validate = (input: unknown) => standard["~standard"].validate(input)
 
   // Live checks are synchronous; a Schema with asynchronous parts is checked on submit only.
@@ -112,8 +142,13 @@ export const createForm = <S extends Schema.ConstraintDecoder<unknown>>(options:
       get value() {
         return values[name]
       },
-      onValueChange: (value) => set(name, value),
-      onBlur: () => setTouched((previous) => new Set(previous).add(name)),
+      onValueChange: (value) => {
+        edited.add(name)
+        set(name, value)
+      },
+      onBlur: () => {
+        if (edited.has(name)) afterPress(() => setTouched((previous) => new Set(previous).add(name)))
+      },
       get errorText() {
         return tried() || touched().has(name) ? errors()[name] : undefined
       },
@@ -149,6 +184,7 @@ export const createForm = <S extends Schema.ConstraintDecoder<unknown>>(options:
     reset: (next) =>
       batch(() => {
         setValues(reconcile(structuredClone(next ?? options.initial)))
+        edited.clear()
         setTouched(new Set<string>())
         setTried(false)
         setError(undefined)
