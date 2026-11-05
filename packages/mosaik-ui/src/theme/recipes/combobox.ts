@@ -2,6 +2,16 @@ import { comboboxAnatomy } from "@ark-ui/solid/anatomy"
 import { defineSlotRecipe } from "@pandacss/dev"
 import { input } from "./input"
 
+const INDICATOR = {
+  alignItems: "center",
+  alignSelf: "stretch",
+  cursor: "pointer",
+  display: "inline-flex",
+  justifyContent: "center",
+  px: "1",
+  _disabled: { layerStyle: "disabled" },
+} as const
+
 export const combobox = defineSlotRecipe({
   className: "combobox",
   slots: comboboxAnatomy.extendWith("indicatorGroup").keys(),
@@ -93,16 +103,18 @@ export const combobox = defineSlotRecipe({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      gap: "1",
       pos: "absolute",
       insetEnd: "0",
       top: "0",
       bottom: "0",
     },
+    // As tall as the input and wider than the icon, as an icon alone is hard to hit.
     trigger: {
-      color: "fg.subtle",
+      ...INDICATOR,
+      color: { base: "fg.subtle", _invalid: "error" },
     },
     clearTrigger: {
+      ...INDICATOR,
       color: "fg.muted",
     },
     empty: {
@@ -131,34 +143,34 @@ export const combobox = defineSlotRecipe({
       xs: {
         input: {
           ...input.variants.size.xs,
-          pe: "12",
+          pe: "14",
         },
         content: { p: "1", gap: "0.5", textStyle: "sm" },
         item: { px: "1", minH: "6", gap: "2", _icon: { boxSize: "3.5" } },
         itemGroup: { gap: "0.5" },
         itemGroupLabel: { px: "1", height: "6" },
-        indicatorGroup: { px: "2", _icon: { boxSize: "3.5" } },
+        indicatorGroup: { px: "1", _icon: { boxSize: "3.5" } },
         empty: { px: "1", minH: "6" },
       },
       sm: {
         input: {
           ...input.variants.size.sm,
-          pe: "14",
+          pe: "16",
         },
         content: { p: "1", gap: "0.5", textStyle: "sm" },
         item: { px: "1.5", minH: "7", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
         itemGroupLabel: { px: "1.5", height: "7" },
-        indicatorGroup: { px: "2.5", _icon: { boxSize: "4" } },
+        indicatorGroup: { px: "1.5", _icon: { boxSize: "4" } },
         empty: { px: "1.5", minH: "7" },
       },
       md: {
         input: {
           ...input.variants.size.md,
-          pe: "14",
+          pe: "16",
         },
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        indicatorGroup: { px: "3", _icon: { boxSize: "4" } },
+        indicatorGroup: { px: "2", _icon: { boxSize: "4" } },
         item: { px: "2", minH: "8", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
         itemGroupLabel: { px: "2", height: "8" },
@@ -167,25 +179,25 @@ export const combobox = defineSlotRecipe({
       lg: {
         input: {
           ...input.variants.size.lg,
-          pe: "16",
+          pe: "4.5rem",
         },
         content: { p: "1", gap: "0.5", textStyle: "md" },
         item: { px: "2.5", minH: "10", gap: "2", _icon: { boxSize: "4.5" } },
         itemGroup: { gap: "0.5" },
         itemGroupLabel: { px: "2.5", height: "10" },
-        indicatorGroup: { px: "3.5", _icon: { boxSize: "4.5" } },
+        indicatorGroup: { px: "2.5", _icon: { boxSize: "4.5" } },
         empty: { px: "2.5", minH: "10" },
       },
       xl: {
         input: {
           ...input.variants.size.xl,
-          pe: "16",
+          pe: "20",
         },
         content: { p: "1", gap: "1", textStyle: "lg" },
         item: { px: "3", minH: "12", gap: "3", _icon: { boxSize: "5" } },
         itemGroup: { gap: "1" },
         itemGroupLabel: { px: "3", height: "12" },
-        indicatorGroup: { px: "4", _icon: { boxSize: "5" } },
+        indicatorGroup: { px: "3", _icon: { boxSize: "5" } },
         empty: { px: "3", minH: "12" },
       },
     },

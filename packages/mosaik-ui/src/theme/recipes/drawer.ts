@@ -7,6 +7,8 @@ export const drawer = defineSlotRecipe({
   base: {
     backdrop: {
       background: "black.a7",
+      // As a dialog's: the page behind, out of focus.
+      backdropFilter: "blur(2px)",
       position: "fixed",
       insetInlineStart: "0",
       top: "0",
@@ -43,6 +45,7 @@ export const drawer = defineSlotRecipe({
       zIndex: "modal",
       maxH: "100dvh",
       color: "inherit",
+      textStyle: "sm",
       bg: "gray.surface.bg",
       boxShadow: "lg",
       _open: {
@@ -82,7 +85,7 @@ export const drawer = defineSlotRecipe({
     title: {
       color: "fg.default",
       fontWeight: "semibold",
-      textStyle: "xl",
+      textStyle: "lg",
     },
     description: {
       color: "fg.muted",

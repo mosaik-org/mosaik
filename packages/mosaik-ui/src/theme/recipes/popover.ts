@@ -19,7 +19,8 @@ export const popover = defineSlotRecipe({
       position: "relative",
       textStyle: "sm",
       transformOrigin: "var(--transform-origin)",
-      width: "xs",
+      // Within the screen on a narrow phone, leaving its margin on both sides.
+      width: "min(calc(100dvw - {spacing.4}), {sizes.xs})",
       // Above dialogs (`modal`), which they open in too, as `popover`, the layer for what floats.
       zIndex: "calc({zIndex.popover} + var(--layer-index, 0))",
       _open: {
@@ -43,7 +44,7 @@ export const popover = defineSlotRecipe({
     closeTrigger: {
       position: "absolute",
       top: "1",
-      right: "1",
+      insetEnd: "1",
     },
     header: {
       display: "flex",

@@ -16,6 +16,8 @@ export const tooltip = defineSlotRecipe({
       py: "1.5",
       textStyle: "xs",
       maxWidth: "xs",
+      // Its positioner takes this, or a tooltip in a dialog opens behind the dialog.
+      zIndex: "tooltip",
       _open: {
         animationStyle: "scale-fade-in",
         animationDuration: "fast",
