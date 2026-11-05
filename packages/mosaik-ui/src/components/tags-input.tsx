@@ -1,3 +1,4 @@
+import { useFieldContext } from "@ark-ui/solid/field"
 import { TagsInput, useTagsInputContext } from "@ark-ui/solid/tags-input"
 import { type ComponentProps, For } from "solid-js"
 import { createSlotRecipeContext } from "../../styled-system/jsx"
@@ -8,13 +9,21 @@ const { withProvider, withContext } = createSlotRecipeContext(tagsInput)
 
 export type RootProps = ComponentProps<typeof Root>
 export type ItemProps = ComponentProps<typeof Item>
-export const Root = withProvider(TagsInput.Root, "root")
+export const Root = withProvider(TagsInput.Root, "root", {
+  // In a `Field`, its label belongs to the input people type in. Ark links it to the hidden one, so
+  // a click on the label went nowhere and the input had no name.
+  defaultProps: () => {
+    const field = useFieldContext()
+    return field ? { ids: { label: field().ids.label, input: field().ids.control } } : {}
+  },
+})
 export const RootProvider = withProvider(TagsInput.RootProvider, "root")
 export const ClearTrigger = withContext(TagsInput.ClearTrigger, "clearTrigger", {
   defaultProps: () => ({ children: <XIcon /> }),
 })
 export const Control = withContext(TagsInput.Control, "control")
 export const HiddenInput = TagsInput.HiddenInput
+
 export const Input = withContext(TagsInput.Input, "input")
 export const Item = withContext(TagsInput.Item, "item")
 export const ItemDeleteTrigger = withContext(TagsInput.ItemDeleteTrigger, "itemDeleteTrigger", {

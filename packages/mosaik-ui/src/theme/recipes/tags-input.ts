@@ -79,6 +79,10 @@ export const tagsInput = defineSlotRecipe({
       _hover: {
         bg: "colorPalette.plain.bg.hover",
       },
+      // Nothing to delete from a field that cannot change.
+      "[data-part=control]:is([data-disabled], [data-readonly]) &": {
+        display: "none",
+      },
     },
     itemPreview: {
       height: "var(--tags-input-item-height)",
