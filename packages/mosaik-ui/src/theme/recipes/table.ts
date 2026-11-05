@@ -71,19 +71,22 @@ export const table = defineSlotRecipe({
     variant: {
       surface: {
         header: { bg: "gray.surface.bg.hover" },
-        row: { bg: "gray.surface.bg" },
+        row: { bg: "gray.surface.bg", _selected: { bg: "accent.subtle.bg" } },
       },
-      plain: {},
+      // `_selected` in each variant: a variant's `bg` would beat one in the base.
+      plain: {
+        row: { _selected: { bg: "accent.subtle.bg" } },
+      },
     },
     striped: {
       true: {
-        row: { "&:nth-of-type(odd) td": { bg: "gray.surface.bg.hover" } },
+        row: { "&:nth-of-type(odd):not([data-selected]) td": { bg: "gray.surface.bg.hover" } },
       },
     },
     interactive: {
       true: {
         // A tint, not a surface step: it shows on white cards and dark ones alike.
-        body: { "& tr": { _hover: { bg: "gray.subtle.bg" } } },
+        body: { "& tr": { _hover: { bg: "gray.subtle.bg", _selected: { bg: "accent.subtle.bg.hover" } } } },
       },
     },
     columnBorder: {
@@ -103,11 +106,23 @@ export const table = defineSlotRecipe({
         },
       },
     },
+    // Rows of 32, 40 and 48, as controls of the same sizes.
     size: {
+      sm: {
+        root: { textStyle: "sm" },
+        header: { px: "2.5", py: "1.5" },
+        cell: { px: "2.5", py: "1.5" },
+      },
       md: {
         root: { textStyle: "sm" },
         header: { px: "3", py: "2.5" },
         cell: { px: "3", py: "2.5" },
+      },
+      lg: {
+        root: { textStyle: "md" },
+        head: { textStyle: "sm" },
+        header: { px: "4", py: "3" },
+        cell: { px: "4", py: "3", textStyle: "md" },
       },
     },
   },

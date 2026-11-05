@@ -4,7 +4,7 @@ import { Portal } from "solid-js/web"
 import { Wrap } from "styled-system/jsx"
 
 export const App = () => {
-  const sizes = ["xs", "sm", "md", "lg", "xl"] as const
+  const sizes = ["xs", "sm", "md", "lg", "xl", "2xl"] as const
 
   return (
     <Wrap gap="4">

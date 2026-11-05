@@ -58,6 +58,8 @@ interface DataTableBaseProps<TData extends RowData> {
   emptyMessage?: string
   pageSizes?: number[]
   onRowClick?: (row: TData) => void
+  /** How tall its rows are: `sm` for many columns of data. */
+  size?: Table.RootProps["size"]
 }
 
 export interface DataTableClientProps {
@@ -144,7 +146,7 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
   return (
     <div class={styles.root}>
       <div class={styles.scroller}>
-        <Table.Root>
+        <Table.Root size={props.size}>
           <Table.Head>
             <For each={table.getHeaderGroups()}>
               {(headerGroup) => (

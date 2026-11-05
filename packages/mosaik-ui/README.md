@@ -83,6 +83,9 @@ and `asChild`:
 </Dialog.Root>
 ```
 
+To drive one from outside, `Dialog`, `Menu` and `Tabs` have a hook for their `RootProvider`:
+`const dialog = Dialog.useDialog()`, then `<Dialog.RootProvider value={dialog}>`.
+
 | | |
 |---|---|
 | Actions | `Button`, `ButtonGroup`, `IconButton`, `CloseButton`, `Toggle`, `ToggleGroup`, `Link`, `Clipboard` |

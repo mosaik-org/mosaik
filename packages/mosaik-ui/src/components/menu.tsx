@@ -1,3 +1,4 @@
+import { ark } from "@ark-ui/solid/factory"
 import { Menu, useMenuItemContext } from "@ark-ui/solid/menu"
 import type { ComponentProps } from "solid-js"
 import { Show } from "solid-js"
@@ -25,6 +26,7 @@ export const Indicator = withContext(Menu.Indicator, "indicator", {
   defaultProps: () => ({ children: <ChevronDownIcon /> }),
 })
 export const Item = withContext(Menu.Item, "item")
+export const ItemCommand = withContext(ark.span, "itemCommand")
 export const ItemGroup = withContext(Menu.ItemGroup, "itemGroup")
 export const ItemGroupLabel = withContext(Menu.ItemGroupLabel, "itemGroupLabel")
 export const ItemText = withContext(Menu.ItemText, "itemText")
@@ -38,6 +40,7 @@ export const TriggerItem = withContext(Menu.TriggerItem, "item")
 export {
   MenuContext as Context,
   type MenuSelectionDetails as SelectionDetails,
+  useMenu,
 } from "@ark-ui/solid/menu"
 
 const StyledItemIndicator = withContext(Menu.ItemIndicator, "itemIndicator")

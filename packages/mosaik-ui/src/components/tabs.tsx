@@ -12,4 +12,4 @@ export const List = withContext(Tabs.List, "list")
 export const Trigger = withContext(Tabs.Trigger, "trigger")
 export const Content = withContext(Tabs.Content, "content")
 
-export { TabsContext as Context } from "@ark-ui/solid/tabs"
+export { TabsContext as Context, useTabs } from "@ark-ui/solid/tabs"

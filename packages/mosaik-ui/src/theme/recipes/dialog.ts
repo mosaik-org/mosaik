@@ -145,6 +145,8 @@ export const dialog = defineSlotRecipe({
       md: { content: { maxW: "md" } },
       lg: { content: { maxW: "lg" } },
       xl: { content: { maxW: "xl" } },
+      // A step past the rest, for what is wider than a form: a table, a preview.
+      "2xl": { content: { maxW: "4xl" } },
       cover: {
         positioner: { padding: "8" },
         content: {

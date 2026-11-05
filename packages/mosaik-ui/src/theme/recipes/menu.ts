@@ -3,7 +3,7 @@ import { defineSlotRecipe } from "@pandacss/dev"
 
 export const menu = defineSlotRecipe({
   className: "menu",
-  slots: menuAnatomy.keys(),
+  slots: menuAnatomy.extendWith("itemCommand").keys(),
   base: {
     content: {
       // Above dialogs (`modal`), which menus open in too: the `popover` layer, for what floats.
@@ -68,6 +68,14 @@ export const menu = defineSlotRecipe({
       _focusVisible: {
         focusVisibleRing: "outside",
       },
+    },
+    // Pushed to the end of its row, past the label.
+    itemCommand: {
+      color: "fg.subtle",
+      flexShrink: "0",
+      ms: "auto",
+      ps: "4",
+      textStyle: "xs",
     },
     itemGroupLabel: {
       alignItems: "flex-start",
