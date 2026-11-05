@@ -87,11 +87,11 @@ and `asChild`:
 |---|---|
 | Actions | `Button`, `ButtonGroup`, `IconButton`, `CloseButton`, `Toggle`, `ToggleGroup`, `Link`, `Clipboard` |
 | Form controls | `Field`, `Fieldset`, `Input`, `InputGroup`, `InputAddon`, `Textarea`, `PasswordInput`, `NumberInput`, `PinInput`, `Checkbox`, `RadioGroup`, `RadioCardGroup`, `Switch`, `Select`, `Combobox`, `TagsInput`, `SegmentGroup`, `Slider`, `RatingGroup`, `DatePicker`, `ColorPicker`, `FileUpload`, `Editable` |
-| Overlays | `Dialog`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `Menu`, `Toaster` / `toaster` |
+| Overlays | `Dialog`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `Menu`, `Command`, `Toaster` / `toaster` |
 | Navigation | `Tabs`, `Breadcrumb`, `Pagination`, `Steps`, `Accordion`, `Collapsible` |
 | Display | `Card`, `Alert`, `Badge`, `Avatar`, `Table`, `Code`, `Kbd`, `Heading`, `Text`, `DisplayValue`, `Image`, `Icon`, `Progress`, `Skeleton`, `Spinner`, `Loader`, `Carousel`, `ScrollArea`, `Splitter` |
 | Layout | `Group`, `AbsoluteCenter`, `Span` |
-| Collections | `createListCollection`, `useListCollection`, `useFilter`: the items `Select` and `Combobox` parts take |
+| Collections | `createListCollection`, `useListCollection`, `useFilter`: the items `Select`, `Combobox` and `Command` parts take |
 
 ## Fields
 

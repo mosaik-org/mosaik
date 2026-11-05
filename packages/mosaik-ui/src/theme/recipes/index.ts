@@ -13,6 +13,7 @@ import { code } from "./code"
 import { collapsible } from "./collapsible"
 import { colorPicker } from "./color-picker"
 import { combobox } from "./combobox"
+import { command } from "./command"
 import { datePicker } from "./date-picker"
 import { dialog } from "./dialog"
 import { drawer } from "./drawer"
@@ -94,6 +95,7 @@ export const slotRecipes = {
   collapsible,
   colorPicker,
   combobox,
+  command,
   datePicker,
   dialog,
   drawer,
