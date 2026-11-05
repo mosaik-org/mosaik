@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { EmptyState, Heading, Input, SelectField, Tabs } from "@mosaik/mosaik-ui"
+import { EmptyState, Heading, Input, InputGroup, SelectField, Tabs } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { PageTitle, searchValidator } from "@mosaik/web-kit"
@@ -46,16 +46,7 @@ const ALL_CATEGORIES = "__all__"
 
 const styles = {
   toolbar: css({ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "3" }),
-  search: css({ position: "relative", flex: "1", minW: "56", maxW: "md" }),
-  searchIcon: css({
-    position: "absolute",
-    left: "3",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "fg.subtle",
-    pointerEvents: "none",
-  }),
-  searchInput: css({ pl: "9" }),
+  search: css({ flex: "1", minW: "56", maxW: "md" }),
   count: css({ fontSize: "xs", color: "fg.subtle" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
   grid: css({
@@ -144,17 +135,15 @@ function Directory() {
 
       <div class={styles.toolbar}>
         <div class={styles.search}>
-          <span class={styles.searchIcon}>
-            <Search size={16} />
-          </span>
-          <Input
-            class={styles.searchInput}
-            type="search"
-            placeholder="Search apps"
-            aria-label="Search apps"
-            value={query()}
-            onInput={(event) => update({ q: event.currentTarget.value || undefined })}
-          />
+          <InputGroup startElement={<Search />}>
+            <Input
+              type="search"
+              placeholder="Search apps"
+              aria-label="Search apps"
+              value={query()}
+              onInput={(event) => update({ q: event.currentTarget.value || undefined })}
+            />
+          </InputGroup>
         </div>
         <SelectField
           aria-label="Sort"
