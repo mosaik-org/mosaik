@@ -88,7 +88,6 @@ export const dialog = defineSlotRecipe({
       display: "flex",
       flex: "1",
       flexDirection: "column",
-      alignItems: "flex-start",
       px: { base: "4", md: "6" },
     },
     footer: {
