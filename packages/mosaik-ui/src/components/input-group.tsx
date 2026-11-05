@@ -2,6 +2,7 @@ import { ark } from "@ark-ui/solid"
 import { type ComponentProps, type JSX, Show, splitProps } from "solid-js"
 import { createSlotRecipeContext } from "../../styled-system/jsx"
 import { inputGroup } from "../../styled-system/recipes"
+import { InputSizeContext } from "./input"
 
 const { withProvider, withContext } = createSlotRecipeContext(inputGroup)
 
@@ -18,18 +19,20 @@ export const InputGroup = (props: InputGroupProps) => {
   const [local, rest] = splitProps(props, ["startElement", "endElement"])
 
   return (
-    <Root {...rest}>
-      <Show when={local.startElement}>
-        <Element insetInlineStart="0" top="0">
-          {local.startElement}
-        </Element>
-      </Show>
-      {rest.children}
-      <Show when={local.endElement}>
-        <Element insetInlineEnd="0" top="0">
-          {local.endElement}
-        </Element>
-      </Show>
-    </Root>
+    <InputSizeContext.Provider value={() => props.size}>
+      <Root {...rest}>
+        <Show when={local.startElement}>
+          <Element insetInlineStart="0" top="0">
+            {local.startElement}
+          </Element>
+        </Show>
+        {rest.children}
+        <Show when={local.endElement}>
+          <Element insetInlineEnd="0" top="0">
+            {local.endElement}
+          </Element>
+        </Show>
+      </Root>
+    </InputSizeContext.Provider>
   )
 }

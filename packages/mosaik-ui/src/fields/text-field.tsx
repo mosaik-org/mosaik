@@ -74,7 +74,7 @@ export const TextField = (props: TextFieldProps) => {
   return (
     <FormField {...field}>
       <Show when={local.startElement || local.endElement} fallback={input()}>
-        <InputGroup startElement={local.startElement} endElement={local.endElement}>
+        <InputGroup size={rest.size} startElement={local.startElement} endElement={local.endElement}>
           {input()}
         </InputGroup>
       </Show>

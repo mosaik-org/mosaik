@@ -7,6 +7,9 @@ export const inputGroup = defineSlotRecipe({
     root: {
       position: "relative",
       width: "full",
+      // Room for what sits inside, read from the input's own height: square, as an icon's place is.
+      "& > input:not(:first-child)": { ps: "var(--input-height)!" },
+      "& > input:not(:last-child)": { pe: "var(--input-height)!" },
     },
     element: {
       alignItems: "center",
@@ -28,42 +31,15 @@ export const inputGroup = defineSlotRecipe({
     size: "md",
   },
   variants: {
+    // As tall as the input of that size, its icon as large as a button's.
     size: {
-      xs: {
-        element: { minW: "8", _icon: { boxSize: "4" } },
-        root: {
-          "& > input:not(:first-child)": { ps: "7!" },
-          "& > input:not(:last-child)": { pe: "7!" },
-        },
-      },
-      sm: {
-        root: {
-          "& > input:not(:first-child)": { ps: "8!" },
-          "& > input:not(:last-child)": { pe: "8!" },
-        },
-        element: { minW: "9", _icon: { boxSize: "4.5" } },
-      },
-      md: {
-        root: {
-          "& > input:not(:first-child)": { ps: "9!" },
-          "& > input:not(:last-child)": { pe: "9!" },
-        },
-        element: { minW: "10", _icon: { boxSize: "5" } },
-      },
-      lg: {
-        root: {
-          "& > input:not(:first-child)": { ps: "10!" },
-          "& > input:not(:last-child)": { pe: "10!" },
-        },
-        element: { minW: "11", _icon: { boxSize: "5" } },
-      },
-      xl: {
-        root: {
-          "& > input:not(:first-child)": { ps: "11!" },
-          "& > input:not(:last-child)": { pe: "11!" },
-        },
-        element: { minW: "11", _icon: { boxSize: "5.5" } },
-      },
+      "2xs": { element: { minW: "5", _icon: { boxSize: "3" } } },
+      xs: { element: { minW: "6", _icon: { boxSize: "3.5" } } },
+      sm: { element: { minW: "7", _icon: { boxSize: "4" } } },
+      md: { element: { minW: "8", _icon: { boxSize: "4" } } },
+      lg: { element: { minW: "10", _icon: { boxSize: "5" } } },
+      xl: { element: { minW: "12", _icon: { boxSize: "5.5" } } },
+      "2xl": { element: { minW: "16", _icon: { boxSize: "6" } } },
     },
   },
 })

@@ -1,7 +1,16 @@
 import { Field } from "@ark-ui/solid/field"
-import type { ComponentProps } from "solid-js"
+import { type Accessor, type ComponentProps, createContext, useContext } from "solid-js"
 import { styled } from "../../styled-system/jsx"
-import { input } from "../../styled-system/recipes"
+import { type InputVariantProps, input } from "../../styled-system/recipes"
 
-export type InputProps = ComponentProps<typeof Input>
-export const Input = styled(Field.Input, input)
+const StyledInput = styled(Field.Input, input)
+
+/** The size an `InputGroup` gives the input inside it, so that the two cannot disagree. */
+export const InputSizeContext = createContext<Accessor<InputVariantProps["size"]>>()
+
+export type InputProps = ComponentProps<typeof StyledInput>
+
+export const Input = (props: InputProps) => {
+  const groupSize = useContext(InputSizeContext)
+  return <StyledInput size={groupSize?.()} {...props} />
+}

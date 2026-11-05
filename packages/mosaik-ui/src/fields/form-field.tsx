@@ -21,6 +21,8 @@ export interface FieldProps {
   readonly readOnly?: boolean
   /** The name the value is submitted under in a native form. */
   readonly name?: string
+  /** `horizontal` puts the label beside the control rather than above it, as in a settings form. */
+  readonly layout?: "vertical" | "horizontal"
   readonly id?: string
   readonly class?: string
 }
@@ -35,6 +37,7 @@ export const FIELD_PROPS = [
   "required",
   "disabled",
   "readOnly",
+  "layout",
   "id",
   "class",
 ] as const satisfies ReadonlyArray<keyof FieldProps>
@@ -59,9 +62,17 @@ export interface FormFieldProps extends Omit<FieldProps, "name"> {
  * or `Field.Input`).
  */
 export const FormField = (props: FormFieldProps) => {
-  const [local, rest] = splitProps(props, ["label", "helperText", "errorText", "optionalText", "invalid", "children"])
+  const [local, rest] = splitProps(props, [
+    "layout",
+    "label",
+    "helperText",
+    "errorText",
+    "optionalText",
+    "invalid",
+    "children",
+  ])
   return (
-    <Field.Root {...rest} invalid={isInvalid(props)}>
+    <Field.Root {...rest} orientation={local.layout} invalid={isInvalid(props)}>
       <Show when={local.label}>
         <Field.Label>
           {local.label}
@@ -72,7 +83,12 @@ export const FormField = (props: FormFieldProps) => {
       <Show when={local.helperText && !isInvalid(props)}>
         <Field.HelperText>{local.helperText}</Field.HelperText>
       </Show>
-      <Field.ErrorText>{local.errorText}</Field.ErrorText>
+      <Show when={hasContent(local.errorText)}>
+        <Field.ErrorText>
+          <Field.ErrorIcon />
+          {local.errorText}
+        </Field.ErrorText>
+      </Show>
     </Field.Root>
   )
 }

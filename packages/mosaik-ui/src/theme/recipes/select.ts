@@ -81,7 +81,7 @@ export const select = defineSlotRecipe({
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: { base: "fg.subtle" },
+      color: { base: "fg.subtle", _invalid: "error" },
     },
     itemGroupLabel: {
       alignItems: "flex-start",
@@ -142,6 +142,7 @@ export const select = defineSlotRecipe({
           borderWidth: "1px",
           borderColor: "gray.outline.border",
           [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
+          "&[aria-expanded=true]:not([data-invalid])": { borderColor: "gray.surface.border.hover" },
           focusVisibleRing: "inside",
           _invalid: {
             borderColor: "error",
@@ -155,6 +156,36 @@ export const select = defineSlotRecipe({
           borderWidth: "1px",
           borderColor: "gray.surface.border",
           [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
+          "&[aria-expanded=true]:not([data-invalid])": { borderColor: "gray.surface.border.hover" },
+          focusVisibleRing: "inside",
+          _invalid: {
+            borderColor: "error",
+            focusRingColor: "error",
+          },
+        },
+      },
+      subtle: {
+        trigger: {
+          borderWidth: "1px",
+          borderColor: "transparent",
+          bg: "gray.subtle.bg",
+          color: "gray.subtle.fg",
+          _hover: { bg: "gray.subtle.bg.hover" },
+          _expanded: { bg: "gray.subtle.bg.hover" },
+          focusVisibleRing: "inside",
+          _invalid: {
+            borderColor: "error",
+            focusRingColor: "error",
+          },
+        },
+      },
+      // Only a label and a chevron until it is used: for toolbars, where a border is one too many.
+      ghost: {
+        trigger: {
+          borderWidth: "1px",
+          borderColor: "transparent",
+          _hover: { bg: "gray.subtle.bg" },
+          _expanded: { bg: "gray.subtle.bg" },
           focusVisibleRing: "inside",
           _invalid: {
             borderColor: "error",

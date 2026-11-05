@@ -112,6 +112,7 @@ All of them take the same props besides the value:
 - `label`, `helperText`;
 - `errorText`, which marks the field invalid while set;
 - `optionalText`, shown after the label of a field that is not `required`;
+- `layout="horizontal"`, the label beside the control, as in a settings form;
 - `required`, `disabled`, `readOnly`, `invalid`, `name`;
 - `onBlur`, so a form can show a field's error once it was left.
 

@@ -6,8 +6,6 @@ export const field = defineSlotRecipe({
   slots: fieldAnatomy.keys(),
   base: {
     root: {
-      display: "flex",
-      flexDirection: "column",
       gap: "1.5",
     },
     label: {
@@ -33,8 +31,32 @@ export const field = defineSlotRecipe({
       },
     },
     errorText: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "1",
       color: "error",
       textStyle: "sm",
+      _icon: { boxSize: "1em", flexShrink: "0" },
+    },
+  },
+  defaultVariants: {
+    orientation: "vertical",
+  },
+  variants: {
+    orientation: {
+      vertical: {
+        root: { display: "flex", flexDirection: "column" },
+      },
+      // The label in a column of its own; the control, help and error line up in the next.
+      horizontal: {
+        root: {
+          display: "grid",
+          gridTemplateColumns: "var(--field-label-width, 8rem) minmax(0, 1fr)",
+          alignItems: "center",
+          columnGap: "3",
+          "& > :not(label)": { gridColumn: "2" },
+        },
+      },
     },
   },
 })
