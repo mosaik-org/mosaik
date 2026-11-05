@@ -35,7 +35,7 @@ import {
 } from "@mosaik/portal/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { QueryBoundary, SettingField } from "@mosaik/web-kit"
+import { AppIcon, appColor, QueryBoundary, SettingField } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import Ellipsis from "lucide-solid/icons/ellipsis"
@@ -773,9 +773,16 @@ const columns = column.columns([
   column.accessor("name", {
     header: "App",
     cell: (info) => (
-      <div>
-        <div class={css({ fontWeight: "medium" })}>{info.getValue()}</div>
-        <div class={styles.mono}>{info.row.original.id}</div>
+      <div class={css({ display: "flex", alignItems: "center", gap: "3" })}>
+        <AppIcon
+          name={info.row.original.manifest?.portal.icon}
+          size={20}
+          color={appColor({ id: info.row.original.id, portal: { color: info.row.original.manifest?.portal.color } })}
+        />
+        <div>
+          <div class={css({ fontWeight: "medium" })}>{info.getValue()}</div>
+          <div class={styles.mono}>{info.row.original.id}</div>
+        </div>
       </div>
     ),
   }),

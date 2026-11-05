@@ -17,13 +17,11 @@ export interface PageHeaderProps {
   /** The page's own actions, such as "New order". */
   readonly actions?: JSX.Element
   readonly icon?: JSX.Element
-  /** On the header, e.g. a class with a `colorPalette` for its icon's tile. */
-  readonly class?: string
 }
 
 /** The top of a page: its `<h1>`, what the page is for, and its actions. */
 export const PageHeader = (props: PageHeaderProps) => (
-  <Root class={props.class}>
+  <Root>
     <Heading>
       <Show when={props.icon}>
         <Icon aria-hidden="true">{props.icon}</Icon>

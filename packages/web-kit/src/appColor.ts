@@ -1,18 +1,18 @@
-import { type AppColor, appColors } from "@mosaik/core"
+import { type AppColor, appColors, isAppColor } from "@mosaik/core"
 import { cva } from "@mosaik/styled-system/css"
 
 /** What an app's colour is read from: its id and, when it names one, `portal.color`. */
 export interface Colored {
   readonly id: string
-  readonly portal: { readonly color?: AppColor | undefined }
+  readonly portal: { readonly color?: string | null | undefined }
 }
 
 /**
- * An app's colour: the one its manifest names, or one picked from its id, so that every app has
- * one and keeps it wherever and whenever it shows.
+ * An app's colour: the one its manifest names, or one picked from its id (also for a name this
+ * version does not know), so that every app has one and keeps it wherever and whenever it shows.
  */
 export const appColor = (app: Colored): AppColor => {
-  if (app.portal.color !== undefined) return app.portal.color
+  if (isAppColor(app.portal.color)) return app.portal.color
   // A small string hash (FNV-1a): stable across sessions and browsers.
   let hash = 0x811c9dc5
   for (let i = 0; i < app.id.length; i++) {

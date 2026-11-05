@@ -8,7 +8,7 @@ import ChevronDown from "lucide-solid/icons/chevron-down"
 import { createMemo, type JSX, Show } from "solid-js"
 import { AppIcon } from "./AppIcon"
 import { AppTabs } from "./AppTabs"
-import { appColor, appColorClass } from "./appColor"
+import { appColor } from "./appColor"
 import { appPageLinks, currentPage } from "./appPages"
 import { FrameHeader, useHasFrameHeader } from "./FrameHeader"
 import { NavTabs } from "./NavTabs"
@@ -78,8 +78,7 @@ export const AppLayout = (props: AppLayoutProps) => {
         fallback={
           <>
             <PageHeader
-              icon={<AppIcon name={icon()} size={22} />}
-              class={appColorClass(props.app)}
+              icon={<AppIcon name={icon()} size={22} color={appColor(props.app)} />}
               title={props.app.name}
               description={props.app.description}
               actions={props.actions}

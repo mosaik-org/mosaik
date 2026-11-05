@@ -1,5 +1,5 @@
 export { AccessDenied } from "./AccessDenied"
-export { AppIcon, type AppIconName, type AppIconProps, AppTile, appIconNames } from "./AppIcon"
+export { AppIcon, type AppIconName, type AppIconProps, appIconNames } from "./AppIcon"
 export { AppLayout, type AppLayoutProps } from "./AppLayout"
 export {
   type Action,

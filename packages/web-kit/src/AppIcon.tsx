@@ -1,5 +1,5 @@
 import type { AppColor } from "@mosaik/core"
-import { css, cva, cx } from "@mosaik/styled-system/css"
+import { css, cx } from "@mosaik/styled-system/css"
 import type { LucideProps } from "lucide-solid"
 import Activity from "lucide-solid/icons/activity"
 import Bell from "lucide-solid/icons/bell"
@@ -63,6 +63,8 @@ export interface AppIconProps {
   color?: AppColor | undefined
 }
 
+// Its size whatever is beside it: long text in a row would otherwise squeeze it.
+const fixed = css({ flexShrink: "0" })
 const tinted = css({ color: "colorPalette.plain.fg" })
 
 /** An app's icon by name (from its manifest); a box for apps without one, or with an unknown name. */
@@ -72,40 +74,8 @@ export function AppIcon(props: AppIconProps) {
     <Dynamic
       component={icon()}
       size={props.size ?? 18}
-      class={props.color === undefined ? undefined : cx(appPalette({ color: props.color }), tinted)}
+      class={props.color === undefined ? fixed : cx(fixed, appPalette({ color: props.color }), tinted)}
       aria-hidden="true"
     />
-  )
-}
-
-const tile = cva({
-  base: {
-    display: "grid",
-    placeItems: "center",
-    flexShrink: "0",
-    bg: "colorPalette.subtle.bg",
-    color: "colorPalette.subtle.fg",
-  },
-  variants: {
-    size: {
-      sm: { boxSize: "7", borderRadius: "l2" },
-      md: { boxSize: "10", borderRadius: "l3" },
-    },
-  },
-  defaultVariants: { size: "md" },
-})
-
-/**
- * An app's icon on a tile of its colour, where an app is listed (cards, rows); grey without a
- * colour, as for an app the person cannot open.
- */
-export function AppTile(props: { name?: string | null; color?: AppColor | undefined; size?: "sm" | "md" }) {
-  return (
-    <span
-      class={cx(tile({ size: props.size }), props.color === undefined ? undefined : appPalette({ color: props.color }))}
-      aria-hidden="true"
-    >
-      <AppIcon name={props.name} size={props.size === "sm" ? 14 : 20} />
-    </span>
   )
 }

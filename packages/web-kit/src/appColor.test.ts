@@ -13,6 +13,12 @@ describe("appColor", () => {
     expect(appColor({ id: "sales", portal: {} })).toBe(picked)
   })
 
+  it("is picked from the id for a name it does not know", () => {
+    expect(appColor({ id: "sales", portal: { color: "mauve" } })).toBe(
+      appColor({ id: "sales", portal: { color: null } }),
+    )
+  })
+
   it("tells most apps apart", () => {
     const ids = ["sales", "issues", "notes", "status", "admin", "portal", "billing", "hr"]
     expect(new Set(ids.map((id) => appColor({ id, portal: {} }))).size).toBeGreaterThanOrEqual(4)

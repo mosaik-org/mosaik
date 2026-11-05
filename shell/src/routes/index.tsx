@@ -4,7 +4,7 @@ import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
 import { Button, Card, EmptyState, Heading, PageHeader } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppTile, appColor } from "@mosaik/web-kit"
+import { AppIcon, appColor } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
@@ -80,7 +80,7 @@ const AppCard = (props: { app: AnyApp }) => (
   <Link to={appHref(props.app)} class={styles.tileLink}>
     <Card.Root class={styles.tile}>
       <Card.Body flexDirection="row" alignItems="center" gap="3">
-        <AppTile name={props.app.portal.icon} color={appColor(props.app)} />
+        <AppIcon name={props.app.portal.icon} size={24} color={appColor(props.app)} />
         <div class={styles.tileText}>
           <span class={styles.name}>{props.app.name}</span>
           <span class={styles.description} title={props.app.description}>

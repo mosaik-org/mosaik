@@ -7,7 +7,6 @@ export {
   AppIcon,
   type AppIconName,
   type AppIconProps,
-  AppTile,
   appColor,
   appColorClass,
   appIconNames,

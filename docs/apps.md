@@ -71,7 +71,7 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`, `markBusy`); no framework |
 | `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `useBusy`, `useStatus`, `<Toasts />` |
 | `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
-| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `AppTile`, `appColor`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
+| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `appColor`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
 | `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
 

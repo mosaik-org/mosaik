@@ -1,8 +1,8 @@
 import { errorMessage, toast } from "@mosaik/client"
 import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import type { InboxItem, Severity } from "@mosaik/notifications/contract"
-import { css, cva, cx } from "@mosaik/styled-system/css"
-import { AppIcon, appColorClass } from "@mosaik/web-kit"
+import { css, cva } from "@mosaik/styled-system/css"
+import { AppIcon, appColor } from "@mosaik/web-kit"
 import { useMutation, useQueryClient } from "@tanstack/solid-query"
 import { useRouter } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -12,35 +12,16 @@ import { sourceApp, sourceName } from "../apps"
 import { notificationKeys, notificationsApi } from "./api"
 import { groupByDay, shortAgo } from "./time"
 
-/**
- * The sending app's icon on a tile: in the app's colour, as everywhere it shows, unless the
- * notification warns or is critical, which take their own; Mosaik's own (platform) in grey.
- */
-const tile = cva({
-  base: {
-    display: "grid",
-    placeItems: "center",
-    flexShrink: "0",
-    boxSize: "7",
-    borderRadius: "l2",
-    bg: "colorPalette.subtle.bg",
-    color: "colorPalette.subtle.fg",
-  },
+/** A warning or critical notification's icon takes their colour; Mosaik's own (platform) is quiet. */
+const sourceIcon = cva({
+  base: { display: "flex", flexShrink: "0", color: "fg.muted" },
   variants: {
     severity: {
-      warning: { colorPalette: "warning" },
-      critical: { colorPalette: "danger" },
+      warning: { color: "warning.plain.fg" },
+      critical: { color: "danger.plain.fg" },
     },
   },
 })
-
-/** The tile's class: the severity's colour when it alarms, otherwise the app's (grey for none). */
-const tileClass = (item: InboxItem): string => {
-  const severity = item.content.severity
-  if (severity === "warning" || severity === "critical") return tile({ severity })
-  const app = sourceApp(item.source)
-  return cx(tile(), app === undefined ? undefined : appColorClass(app))
-}
 
 const styles = {
   groups: css({ display: "flex", flexDirection: "column", gap: "2", py: "2" }),
@@ -138,19 +119,30 @@ export const useInboxActions = () => {
   return { markRead, markAllRead, open, invalidate }
 }
 
-/** The sending app's icon; Mosaik's own (platform) notifications get the bell. */
-const SourceIcon = (props: { source: string }) => {
-  const app = () => sourceApp(props.source)
+/** The sending app's icon, in its colour unless the notification alarms; Mosaik's own get the bell. */
+const SourceIcon = (props: { item: InboxItem }) => {
+  const severity = () => {
+    const severity = props.item.content.severity
+    return severity === "warning" || severity === "critical" ? severity : undefined
+  }
+  const app = () => sourceApp(props.item.source)
   return (
-    <Show when={app()} fallback={<Bell size={14} />}>
-      {(found) => <AppIcon name={found().portal.icon} size={14} />}
-    </Show>
+    <span class={sourceIcon({ severity: severity() })} aria-hidden="true">
+      <Show when={app()} fallback={<Bell size={18} />}>
+        {(found) => (
+          <AppIcon
+            name={found().portal.icon}
+            size={18}
+            color={severity() === undefined ? appColor(found()) : undefined}
+          />
+        )}
+      </Show>
+    </span>
   )
 }
 
 /**
- * Notifications under the day they came, newest first: each with its app's icon (tinted by how
- * much it matters), its title and time, and a line or two of what it says; unread ones bold, with
+ * Notifications under the day they came, newest first: each with its app's icon, its title and time, and a line or two of what it says; unread ones bold, with
  * a dot, and a way to mark them read without opening them.
  */
 export const NotificationList = (props: {
@@ -183,9 +175,7 @@ export const NotificationList = (props: {
                     return (
                       <li class={styles.row}>
                         <button type="button" class={styles.item} onClick={() => props.onOpen(item)}>
-                          <span class={tileClass(item)} aria-hidden="true">
-                            <SourceIcon source={item.source} />
-                          </span>
+                          <SourceIcon item={item} />
                           <span class={styles.text}>
                             <span class={styles.line}>
                               <span class={styles.title} data-unread={props.unreadOnly === true ? undefined : unread()}>
