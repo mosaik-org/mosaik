@@ -84,12 +84,23 @@ const styles = {
     color: "fg.muted",
     whiteSpace: "nowrap",
     transition: "background 0.15s, color 0.15s",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
+    // Each highlight is also the tint of the ring around a status's dot, which sits on it.
+    _hover: { bg: "gray.subtle.bg", color: "fg.default", "--status-mark-tint": "colors.gray.subtle.bg" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    "&[data-status=active]": { bg: "gray.subtle.bg.hover", color: "fg.default" },
+    "&[data-status=active]": {
+      bg: "gray.subtle.bg.hover",
+      color: "fg.default",
+      "--status-mark-tint": "colors.gray.subtle.bg.hover",
+    },
   }),
-  // An app's icon is grey like the rest of the list, in the app's colour while it is the open one.
-  appIcon: css({ "[data-status=active] &": { color: "colorPalette.plain.fg" } }),
+  // An app's icon is grey like the rest of the list, in the app's colour while it is the open one;
+  // the dot on it (collapsed) goes with it, as they read as one mark there.
+  appIcon: css({
+    "[data-status=active] &": {
+      color: "colorPalette.plain.fg",
+      "& [data-counted=true]": { bg: "colorPalette.plain.fg" },
+    },
+  }),
   // As tall as a line of the label beside it, so a row is as tall with its label (expanded) as without (rail).
   icon: css({ position: "relative", display: "flex", alignItems: "center", flexShrink: "0", height: "1lh" }),
   label: css({ flex: "1", minW: "0", truncate: true }),
@@ -106,7 +117,7 @@ const styles = {
 }
 
 const NavLink = (props: {
-  /** On the icon: what colours it. */
+  /** On the icon and the dot beside it: what colours them. */
   iconClass?: string
   to: string
   exact?: boolean

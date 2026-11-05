@@ -18,13 +18,20 @@ const dot = cva({
       attention: { bg: "accent.solid.bg" },
       warning: { bg: "warning.solid.bg" },
       danger: { bg: "danger.solid.bg" },
+      // Things waiting where there is no room for their number: grey, as that number is.
+      counted: { bg: "gray.9" },
     },
   },
 })
 
+/** Things waiting, in no particular alarm: what a grey number or dot stands for. */
+const counted = (summary: StatusSummary): boolean => summary.count > 0 && summary.tone === "attention"
+
 const styles = {
   mark: css({ display: "inline-flex", alignItems: "center", flexShrink: "0" }),
-  // On an icon in the rail: in its corner, apart from the sidebar's background.
+  // On an icon in the rail: in its corner, cut out of it by a ring of what is behind. A layer and
+  // not an outline: a row's highlight is translucent (`--status-mark-tint`), so the ring only
+  // matches it painted the same way, over the sidebar's background.
   corner: css({
     position: "absolute",
     top: "-1",
@@ -32,8 +39,16 @@ const styles = {
     display: "grid",
     placeItems: "center",
     borderRadius: "full",
-    outline: "2px solid token(colors.gray.2)",
-    bg: "gray.2",
+    isolation: "isolate",
+    _before: {
+      content: '""',
+      position: "absolute",
+      inset: "-2px",
+      zIndex: "-1",
+      borderRadius: "full",
+      bg: "gray.2",
+      backgroundImage: "linear-gradient(var(--status-mark-tint, transparent), var(--status-mark-tint, transparent))",
+    },
   }),
 }
 
@@ -50,7 +65,14 @@ export const StatusMark = (props: { readonly summary: StatusSummary; readonly co
       title={props.summary.lines.join("\n")}
       data-status-mark
     >
-      <Switch fallback={<span class={dot({ tone: props.summary.tone })} />}>
+      <Switch
+        fallback={
+          <span
+            class={dot({ tone: counted(props.summary) ? "counted" : props.summary.tone })}
+            data-counted={counted(props.summary)}
+          />
+        }
+      >
         <Match when={props.summary.count > 0 && props.corner !== true}>
           <Badge
             variant={badge[props.summary.tone].variant}
