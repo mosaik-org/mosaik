@@ -129,7 +129,6 @@ function ManagedApp() {
                   >
                     {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
                   </For>
-                  <Tabs.Indicator />
                 </Tabs.List>
               </Tabs.Root>
               <Switch>

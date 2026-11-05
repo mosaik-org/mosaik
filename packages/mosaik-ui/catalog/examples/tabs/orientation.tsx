@@ -8,7 +8,6 @@ export const App = () => {
         <Tabs.Trigger value="solid">Solid</Tabs.Trigger>
         <Tabs.Trigger value="svelte">Svelte</Tabs.Trigger>
         <Tabs.Trigger value="vue">Vue</Tabs.Trigger>
-        <Tabs.Indicator />
       </Tabs.List>
       <Tabs.Content value="react" />
       <Tabs.Content value="solid" />

@@ -11,6 +11,5 @@ export const RootProvider = withProvider(Tabs.RootProvider, "root")
 export const List = withContext(Tabs.List, "list")
 export const Trigger = withContext(Tabs.Trigger, "trigger")
 export const Content = withContext(Tabs.Content, "content")
-export const Indicator = withContext(Tabs.Indicator, "indicator")
 
 export { TabsContext as Context } from "@ark-ui/solid/tabs"

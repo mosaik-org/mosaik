@@ -310,7 +310,6 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
               >
                 {(item) => <Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>}
               </For>
-              <Tabs.Indicator />
             </Tabs.List>
           </Tabs.Root>
           <TextField

@@ -86,7 +86,6 @@ export const Orders = () => {
               Waiting <Badge size="sm">{waiting()}</Badge>
             </Tabs.Trigger>
             <Tabs.Trigger value="returns">Returns</Tabs.Trigger>
-            <Tabs.Indicator />
           </Tabs.List>
         </Card.Header>
         <Card.Body>

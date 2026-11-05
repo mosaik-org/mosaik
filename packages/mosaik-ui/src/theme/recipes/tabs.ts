@@ -24,20 +24,31 @@ export const tabs = defineSlotRecipe({
       isolation: "isolate",
       _horizontal: {
         flexDirection: "row",
+        // More tabs than fit scroll sideways, within the row, and never widen the page.
+        maxW: "full",
+        overflowX: "auto",
+        scrollbarWidth: "none",
       },
       _vertical: {
         flexDirection: "column",
       },
     },
+    // The selected tab draws its own mark, in CSS. Measuring it for a sliding indicator happens only
+    // once, as the tabs start: on a page still loading its data that found nothing, and no tab showed.
     trigger: {
       alignItems: "center",
       cursor: "pointer",
       display: "flex",
+      // As wide as its label: in a tight row, the row overflows rather than labels running together.
+      flexShrink: "0",
+      whiteSpace: "nowrap",
       fontWeight: "medium",
       outline: "0",
       position: "relative",
+      transition: "color 0.15s, background 0.15s",
+      // Within the tab: a list that scrolls clips what reaches past it.
+      "--focus-ring-offset": "-3px",
       _focusVisible: {
-        zIndex: 1,
         focusVisibleRing: "outside",
       },
       _disabled: {
@@ -53,11 +64,6 @@ export const tabs = defineSlotRecipe({
       _vertical: {
         height: "100%",
       },
-    },
-    indicator: {
-      width: "var(--width)",
-      height: "var(--height)",
-      zIndex: -1,
     },
   },
 
@@ -86,44 +92,41 @@ export const tabs = defineSlotRecipe({
           alignItems: "stretch",
         },
         list: {
+          // A line inside the list rather than a border: the list scrolls, which would clip the
+          // selected tab's mark where it meets a border.
           _horizontal: {
-            borderBottomWidth: "1px",
+            boxShadow: "inset 0 -1px 0 0 token(colors.border)",
           },
           _vertical: {
             borderStartWidth: "1px",
-          },
-        },
-        indicator: {
-          background: "colorPalette.solid.bg",
-          _horizontal: {
-            bottom: "0",
-            height: "0.5",
-            transform: "translateY(1px)",
-          },
-          _vertical: {
-            left: "0",
-            width: "0.5",
-            transform: "translateX(-1px)",
           },
         },
         trigger: {
           color: "fg.muted",
           _selected: {
             color: "colorPalette.plain.fg",
+            _after: {
+              content: '""',
+              position: "absolute",
+              bg: "colorPalette.solid.bg",
+            },
+          },
+          _horizontal: {
+            _selected: { _after: { insetX: "0", bottom: "0", height: "0.5" } },
+          },
+          _vertical: {
+            _selected: { _after: { insetY: "0", left: "-1px", width: "0.5" } },
           },
         },
       },
       subtle: {
         trigger: {
           color: "fg.muted",
+          borderRadius: "l2",
           _selected: {
             color: "colorPalette.subtle.fg",
+            bg: "colorPalette.subtle.bg",
           },
-        },
-        indicator: {
-          bg: "colorPalette.subtle.bg",
-          color: "colorPalette.subtle.fg",
-          borderRadius: "l2",
         },
       },
       enclosed: {
@@ -139,19 +142,17 @@ export const tabs = defineSlotRecipe({
         },
         trigger: {
           color: "fg.muted",
+          borderRadius: "l2",
           _selected: {
             color: "colorPalette.surface.fg",
-          },
-        },
-        indicator: {
-          borderRadius: "l2",
-          boxShadow: {
-            base: "xs",
-            _dark: "none",
-          },
-          bg: {
-            base: "white",
-            _dark: "gray.3",
+            boxShadow: {
+              base: "xs",
+              _dark: "none",
+            },
+            bg: {
+              base: "white",
+              _dark: "gray.3",
+            },
           },
         },
       },
