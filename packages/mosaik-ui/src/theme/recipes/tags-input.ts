@@ -33,10 +33,7 @@ export const tagsInput = defineSlotRecipe({
       transitionProperty: "border-color, box-shadow",
 
       _disabled: {
-        opacity: "0.5",
-      },
-      _invalid: {
-        borderColor: "var(--error-color)",
+        layerStyle: "disabled",
       },
     },
     clearTrigger: {
@@ -105,6 +102,9 @@ export const tagsInput = defineSlotRecipe({
       outline: {
         control: {
           borderWidth: "1px",
+          borderColor: "gray.outline.border",
+          // In each variant, as its border would beat one in the base.
+          _invalid: { borderColor: "var(--error-color)" },
           _focus: {
             outlineWidth: "1px",
             outlineStyle: "solid",
@@ -130,6 +130,8 @@ export const tagsInput = defineSlotRecipe({
           color: "gray.subtle.fg",
           borderWidth: "1px",
           borderColor: "transparent",
+          // In each variant, as its border would beat one in the base.
+          _invalid: { borderColor: "var(--error-color)" },
           _focus: {
             outlineWidth: "1px",
             outlineStyle: "solid",
@@ -155,6 +157,8 @@ export const tagsInput = defineSlotRecipe({
           bg: "gray.surface.bg",
           borderWidth: "1px",
           borderColor: "gray.surface.border",
+          // In each variant, as its border would beat one in the base.
+          _invalid: { borderColor: "var(--error-color)" },
           _focus: {
             outlineWidth: "1px",
             outlineStyle: "solid",
@@ -211,6 +215,8 @@ export const tagsInput = defineSlotRecipe({
           _icon: { boxSize: "3.5" },
           textStyle: "sm",
         },
+        // 16px on phones, as `Input`: they zoom into a field set smaller when it is tapped.
+        input: { textStyle: { base: "md", md: "sm" } },
         control: { gap: "1.5" },
         itemPreview: { gap: "1" },
         itemDeleteTrigger: { boxSize: "5", me: "-1" },

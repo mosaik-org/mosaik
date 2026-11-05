@@ -16,6 +16,9 @@ export const slider = defineSlotRecipe({
       isolation: "isolate",
       touchAction: "none",
       width: "full",
+      _disabled: {
+        layerStyle: "disabled",
+      },
     },
     label: {
       fontWeight: "medium",
@@ -24,6 +27,10 @@ export const slider = defineSlotRecipe({
     control: {
       display: "inline-flex",
       alignItems: "center",
+      // The range and the thumb read the palette, so both show it.
+      _invalid: {
+        colorPalette: "danger",
+      },
     },
     track: {
       overflow: "hidden",
@@ -51,21 +58,28 @@ export const slider = defineSlotRecipe({
       borderRadius: "full",
       bg: "colorPalette.solid.fg",
     },
+    // Above the thumb while it is dragged, as a tooltip would be.
+    draggingIndicator: {
+      bg: "gray.solid.bg",
+      borderRadius: "l1",
+      bottom: "calc(100% + {spacing.1})",
+      color: "gray.solid.fg",
+      fontWeight: "medium",
+      pointerEvents: "none",
+      px: "1.5",
+      py: "0.5",
+      textStyle: "xs",
+      whiteSpace: "nowrap",
+    },
     thumb: {
       width: "var(--slider-thumb-size)",
       height: "var(--slider-thumb-size)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      outline: 0,
       zIndex: "2",
       borderRadius: "full",
-      _focusVisible: {
-        ring: "2px",
-        ringColor: "colorPalette.solid.bg",
-        ringOffset: "2px",
-        ringOffsetColor: "bg",
-      },
+      focusVisibleRing: "outside",
     },
   },
   defaultVariants: {

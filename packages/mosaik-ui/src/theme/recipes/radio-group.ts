@@ -11,6 +11,11 @@ export const radioGroup = defineSlotRecipe({
       display: "flex",
       flexDirection: "column",
       gap: "3",
+      _horizontal: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: "4",
+      },
     },
     itemControl: {
       alignItems: "center",
@@ -60,13 +65,16 @@ export const radioGroup = defineSlotRecipe({
               background: "colorPalette.solid.fg",
             },
           },
+          _invalid: {
+            boxShadowColor: "error",
+          },
         },
       },
     },
     size: {
       sm: {
         item: { gap: "2" },
-        itemControl: { boxSize: "4.5" },
+        itemControl: { boxSize: "3.5" },
         itemText: { textStyle: "sm" },
       },
       md: {
@@ -76,8 +84,8 @@ export const radioGroup = defineSlotRecipe({
       },
       lg: {
         item: { gap: "3" },
-        itemControl: { boxSize: "5.5" },
-        itemText: { textStyle: "lg" },
+        itemControl: { boxSize: "5" },
+        itemText: { textStyle: "md" },
       },
     },
   },

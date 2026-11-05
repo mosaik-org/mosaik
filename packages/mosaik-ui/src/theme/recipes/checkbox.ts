@@ -13,6 +13,8 @@ export const checkbox = defineSlotRecipe({
       alignItems: "center",
       verticalAlign: "top",
       position: "relative",
+      // All of it, as a click on the label counts too.
+      cursor: "pointer",
       _disabled: {
         layerStyle: "disabled",
       },
@@ -25,7 +27,6 @@ export const checkbox = defineSlotRecipe({
       borderWidth: "1px",
       borderColor: "transparent",
       borderRadius: "l1",
-      cursor: "pointer",
       focusVisibleRing: "outside",
 
       _icon: {
@@ -43,7 +44,7 @@ export const checkbox = defineSlotRecipe({
       sm: {
         root: { gap: "2" },
         label: { textStyle: "sm" },
-        control: { boxSize: "4.5", _icon: { boxSize: "3" } },
+        control: { boxSize: "3.5", _icon: { boxSize: "2.5" } },
       },
       md: {
         root: { gap: "2.5" },
@@ -52,11 +53,13 @@ export const checkbox = defineSlotRecipe({
       },
       lg: {
         root: { gap: "3" },
-        label: { textStyle: "lg" },
-        control: { boxSize: "5.5", _icon: { boxSize: "4" } },
+        label: { textStyle: "md" },
+        control: { boxSize: "5", _icon: { boxSize: "4" } },
       },
     },
 
+    // Grey until checked, in every variant: the accent says what the person set. Each has its own
+    // `_invalid`, as a variant's border beats one in the base.
     variant: {
       solid: {
         control: {
@@ -67,38 +70,47 @@ export const checkbox = defineSlotRecipe({
             borderColor: "colorPalette.solid.bg",
             color: "colorPalette.solid.fg",
           },
-          _invalid: {
-            borderColor: "error",
-          },
+          _invalid: { borderColor: "error" },
         },
       },
       surface: {
         control: {
-          bg: "colorPalette.surface.bg",
-          borderWidth: "1px",
-          borderColor: "colorPalette.surface.border",
-          color: "colorPalette.surface.fg",
+          bg: "gray.surface.bg",
+          borderColor: "gray.surface.border",
+          _checked: {
+            bg: "colorPalette.surface.bg",
+            borderColor: "colorPalette.surface.border",
+            color: "colorPalette.surface.fg",
+          },
+          _invalid: { borderColor: "error" },
         },
       },
       subtle: {
         control: {
-          bg: "colorPalette.subtle.bg",
-          color: "colorPalette.subtle.fg",
+          bg: "gray.subtle.bg",
+          _checked: {
+            bg: "colorPalette.subtle.bg",
+            color: "colorPalette.subtle.fg",
+          },
+          _invalid: { borderColor: "error" },
         },
       },
       outline: {
         control: {
-          borderWidth: "1px",
-          borderColor: "colorPalette.outline.border",
-          color: "colorPalette.outline.fg",
+          borderColor: "gray.outline.border",
           _checked: {
             borderColor: "colorPalette.solid.bg",
+            color: "colorPalette.outline.fg",
           },
+          _invalid: { borderColor: "error" },
         },
       },
       plain: {
         control: {
-          color: "colorPalette.plain.fg",
+          _checked: {
+            color: "colorPalette.plain.fg",
+          },
+          _invalid: { borderColor: "error" },
         },
       },
     },

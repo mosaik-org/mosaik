@@ -1,6 +1,6 @@
 import { ark } from "@ark-ui/solid/factory"
 import { Slider, useSliderContext } from "@ark-ui/solid/slider"
-import { type ComponentProps, For, type JSX, Show, splitProps } from "solid-js"
+import { type ComponentProps, For, Index, type JSX, Show, splitProps } from "solid-js"
 import { createSlotRecipeContext } from "../../styled-system/jsx"
 import { slider } from "../../styled-system/recipes"
 
@@ -57,12 +57,14 @@ export const Marks = (props: MarksProps) => {
 export const Thumbs = (props: Omit<ThumbProps, "index">) => {
   const slider = useSliderContext()
   return (
-    <For each={slider().value}>
+    // By position, not by value: `For` would make a new thumb as the value changes, taking focus
+    // with it, so an arrow key moved it once and no more.
+    <Index each={slider().value}>
       {(_, index) => (
-        <Thumb index={index()} {...props}>
+        <Thumb index={index} {...props}>
           <HiddenInput />
         </Thumb>
       )}
-    </For>
+    </Index>
   )
 }

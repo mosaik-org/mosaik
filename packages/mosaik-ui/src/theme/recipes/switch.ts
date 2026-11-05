@@ -13,6 +13,11 @@ export const switchRecipe = defineSlotRecipe({
       alignItems: "center",
       position: "relative",
       verticalAlign: "middle",
+      // All of it, as a click on the label counts too, and all of it dims.
+      cursor: "pointer",
+      _disabled: {
+        layerStyle: "disabled",
+      },
       "--switch-diff": "calc(var(--switch-width) - var(--switch-height))",
       "--switch-x": {
         base: "var(--switch-diff)",
@@ -45,16 +50,12 @@ export const switchRecipe = defineSlotRecipe({
       gap: "0.5rem",
       flexShrink: 0,
       justifyContent: "flex-start",
-      cursor: "pointer",
       borderRadius: "full",
       position: "relative",
       width: "var(--switch-width)",
       height: "var(--switch-height)",
       transition: "backgrounds",
       focusVisibleRing: "outside",
-      _disabled: {
-        layerStyle: "disabled",
-      },
       _invalid: {
         outline: "2px solid",
         outlineColor: "error",
