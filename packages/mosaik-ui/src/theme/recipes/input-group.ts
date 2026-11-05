@@ -16,6 +16,9 @@ export const inputGroup = defineSlotRecipe({
       justifyContent: "center",
       position: "absolute",
       zIndex: "2",
+      // A click on an icon or a unit is a click on the input; a button inside takes its own.
+      pointerEvents: "none",
+      "& :is(a, button, input, select, textarea, [role=button], [tabindex])": { pointerEvents: "auto" },
       _icon: {
         color: "fg.subtle",
       },

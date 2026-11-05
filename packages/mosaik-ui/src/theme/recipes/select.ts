@@ -1,5 +1,6 @@
 import { selectAnatomy } from "@ark-ui/solid/anatomy"
 import { defineSlotRecipe } from "@pandacss/dev"
+import { FIELD_HOVER } from "./input"
 
 export const select = defineSlotRecipe({
   className: "select",
@@ -43,13 +44,10 @@ export const select = defineSlotRecipe({
       display: "flex",
       justifyContent: "space-between",
       userSelect: "none",
-      _hover: {
-        background: "gray.surface.bg.hover",
-      },
+      // The pointer highlights a row too, so one row is marked even as the keyboard moves on.
       _highlighted: {
         background: "gray.surface.bg.hover",
       },
-      _selected: {},
       _disabled: {
         layerStyle: "disabled",
       },
@@ -143,8 +141,12 @@ export const select = defineSlotRecipe({
         trigger: {
           borderWidth: "1px",
           borderColor: "gray.outline.border",
-
+          [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
           focusVisibleRing: "inside",
+          _invalid: {
+            borderColor: "error",
+            focusRingColor: "error",
+          },
         },
       },
       surface: {
@@ -152,24 +154,28 @@ export const select = defineSlotRecipe({
           bg: "gray.surface.bg",
           borderWidth: "1px",
           borderColor: "gray.surface.border",
-
+          [FIELD_HOVER]: { borderColor: "gray.surface.border.hover" },
           focusVisibleRing: "inside",
+          _invalid: {
+            borderColor: "error",
+            focusRingColor: "error",
+          },
         },
       },
     },
     size: {
       xs: {
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1", minH: "8", gap: "2", _icon: { boxSize: "3.5" } },
+        item: { px: "1", minH: "6", gap: "2", _icon: { boxSize: "3.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1", height: "8" },
+        itemGroupLabel: { px: "1", height: "6" },
         trigger: { px: "2", h: "6", textStyle: "xs", gap: "2", _icon: { boxSize: "3.5" } },
       },
       sm: {
         content: { p: "1", gap: "0.5", textStyle: "sm" },
-        item: { px: "1.5", minH: "9", gap: "2", _icon: { boxSize: "4" } },
+        item: { px: "1.5", minH: "7", gap: "2", _icon: { boxSize: "4" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "1.5", height: "9" },
+        itemGroupLabel: { px: "1.5", height: "7" },
         trigger: { px: "2.5", h: "7", textStyle: "sm", gap: "2", _icon: { boxSize: "4" } },
       },
       md: {
@@ -181,9 +187,9 @@ export const select = defineSlotRecipe({
       },
       lg: {
         content: { p: "1", gap: "0.5", textStyle: "md" },
-        item: { px: "2.5", minH: "11", gap: "2", _icon: { boxSize: "4.5" } },
+        item: { px: "2.5", minH: "10", gap: "2", _icon: { boxSize: "4.5" } },
         itemGroup: { gap: "0.5" },
-        itemGroupLabel: { px: "2.5", height: "11" },
+        itemGroupLabel: { px: "2.5", height: "10" },
         trigger: { px: "3.5", h: "10", textStyle: "md", gap: "2", _icon: { boxSize: "4.5" } },
       },
       xl: {

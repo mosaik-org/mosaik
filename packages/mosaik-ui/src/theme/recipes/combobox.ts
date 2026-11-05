@@ -58,9 +58,7 @@ export const combobox = defineSlotRecipe({
       cursor: "pointer",
       display: "flex",
       justifyContent: "space-between",
-      _hover: {
-        background: "gray.surface.bg.hover",
-      },
+      // The pointer highlights a row too, so one row is marked even as the keyboard moves on.
       _highlighted: {
         background: "gray.surface.bg.hover",
       },

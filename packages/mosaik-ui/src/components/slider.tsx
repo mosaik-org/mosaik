@@ -6,7 +6,8 @@ import { slider } from "../../styled-system/recipes"
 
 const { withProvider, withContext } = createSlotRecipeContext(slider)
 
-export const Root = withProvider(Slider.Root, "root")
+// `orientation` is both a variant and how it behaves: the recipe would keep it from the slider.
+export const Root = withProvider(Slider.Root, "root", { forwardProps: ["orientation"] })
 export const Control = withContext(Slider.Control, "control")
 export const DraggingIndicator = withContext(Slider.DraggingIndicator, "draggingIndicator")
 export const Label = withContext(Slider.Label, "label")

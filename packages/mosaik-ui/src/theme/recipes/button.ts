@@ -44,6 +44,10 @@ export const button = defineRecipe({
         _hover: {
           bg: "colorPalette.solid.bg.hover",
         },
+        // What it opens is open (a menu, say): it stays as under the pointer, whichever way it was opened.
+        _expanded: {
+          bg: "colorPalette.solid.bg.hover",
+        },
       },
       surface: {
         // Secondary actions are neutral; `colorPalette` still picks another.
@@ -54,6 +58,9 @@ export const button = defineRecipe({
         color: "colorPalette.surface.fg",
         boxShadow: "xs",
         _hover: {
+          borderColor: "colorPalette.surface.border.hover",
+        },
+        _expanded: {
           borderColor: "colorPalette.surface.border.hover",
         },
         _active: {
@@ -67,6 +74,9 @@ export const button = defineRecipe({
         bg: "colorPalette.subtle.bg",
         color: "colorPalette.subtle.fg",
         _hover: {
+          bg: "colorPalette.subtle.bg.hover",
+        },
+        _expanded: {
           bg: "colorPalette.subtle.bg.hover",
         },
         _active: {
@@ -85,6 +95,9 @@ export const button = defineRecipe({
         _hover: {
           bg: "colorPalette.outline.bg.hover",
         },
+        _expanded: {
+          bg: "colorPalette.outline.bg.hover",
+        },
         _active: {
           bg: "colorPalette.outline.bg.active",
         },
@@ -96,6 +109,9 @@ export const button = defineRecipe({
         colorPalette: "gray",
         color: "colorPalette.plain.fg",
         _hover: {
+          bg: "colorPalette.plain.bg.hover",
+        },
+        _expanded: {
           bg: "colorPalette.plain.bg.hover",
         },
         _active: {

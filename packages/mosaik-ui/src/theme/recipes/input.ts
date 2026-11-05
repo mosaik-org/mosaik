@@ -86,7 +86,7 @@ export const input = {
       },
     },
     size: {
-      "2xs": { textStyle: "xs", px: "1.5", "--input-height": "sizes.7" },
+      "2xs": { textStyle: "xs", px: "1.5", "--input-height": "sizes.5" },
       xs: { textStyle: "xs", px: "2", "--input-height": "sizes.6" },
       sm: { textStyle: "sm", px: "2.5", "--input-height": "sizes.7" },
       // 16px on phones, which zoom into a field set smaller when it is tapped.
