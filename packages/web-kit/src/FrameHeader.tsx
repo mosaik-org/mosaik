@@ -11,8 +11,7 @@ export const FrameHeaderProvider = (props: ParentProps<{ readonly stack: FrameHe
 /**
  * Shows its children in the frame's header, the shell's top bar, while the page shows it: the page's
  * title, its navigation, its actions. They stay the page's own (its data, its handlers); the
- * deepest page's wins. Where the frame has no header (Core's console, a standalone page), nothing
- * shows: keep what people need in the page itself.
+ * deepest page's wins. Without a frame (a standalone page), nothing shows.
  *
  * @example
  * <FrameHeader>
@@ -27,6 +26,3 @@ export const FrameHeader = (props: ParentProps): JSX.Element => {
   }
   return null
 }
-
-/** Whether the frame has a header pages show things in (`FrameHeader`): not in Core's console. */
-export const useHasFrameHeader = (): boolean => useContext(FrameHeaderContext) !== undefined

@@ -2,10 +2,10 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { AppOwners, AppRoles, aboutQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
-import { Badge, Button, IconButton, PageHeader } from "@mosaik/mosaik-ui"
+import { Badge, Button, IconButton } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, appColor, QueryBoundary } from "@mosaik/web-kit"
+import { AppIcon, appColor, PageTitle, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
@@ -143,10 +143,9 @@ function AppPage() {
           <Link to="/directory" class={styles.back}>
             <ArrowLeft size={14} /> All apps
           </Link>
-          <PageHeader
+          <PageTitle
             title={app.name}
-            description={app.description}
-            icon={<AppIcon name={app.portal.icon} size={20} color={appColor(app)} />}
+            icon={<AppIcon name={app.portal.icon} size={18} color={appColor(app)} />}
             actions={<Actions app={app} />}
           />
           <About app={app} />

@@ -1,7 +1,7 @@
 import { usePrincipal } from "@mosaik/auth/web"
-import { Card, EmptyState, PageHeader } from "@mosaik/mosaik-ui"
+import { Card, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { QueryBoundary } from "@mosaik/web-kit"
+import { PageTitle, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import LayoutGrid from "lucide-solid/icons/layout-grid"
@@ -41,11 +41,7 @@ function ManagedApps() {
 
   return (
     <div class={styles.page}>
-      <PageHeader
-        title="Apps"
-        description="Who can use the apps you decide about, and their requests for access."
-        icon={<LayoutGrid size={20} />}
-      />
+      <PageTitle title="Apps" icon={<LayoutGrid size={18} />} />
       <QueryBoundary query={apps}>
         {(list) => (
           <Show

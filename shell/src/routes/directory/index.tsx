@@ -1,9 +1,9 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { EmptyState, Heading, Input, PageHeader, SelectField, SwitchField } from "@mosaik/mosaik-ui"
+import { EmptyState, Heading, Input, SelectField, SwitchField } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { searchValidator } from "@mosaik/web-kit"
+import { PageTitle, searchValidator } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
@@ -162,11 +162,7 @@ function Directory() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
-      <PageHeader
-        title="All apps"
-        description={`${all().length} apps, ${all().filter((app) => app.available).length} of them open to you.`}
-        icon={<LayoutGrid size={20} />}
-      />
+      <PageTitle title="All apps" icon={<LayoutGrid size={18} />} />
 
       <div class={styles.toolbar}>
         <div class={styles.search}>

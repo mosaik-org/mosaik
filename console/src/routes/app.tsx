@@ -3,7 +3,7 @@ import { sessionQueryOptions, signOut, useLiveAccess, usePrincipal } from "@mosa
 import { canUseConsole, consoleNav } from "@mosaik/console"
 import { Button, EmptyState, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { CommandProvider, PageMain } from "@mosaik/web-kit"
+import { CommandProvider, createFrameHeaderStack, FrameHeaderProvider, PageMain } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/solid-router"
 import Lock from "lucide-solid/icons/lock"
@@ -50,11 +50,25 @@ const styles = {
     "&[data-status=active]": { color: "fg.default", fontWeight: "medium" },
   }),
   user: css({ display: "flex", alignItems: "center", gap: "3", fontSize: "sm" }),
+  // The page's: its title, navigation, actions (`FrameHeader`), as in the shell's top bar.
+  pageBar: css({
+    display: "flex",
+    alignItems: "center",
+    gap: "3",
+    h: "12",
+    minW: "0",
+    px: { base: "4", md: "6" },
+    borderBottomWidth: "1px",
+    borderColor: "border",
+    bg: "canvas",
+    overflow: "hidden",
+  }),
 }
 
 function ConsoleLayout() {
   const principal = usePrincipal()
   const queryClient = useQueryClient()
+  const frameHeader = createFrameHeaderStack()
   // Every page of the console shows what its visitor's roles allow (administration, the apps they
   // manage, requests to answer): when their access changes, which is rare, all of it reloads.
   useLiveAccess(() => void queryClient.invalidateQueries())
@@ -94,6 +108,9 @@ function ConsoleLayout() {
             </Button>
           </div>
         </header>
+        <Show when={frameHeader.current()}>
+          <div class={styles.pageBar}>{frameHeader.current()}</div>
+        </Show>
         <PageMain>
           <Show
             when={canUseConsole(principal())}
@@ -105,7 +122,9 @@ function ConsoleLayout() {
               />
             }
           >
-            <Outlet />
+            <FrameHeaderProvider stack={frameHeader}>
+              <Outlet />
+            </FrameHeaderProvider>
           </Show>
         </PageMain>
       </div>

@@ -33,7 +33,6 @@ import { link } from "./link"
 import { listbox } from "./listbox"
 import { menu } from "./menu"
 import { numberInput } from "./number-input"
-import { pageHeader } from "./page-header"
 import { pagination } from "./pagination"
 import { passwordInput } from "./password-input"
 import { pinInput } from "./pin-input"
@@ -82,7 +81,6 @@ export const recipes = {
 
 export const slotRecipes = {
   emptyState,
-  pageHeader,
   stat,
   themeChoice,
   accordion,

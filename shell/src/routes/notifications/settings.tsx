@@ -2,10 +2,10 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import type { PersonalChannel } from "@mosaik/core"
-import { Card, EmptyState, PageHeader, SwitchField } from "@mosaik/mosaik-ui"
+import { Card, EmptyState, SwitchField } from "@mosaik/mosaik-ui"
 import type { NotificationSettings, NotificationTypeSettings } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
-import { QueryBoundary } from "@mosaik/web-kit"
+import { PageTitle, QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, redirect } from "@tanstack/solid-router"
 import BellOff from "lucide-solid/icons/bell-off"
@@ -98,11 +98,7 @@ function SettingsPage() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6", maxW: "3xl" })}>
-      <PageHeader
-        icon={<Settings size={22} />}
-        title="Notification settings"
-        description="Choose where you get each kind of notification. You only get the ones meant for you."
-      />
+      <PageTitle title="Notification settings" icon={<Settings size={18} />} />
       <QueryBoundary query={settings}>
         {(data) => (
           <>

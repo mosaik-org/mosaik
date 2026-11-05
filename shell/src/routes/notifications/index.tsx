@@ -1,8 +1,8 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions } from "@mosaik/auth/web"
-import { Button, Card, EmptyState, PageHeader, Tabs } from "@mosaik/mosaik-ui"
+import { Button, Card, EmptyState, Tabs } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
+import { PageTitle, QueryBoundary, searchValidator } from "@mosaik/web-kit"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link, redirect } from "@tanstack/solid-router"
 import { Schema } from "effect"
@@ -36,10 +36,9 @@ function NotificationsPage() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6", maxW: "3xl" })}>
-      <PageHeader
-        icon={<Bell size={22} />}
+      <PageTitle
         title="Notifications"
-        description="What the apps told you about. Choose how you get each kind in the settings."
+        icon={<Bell size={18} />}
         actions={
           <>
             <Show when={unread() > 0}>

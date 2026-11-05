@@ -1,9 +1,9 @@
 import { admin } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
-import { Button, EmptyState, PageHeader, Tabs } from "@mosaik/mosaik-ui"
+import { Button, EmptyState, Tabs } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
-import { QueryBoundary, searchValidator } from "@mosaik/web-kit"
+import { PageTitle, QueryBoundary, searchValidator } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import { Schema } from "effect"
@@ -94,9 +94,8 @@ function ManagedApp() {
         <QueryBoundary query={about}>
           {(about) => (
             <>
-              <PageHeader
+              <PageTitle
                 title={about().app.name}
-                description={params().app}
                 actions={
                   <Show when={principal().can(admin.perm("audit.view"))}>
                     <Button

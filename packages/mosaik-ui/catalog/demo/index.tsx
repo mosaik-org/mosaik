@@ -11,7 +11,6 @@ import {
   IconButton,
   Modal,
   NumberField,
-  PageHeader,
   SelectField,
   Stat,
   TextareaField,
@@ -50,36 +49,37 @@ export const App = () => {
         </Breadcrumb.List>
       </Breadcrumb.Root>
 
-      <PageHeader
-        icon={<CoffeeIcon />}
-        title="Orders"
-        description="What customers ordered, what waits, and how the shop is set up."
-        actions={
-          <HStack gap="2">
-            <Tooltip content="Reload the orders">
-              <IconButton variant="plain" aria-label="Reload" onClick={() => toast.info("Orders are up to date")}>
-                <RefreshCwIcon />
-              </IconButton>
-            </Tooltip>
-            <Button
-              variant="outline"
-              loading={exporting()}
-              onClick={() => {
-                setExporting(true)
-                setTimeout(() => {
-                  setExporting(false)
-                  toast.success("Exported", "orders.csv, 128 orders")
-                }, 1200)
-              }}
-            >
-              <DownloadIcon /> Export
-            </Button>
-            <Button onClick={() => setCreating(true)}>
-              <PlusIcon /> New order
-            </Button>
-          </HStack>
-        }
-      />
+      <HStack justify="space-between" gap="4" flexWrap="wrap">
+        <HStack gap="2">
+          <CoffeeIcon />
+          <Heading as="h1" textStyle="xl" fontWeight="semibold">
+            Orders
+          </Heading>
+        </HStack>
+        <HStack gap="2">
+          <Tooltip content="Reload the orders">
+            <IconButton variant="plain" aria-label="Reload" onClick={() => toast.info("Orders are up to date")}>
+              <RefreshCwIcon />
+            </IconButton>
+          </Tooltip>
+          <Button
+            variant="outline"
+            loading={exporting()}
+            onClick={() => {
+              setExporting(true)
+              setTimeout(() => {
+                setExporting(false)
+                toast.success("Exported", "orders.csv, 128 orders")
+              }, 1200)
+            }}
+          >
+            <DownloadIcon /> Export
+          </Button>
+          <Button onClick={() => setCreating(true)}>
+            <PlusIcon /> New order
+          </Button>
+        </HStack>
+      </HStack>
 
       <Show when={notice()}>
         <Alert.Root status="warning">

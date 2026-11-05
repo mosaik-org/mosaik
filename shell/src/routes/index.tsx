@@ -2,13 +2,14 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
-import { Button, Card, EmptyState, Heading, PageHeader } from "@mosaik/mosaik-ui"
+import { Button, Card, EmptyState, Heading } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { AppIcon, appColor } from "@mosaik/web-kit"
+import { AppIcon, appColor, PageTitle } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 import FileText from "lucide-solid/icons/file-text"
+import LayoutDashboard from "lucide-solid/icons/layout-dashboard"
 import LayoutGrid from "lucide-solid/icons/layout-grid"
 import { For, type JSX, Show } from "solid-js"
 import { allApps, appHref } from "../apps"
@@ -256,10 +257,7 @@ function Home() {
   const principal = usePrincipal()
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
-      <PageHeader
-        title={principal().user ? `Welcome back, ${principal().user?.name}` : "Apps"}
-        description={principal().user ? "Your apps, and what happened since you were last here." : undefined}
-      />
+      <PageTitle title={principal().user ? "Overview" : "Apps"} icon={<LayoutDashboard size={18} />} />
       <Show when={principal().user} fallback={<Visitor />} keyed>
         {(user) => <Personal user={user.id} />}
       </Show>

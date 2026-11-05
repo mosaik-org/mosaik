@@ -1,7 +1,7 @@
 import { usePrincipal } from "@mosaik/auth/web"
-import { EmptyState, PageHeader } from "@mosaik/mosaik-ui"
+import { EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { searchValidator } from "@mosaik/web-kit"
+import { PageTitle, searchValidator } from "@mosaik/web-kit"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
 import Inbox from "lucide-solid/icons/inbox"
@@ -25,11 +25,7 @@ function Requests() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "6" })}>
-      <PageHeader
-        title="Access requests"
-        description="People asking to use the apps you decide about."
-        icon={<Inbox size={20} />}
-      />
+      <PageTitle title="Access requests" icon={<Inbox size={18} />} />
       <Show
         when={managesAnyApp(principal())}
         fallback={

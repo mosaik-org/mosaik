@@ -204,7 +204,7 @@ UI and Panda CSS, accessible, with dark mode); its README has the whole set:
 - **Ready-made components:**
   - dialogs: `Modal`, `ConfirmDialog`, `ActionMenu`;
   - states: `EmptyState`, `ErrorState`;
-  - page parts: `PageHeader`, `Stat`;
+  - page parts: `Stat`;
   - the theme: `ThemeProvider`, `ThemeToggle` (for a standalone page; in the shell, the shell's).
 - **The look of the catalog:** `bun run catalog` in `packages/mosaik-ui` shows every example
   at http://localhost:6006.
@@ -287,13 +287,12 @@ backend, so it registers the new bundle: reload the page to see a change.
 
   `noValidate` leaves the checks to the Schema, so people read its messages instead of the browser's.
 - **Frame.** `AppLayout` shows the app's icon and name from the manifest, its pages as tabs and its
-  `actions` in the shell's top bar, and the page below; where there is no top bar (Core's console),
-  they show above the page, with the app's description.
+  `actions` in the frame's top bar, and the page below.
 - **The top bar.** Its left side is the page's: what a page puts in `<FrameHeader>` shows there while
   it is open (a title, navigation, buttons), with the shell's search, assistant and account on the
   right. It stays the page's own, its data and handlers; the deepest page's wins, so a layout route can
-  show the app's name and a page replace it. Where there is no top bar (Core's console), it shows
-  nothing: keep what people need in the page too.
+  show the app's name and a page replace it. A standalone page has no top bar, so it shows nothing
+  there.
 - **Pages.** An app with several pages lists them in its manifest (`portal.pages`), in order, with paths
   under its address (`/` is its first page). `AppLayout` shows them as tabs in the top bar, with each
   page's statuses, those that do not fit under *More*, and as a menu on the app's name on phones; where
