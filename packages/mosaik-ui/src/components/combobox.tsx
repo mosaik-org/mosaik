@@ -34,7 +34,7 @@ export const Trigger = withContext(Combobox.Trigger, "trigger", {
   defaultProps: () => ({ children: <ChevronsUpDownIcon /> }),
 })
 
-export { ComboboxContext as Context } from "@ark-ui/solid/combobox"
+export { ComboboxContext as Context, useCombobox } from "@ark-ui/solid/combobox"
 
 const StyledItemIndicator = withContext(Combobox.ItemIndicator, "itemIndicator")
 

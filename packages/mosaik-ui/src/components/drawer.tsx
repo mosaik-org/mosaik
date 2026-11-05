@@ -25,4 +25,6 @@ export const Body = withContext(ark.div, "body")
 export const Header = withContext(ark.div, "header")
 export const Footer = withContext(ark.div, "footer")
 
-export { DialogContext as Context } from "@ark-ui/solid/dialog"
+export { DialogContext as Context, useDialog as useDrawer } from "@ark-ui/solid/dialog"
+// A drawer is a dialog to Ark, so `Dialog`'s closes it just the same.
+export { ActionTrigger } from "./dialog"

@@ -83,8 +83,9 @@ and `asChild`:
 </Dialog.Root>
 ```
 
-To drive one from outside, `Dialog`, `Menu` and `Tabs` have a hook for their `RootProvider`:
-`const dialog = Dialog.useDialog()`, then `<Dialog.RootProvider value={dialog}>`.
+To drive one from outside, `Dialog`, `Drawer`, `Popover`, `Menu`, `Tabs` and `Combobox` have a hook
+for their `RootProvider`: `const dialog = Dialog.useDialog()`, then
+`<Dialog.RootProvider value={dialog}>`.
 
 | | |
 |---|---|

@@ -30,4 +30,4 @@ export const Body = withContext(ark.div, "body")
 export const Header = withContext(ark.div, "header")
 export const Footer = withContext(ark.div, "footer")
 
-export { PopoverContext as Context } from "@ark-ui/solid/popover"
+export { PopoverContext as Context, usePopover } from "@ark-ui/solid/popover"
