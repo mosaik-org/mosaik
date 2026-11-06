@@ -44,3 +44,5 @@ export {
   type TableSearchOptions,
   useTableSearch,
 } from "./table-search"
+export { UserAvatar, type UserAvatarProps } from "./UserAvatar"
+export { userColor } from "./userColor"

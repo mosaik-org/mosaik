@@ -1,10 +1,10 @@
 import { formatRelativeTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
+import { UserAvatar } from "@mosaik/sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Lock from "lucide-solid/icons/lock"
 import { createEffect, For, Match, on, Show, Suspense, Switch } from "solid-js"
 import type { Activity, RequestRow } from "../../api"
-import { PersonAvatar } from "../components/PersonAvatar"
 import { activityQuery } from "../queries"
 
 const styles = {
@@ -59,7 +59,7 @@ const changeWords = (line: Activity): string => {
 
 const Post = (props: { line: Activity }) => (
   <div class={styles.post}>
-    <Show when={props.line.author}>{(author) => <PersonAvatar person={author()} size="xs" />}</Show>
+    <Show when={props.line.author}>{(author) => <UserAvatar user={author()} size="xs" />}</Show>
     <div class={styles.content} classList={{ [styles.note]: props.line.kind === "note" }}>
       <div class={styles.who}>
         <span class={styles.name}>{props.line.author?.name ?? "Service Desk"}</span>
@@ -94,7 +94,7 @@ export const Timeline = (props: { row: RequestRow; forRequester: boolean }) => {
   return (
     <div ref={root} class={styles.root}>
       <div class={styles.post}>
-        <PersonAvatar person={props.row.requester} size="xs" />
+        <UserAvatar user={props.row.requester} size="xs" />
         <div class={styles.content}>
           <div class={styles.who}>
             <span class={styles.name}>{props.row.requester.name}</span>

@@ -1,12 +1,13 @@
 import { Button, Tooltip } from "@mosaik/mosaik-ui"
 import { formatDateTime } from "@mosaik/sdk/client"
 import { css } from "@mosaik/sdk/css"
+import { UserAvatar } from "@mosaik/sdk/ui"
 import { type JSX, Show } from "solid-js"
 import { PRIORITY_LABELS, REQUESTER_STATUS_LABELS, type RequestRow, STATUS_LABELS } from "../../api"
 import { DeadlineChip } from "../components/DeadlineChip"
-import { PersonAvatar, Unassigned } from "../components/PersonAvatar"
 import { PriorityIcon } from "../components/PriorityIcon"
 import { StatusIcon } from "../components/StatusIcon"
+import { Unassigned } from "../components/Unassigned"
 import type { RequestPickers } from "../workspace/pickers"
 import { Attachments } from "./Attachments"
 
@@ -88,7 +89,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
                 >
                   {(assignee) => (
                     <>
-                      <PersonAvatar person={assignee()} size="2xs" />
+                      <UserAvatar user={assignee()} size="2xs" />
                       <span class={styles.text}>{assignee().name}</span>
                     </>
                   )}
@@ -123,7 +124,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
             >
               {(assignee) => (
                 <>
-                  <PersonAvatar person={assignee()} size="2xs" />
+                  <UserAvatar user={assignee()} size="2xs" />
                   <span class={styles.text}>{assignee().name}</span>
                 </>
               )}
@@ -142,7 +143,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
       <Show when={props.asAgent}>
         <Field label="Asked by">
           <div class={styles.value}>
-            <PersonAvatar person={props.row.requester} size="2xs" />
+            <UserAvatar user={props.row.requester} size="2xs" />
             <span class={styles.text}>{props.row.requester.name}</span>
           </div>
         </Field>

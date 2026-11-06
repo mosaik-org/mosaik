@@ -17,4 +17,7 @@ export {
   type QueryBoundaryProps,
   QueryFreshness,
   type QueryState,
+  UserAvatar,
+  type UserAvatarProps,
+  userColor,
 } from "@mosaik/web-kit"

@@ -1,3 +1,4 @@
+import { UserAvatar } from "@mosaik/sdk/ui"
 import {
   PRIORITIES,
   PRIORITY_LABELS,
@@ -9,9 +10,9 @@ import {
   SETTABLE_STATUSES,
   STATUS_LABELS,
 } from "../../api"
-import { PersonAvatar, Unassigned } from "../components/PersonAvatar"
 import { PriorityIcon } from "../components/PriorityIcon"
 import { StatusIcon } from "../components/StatusIcon"
+import { Unassigned } from "../components/Unassigned"
 import type { Desk } from "../context"
 
 /** "REQ-12", or "3 requests": what is being changed, in the fewest words. */
@@ -70,7 +71,7 @@ export const createRequestPickers = (desk: Desk, afterChange: () => void = () =>
           ...others.map((agent) => ({
             value: agent.id,
             label: agent.name,
-            icon: <PersonAvatar person={agent} size="2xs" />,
+            icon: <UserAvatar user={agent} size="2xs" />,
           })),
           { value: NOBODY, label: "Unassigned", icon: <Unassigned /> },
         ],

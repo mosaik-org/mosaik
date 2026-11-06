@@ -1,12 +1,13 @@
 import { Checkbox } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/sdk/css"
 import type { ListNavigation } from "@mosaik/sdk/solid"
+import { UserAvatar } from "@mosaik/sdk/ui"
 import { Show } from "solid-js"
 import { REQUESTER_STATUS_LABELS, type RequestRow, requestNumber } from "../../api"
 import { DeadlineChip } from "../components/DeadlineChip"
-import { PersonAvatar, Unassigned } from "../components/PersonAvatar"
 import { PriorityIcon } from "../components/PriorityIcon"
 import { StatusIcon } from "../components/StatusIcon"
+import { Unassigned } from "../components/Unassigned"
 
 const styles = {
   row: css({
@@ -111,7 +112,7 @@ export const RequestListRow = (props: {
                     : `${requestNumber(row().id)} · ${row().requester.name} · ${row().queueName}`}
                 </span>
                 <Show when={row().assignee} fallback={<Unassigned />}>
-                  {(assignee) => <PersonAvatar person={assignee()} size="2xs" />}
+                  {(assignee) => <UserAvatar user={assignee()} size="2xs" />}
                 </Show>
               </div>
             </div>

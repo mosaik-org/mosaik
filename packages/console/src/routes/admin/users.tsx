@@ -3,7 +3,6 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { formatDate } from "@mosaik/client"
 import {
   ActionMenu,
-  Avatar,
   Badge,
   Button,
   ConfirmDialog,
@@ -14,7 +13,7 @@ import {
 } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { createForm, QueryBoundary, useAction, useCommands } from "@mosaik/web-kit"
+import { createForm, QueryBoundary, UserAvatar, useAction, useCommands } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import Ellipsis from "lucide-solid/icons/ellipsis"
@@ -208,10 +207,7 @@ function Users() {
       header: "User",
       cell: (info) => (
         <div class={css({ display: "flex", alignItems: "center", gap: "3" })}>
-          <Avatar.Root size="sm">
-            <Avatar.Fallback name={info.row.original.name} />
-            <Avatar.Image src={info.row.original.image ?? undefined} />
-          </Avatar.Root>
+          <UserAvatar user={info.row.original} size="sm" />
           <div>
             <div class={css({ fontWeight: "medium" })}>{info.row.original.name}</div>
             <div class={css({ fontSize: "xs", color: "fg.muted" })}>{info.row.original.email}</div>

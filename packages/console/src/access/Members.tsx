@@ -3,7 +3,6 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import type { PrincipalUser } from "@mosaik/core"
 import {
-  Avatar,
   Badge,
   Button,
   CheckboxField,
@@ -17,7 +16,7 @@ import {
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { createDebounced, QueryBoundary } from "@mosaik/web-kit"
+import { createDebounced, QueryBoundary, UserAvatar } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import UserPlus from "lucide-solid/icons/user-plus"
 import Users from "lucide-solid/icons/users"
@@ -41,10 +40,7 @@ const styles = {
 
 const Person = (props: { user: PrincipalUser }) => (
   <div class={styles.person}>
-    <Avatar.Root size="sm">
-      <Avatar.Fallback name={props.user.name} />
-      <Avatar.Image src={props.user.image ?? undefined} />
-    </Avatar.Root>
+    <UserAvatar user={props.user} size="sm" />
     <div class={css({ minW: "0" })}>
       <div class={styles.name}>{props.user.name}</div>
       <div class={styles.muted}>{props.user.email}</div>

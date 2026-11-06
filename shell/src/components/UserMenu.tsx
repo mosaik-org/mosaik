@@ -2,8 +2,9 @@ import { AGENT_CONNECTIONS_PATH, admin, signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { toast } from "@mosaik/client"
 import { managesAnyApp } from "@mosaik/console"
-import { Avatar, Badge, Button, Menu, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
+import { Badge, Button, Menu, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { UserAvatar } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -82,10 +83,7 @@ export const UserMenu = () => {
           <Menu.Trigger
             asChild={(trigger) => (
               <button type="button" {...trigger()} class={styles.trigger} aria-label={`Account menu: ${user().name}`}>
-                <Avatar.Root size="sm">
-                  <Avatar.Fallback name={user().name} />
-                  <Avatar.Image src={user().image ?? undefined} />
-                </Avatar.Root>
+                <UserAvatar user={user()} size="sm" />
               </button>
             )}
           />
@@ -93,10 +91,7 @@ export const UserMenu = () => {
             <Menu.Positioner>
               <Menu.Content class={styles.content}>
                 <div class={styles.person}>
-                  <Avatar.Root size="md">
-                    <Avatar.Fallback name={user().name} />
-                    <Avatar.Image src={user().image ?? undefined} />
-                  </Avatar.Root>
+                  <UserAvatar user={user()} size="md" />
                   <div class={styles.who}>
                     <span class={styles.name}>{user().name}</span>
                     <span class={styles.email}>{user().email}</span>

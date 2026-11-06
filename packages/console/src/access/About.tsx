@@ -1,6 +1,7 @@
-import { Avatar, Badge, Card } from "@mosaik/mosaik-ui"
+import { Badge, Card } from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { UserAvatar } from "@mosaik/web-kit"
 import { For, Show } from "solid-js"
 import { RoleDetails } from "./RoleDetails"
 
@@ -62,10 +63,7 @@ export const AppOwners = (props: { readonly about: AppAbout }) => (
         >
           {(owner) => (
             <div class={styles.person}>
-              <Avatar.Root size="sm">
-                <Avatar.Fallback name={owner.name} />
-                <Avatar.Image src={owner.image ?? undefined} />
-              </Avatar.Root>
+              <UserAvatar user={owner} size="sm" />
               <div>
                 <div>{owner.name}</div>
                 <a href={`mailto:${owner.email}`} class={styles.muted}>
