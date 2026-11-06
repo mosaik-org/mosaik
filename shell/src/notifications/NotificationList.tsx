@@ -30,7 +30,7 @@ const styles = {
     pb: "1",
     fontSize: "xs",
     fontWeight: "semibold",
-    color: "fg.subtle",
+    color: "fg.muted",
     textTransform: "uppercase",
     letterSpacing: "wider",
   }),
@@ -64,7 +64,7 @@ const styles = {
     "&[data-unread=true]": { fontWeight: "semibold" },
     "&[data-unread=false]": { color: "fg.muted", fontWeight: "normal" },
   }),
-  time: css({ flexShrink: "0", fontSize: "xs", color: "fg.subtle", fontVariantNumeric: "tabular-nums" }),
+  time: css({ flexShrink: "0", fontSize: "xs", color: "fg.muted", fontVariantNumeric: "tabular-nums" }),
   preview: css({
     fontSize: "xs",
     color: "fg.muted",

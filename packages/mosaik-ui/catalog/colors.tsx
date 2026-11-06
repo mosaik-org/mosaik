@@ -28,7 +28,7 @@ const styles = {
     gap: "2",
   }),
   name: css({ fontFamily: "mono", textStyle: "xs", color: "fg.muted" }),
-  note: css({ display: "block", textStyle: "xs", color: "fg.subtle", mt: "0.5" }),
+  note: css({ display: "block", textStyle: "xs", color: "fg.muted", mt: "0.5" }),
   scale: css({ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))", gap: "1" }),
   step: css({
     display: "grid",

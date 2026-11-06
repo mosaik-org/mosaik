@@ -111,7 +111,7 @@ const styles = {
     pb: "1",
     textStyle: "xs",
     fontWeight: "semibold",
-    color: "fg.subtle",
+    color: "fg.muted",
     textTransform: "uppercase",
     letterSpacing: "wider",
   }),
@@ -128,7 +128,7 @@ const styles = {
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
     "&[aria-current=page]": { bg: "gray.subtle.bg.hover", color: "fg.default", fontWeight: "medium" },
   }),
-  count: css({ textStyle: "xs", color: "fg.subtle" }),
+  count: css({ textStyle: "xs", color: "fg.muted" }),
   none: css({ px: "2", textStyle: "sm", color: "fg.muted" }),
   main: css({ display: "flex", flexDirection: "column", minW: "0" }),
   topBar: css({

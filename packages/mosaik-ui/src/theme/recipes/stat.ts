@@ -24,7 +24,7 @@ export const stat = defineSlotRecipe({
       fontVariantNumeric: "tabular-nums",
       _icon: { boxSize: "3.5" },
     },
-    hint: { textStyle: "xs", color: "fg.subtle" },
+    hint: { textStyle: "xs", color: "fg.muted" },
   },
   defaultVariants: { direction: "flat" },
   variants: {

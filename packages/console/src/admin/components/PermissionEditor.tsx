@@ -18,7 +18,7 @@ const styles = {
   head: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4", flexWrap: "wrap" }),
   title: css({ fontWeight: "semibold" }),
   list: css({ display: "grid", gap: "3", gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)" } }),
-  key: css({ fontFamily: "mono", fontSize: "xs", color: "fg.subtle" }),
+  key: css({ fontFamily: "mono", fontSize: "xs", color: "fg.muted" }),
 }
 
 /**

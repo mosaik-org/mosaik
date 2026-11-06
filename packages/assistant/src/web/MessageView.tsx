@@ -33,7 +33,7 @@ const styles = {
     gap: "1",
     minHeight: "6",
     fontSize: "xs",
-    color: "fg.subtle",
+    color: "fg.muted",
     opacity: "0",
     transition: "opacity 0.15s",
     "[data-reply]:hover &, [data-reply]:focus-within &": { opacity: "1" },

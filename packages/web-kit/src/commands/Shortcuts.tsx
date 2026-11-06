@@ -86,11 +86,11 @@ export const createShortcuts = (commands: Accessor<ReadonlyArray<Command>>): Sho
 const styles = {
   stack: css({ display: "flex", flexDirection: "column", gap: "5", width: "full" }),
   group: css({ display: "flex", flexDirection: "column", gap: "1" }),
-  groupLabel: css({ fontSize: "xs", fontWeight: "medium", color: "fg.subtle", mb: "1" }),
+  groupLabel: css({ fontSize: "xs", fontWeight: "medium", color: "fg.muted", mb: "1" }),
   row: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4", minH: "7" }),
   title: css({ fontSize: "sm", color: "fg.default", minW: "0", truncate: true }),
   keys: css({ display: "flex", alignItems: "center", gap: "1", flexShrink: "0" }),
-  or: css({ fontSize: "xs", color: "fg.subtle", mx: "0.5" }),
+  or: css({ fontSize: "xs", color: "fg.muted", mx: "0.5" }),
 }
 
 const Keys = (props: { keys: string }) => <For each={showKeys(props.keys)}>{(key) => <Kbd size="sm">{key}</Kbd>}</For>

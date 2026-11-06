@@ -33,7 +33,7 @@ const styles = {
   name: css({ fontSize: "sm", fontWeight: "semibold", color: "fg.default", truncate: true }),
   email: css({ fontSize: "xs", color: "fg.muted", truncate: true }),
   icon: css({ color: "fg.muted" }),
-  version: css({ px: "2", pt: "1", pb: "1.5", fontSize: "xs", color: "fg.subtle" }),
+  version: css({ px: "2", pt: "1", pb: "1.5", fontSize: "xs", color: "fg.muted" }),
 }
 
 /**

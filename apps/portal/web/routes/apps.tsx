@@ -821,7 +821,7 @@ const columns = column.columns([
             )}
           </Show>
           <Show when={app.lastSeenAt}>
-            {(at) => <span class={css({ fontSize: "xs", color: "fg.subtle" })}>seen {formatRelativeTime(at())}</span>}
+            {(at) => <span class={css({ fontSize: "xs", color: "fg.muted" })}>seen {formatRelativeTime(at())}</span>}
           </Show>
           <EventsStatus app={app} />
         </div>

@@ -47,7 +47,7 @@ const ALL_CATEGORIES = "__all__"
 const styles = {
   toolbar: css({ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "3" }),
   search: css({ flex: "1", minW: "56", maxW: "md" }),
-  count: css({ fontSize: "xs", color: "fg.subtle" }),
+  count: css({ fontSize: "xs", color: "fg.muted" }),
   section: css({ display: "flex", flexDirection: "column", gap: "3" }),
   grid: css({
     display: "grid",

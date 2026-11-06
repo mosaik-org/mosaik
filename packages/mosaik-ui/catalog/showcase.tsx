@@ -37,7 +37,7 @@ const styles = {
   rows: css({ display: "flex", flexDirection: "column", gap: "5" }),
   cell: css({ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "2", minW: "0" }),
   wide: css({ alignItems: "stretch" }),
-  caption: css({ fontFamily: "mono", textStyle: "xs", color: "fg.subtle" }),
+  caption: css({ fontFamily: "mono", textStyle: "xs", color: "fg.muted" }),
   // Positioned, so that what is out of sight inside (a hidden label) scrolls with it.
   table: css({ position: "relative", display: "grid", gap: "3", alignItems: "center", overflowX: "auto", pb: "1" }),
 }

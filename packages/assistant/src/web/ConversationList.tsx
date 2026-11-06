@@ -28,7 +28,7 @@ const styles = {
     pb: "1",
     fontSize: "xs",
     fontWeight: "semibold",
-    color: "fg.subtle",
+    color: "fg.muted",
     textTransform: "uppercase",
     letterSpacing: "wider",
   }),

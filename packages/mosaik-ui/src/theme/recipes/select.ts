@@ -85,7 +85,7 @@ export const select = defineSlotRecipe({
     },
     itemGroupLabel: {
       alignItems: "flex-start",
-      color: "fg.subtle",
+      color: "fg.muted",
       display: "flex",
       flexDirection: "column",
       fontWeight: "medium",
@@ -119,7 +119,7 @@ export const select = defineSlotRecipe({
       userSelect: "none",
       width: "full",
       _placeholderShown: {
-        color: "fg.subtle",
+        color: "fg.muted",
       },
       _disabled: {
         layerStyle: "disabled",

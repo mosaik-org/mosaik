@@ -28,7 +28,7 @@ const styles = {
   chevron: css({ transition: "transform 0.15s", "[aria-expanded=true] > &": { transform: "rotate(90deg)" } }),
   list: css({ display: "flex", flexDirection: "column", gap: "1", pl: "2", ml: "1", borderLeftWidth: "2px" }),
   row: css({ display: "flex", alignItems: "flex-start", gap: "1.5", py: "0.5" }),
-  app: css({ color: "fg.subtle" }),
+  app: css({ color: "fg.muted" }),
   reason: css({ color: "danger.plain.fg", overflowWrap: "anywhere" }),
 }
 

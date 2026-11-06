@@ -33,7 +33,7 @@ export const App = () => {
                     Principal Software Engineer working at Pyck.ai
                   </Text>
                 </Stack>
-                <HStack gap="1" color="fg.subtle">
+                <HStack gap="1" color="fg.muted">
                   <Icon size="sm">
                     <MapPinIcon />
                   </Icon>

@@ -73,7 +73,7 @@ const styles = {
     _hover: { bg: "gray.subtle.bg" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
   }),
-  pageApp: css({ ml: "auto", fontSize: "xs", color: "fg.subtle", flexShrink: "0" }),
+  pageApp: css({ ml: "auto", fontSize: "xs", color: "fg.muted", flexShrink: "0" }),
   muted: css({ px: "4", py: "6", fontSize: "sm", color: "fg.muted", textAlign: "center" }),
 }
 

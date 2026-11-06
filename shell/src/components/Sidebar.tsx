@@ -42,7 +42,7 @@ const styles = {
     pb: "1.5",
     fontSize: "xs",
     fontWeight: "semibold",
-    color: "fg.subtle",
+    color: "fg.muted",
     textTransform: "uppercase",
     letterSpacing: "wider",
     whiteSpace: "nowrap",
@@ -112,7 +112,7 @@ const styles = {
     opacity: "0",
     transition: "opacity 0.15s",
   }),
-  hint: css({ px: "3", fontSize: "xs", color: "fg.subtle", lineHeight: "relaxed" }),
+  hint: css({ px: "3", fontSize: "xs", color: "fg.muted", lineHeight: "relaxed" }),
   hintLink: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
 }
 

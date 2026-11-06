@@ -203,7 +203,7 @@ const styles = {
     borderWidth: "1px",
     borderRadius: "l2",
     bg: "canvas.sunken",
-    color: "fg.subtle",
+    color: "fg.muted",
     fontSize: "sm",
     cursor: "pointer",
     transition: "border-color 0.15s",

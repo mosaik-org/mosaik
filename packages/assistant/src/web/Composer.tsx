@@ -35,14 +35,14 @@ const styles = {
     // Grows with what is written, up to about eight lines, then scrolls.
     maxHeight: "12rem",
     overflowY: "auto",
-    _placeholder: { color: "fg.subtle" },
+    _placeholder: { color: "fg.muted" },
     _disabled: { cursor: "not-allowed" },
   }),
   send: css({ borderRadius: "full", flexShrink: "0" }),
   hints: css({
     px: "1",
     fontSize: "xs",
-    color: "fg.subtle",
+    color: "fg.muted",
   }),
   // Above the box, over the conversation: a frosted background of its own keeps it readable.
   note: css({

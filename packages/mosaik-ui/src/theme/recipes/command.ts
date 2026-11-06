@@ -96,7 +96,7 @@ export const command = defineSlotRecipe({
       bg: "transparent",
       color: "fg.default",
       outline: "none",
-      _placeholder: { color: "fg.subtle" },
+      _placeholder: { color: "fg.muted" },
     },
     clearTrigger: {
       display: "grid",
@@ -122,7 +122,7 @@ export const command = defineSlotRecipe({
       "& > *": { flexShrink: "0" },
     },
     itemGroup: { "& + &": { mt: "2" } },
-    itemGroupLabel: { px: "2", py: "1.5", textStyle: "xs", fontWeight: "medium", color: "fg.subtle" },
+    itemGroupLabel: { px: "2", py: "1.5", textStyle: "xs", fontWeight: "medium", color: "fg.muted" },
     item: {
       display: "flex",
       alignItems: "center",
@@ -142,7 +142,7 @@ export const command = defineSlotRecipe({
     itemContent: { display: "flex", flexDirection: "column", flex: "1", minW: "0" },
     itemText: { truncate: true },
     itemDescription: { textStyle: "xs", color: "fg.muted", truncate: true },
-    itemCommand: { flexShrink: "0", textStyle: "xs", color: "fg.subtle" },
+    itemCommand: { flexShrink: "0", textStyle: "xs", color: "fg.muted" },
     separator: { h: "1px", my: "2", bg: "border" },
     empty: { px: "4", py: "10", textAlign: "center", textStyle: "sm", color: "fg.muted" },
     footer: {

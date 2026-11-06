@@ -53,7 +53,7 @@ export const table = defineSlotRecipe({
       textStyle: "xs",
     },
     caption: {
-      color: "fg.subtle",
+      color: "fg.muted",
       fontWeight: "medium",
     },
     foot: {

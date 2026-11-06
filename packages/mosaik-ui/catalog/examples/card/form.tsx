@@ -24,7 +24,7 @@ export const App = () => {
           </Stack>
           <HStack>
             <Divider flex="1" />
-            <Text color="fg.subtle" textStyle="sm" whiteSpace="nowrap">
+            <Text color="fg.muted" textStyle="sm" whiteSpace="nowrap">
               or sign up with
             </Text>
             <Divider flex="1" />

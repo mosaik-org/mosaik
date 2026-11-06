@@ -23,7 +23,7 @@ const styles = {
     _hover: { textDecoration: "underline" },
     _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "1px" },
   }),
-  category: css({ fontSize: "xs", color: "fg.subtle" }),
+  category: css({ fontSize: "xs", color: "fg.muted" }),
   description: css({ color: "fg.muted", fontSize: "sm", flex: "1", lineClamp: "3" }),
   footer: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "2", minH: "8" }),
   open: css({
@@ -35,7 +35,7 @@ const styles = {
     color: "fg.muted",
     _hover: { color: "fg.default" },
   }),
-  note: css({ fontSize: "xs", color: "fg.subtle" }),
+  note: css({ fontSize: "xs", color: "fg.muted" }),
   pinned: css({ color: "fg.default", fill: "currentColor" }),
 }
 

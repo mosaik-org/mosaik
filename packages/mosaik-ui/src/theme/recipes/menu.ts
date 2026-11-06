@@ -71,7 +71,7 @@ export const menu = defineSlotRecipe({
     },
     // Pushed to the end of its row, past the label.
     itemCommand: {
-      color: "fg.subtle",
+      color: "fg.muted",
       flexShrink: "0",
       ms: "auto",
       ps: "4",
@@ -79,7 +79,7 @@ export const menu = defineSlotRecipe({
     },
     itemGroupLabel: {
       alignItems: "flex-start",
-      color: "fg.subtle",
+      color: "fg.muted",
       display: "flex",
       flexDirection: "column",
       fontWeight: "medium",

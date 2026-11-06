@@ -130,7 +130,7 @@ const Person = (props: { readonly member: Member }) => (
                   <Text textStyle="sm" color="fg.muted">
                     {props.member.role} at Northwind Coffee
                   </Text>
-                  <HStack gap="1" color="fg.subtle" textStyle="xs">
+                  <HStack gap="1" color="fg.muted" textStyle="xs">
                     <MapPinIcon size={12} /> {props.member.location}
                   </HStack>
                 </Stack>
