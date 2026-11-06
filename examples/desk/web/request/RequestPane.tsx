@@ -16,6 +16,7 @@ import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "
 import { Dynamic } from "solid-js/web"
 import { type ReplyKind, type RequestId, type RequestRow, requesterMayDelete, requestNumber } from "../../api"
 import { desk as manifest } from "../../manifest"
+import { AttentionReason } from "../components/AttentionReason"
 import { useDesk } from "../context"
 import { requestQuery } from "../queries"
 import { createRequestPickers } from "../workspace/pickers"
@@ -129,6 +130,9 @@ export const RequestPane = (props: {
                 <Heading as="h2" textStyle="md" fontWeight="semibold">
                   {row().title}
                 </Heading>
+                <Show when={asAgent()}>
+                  <AttentionReason request={row()} />
+                </Show>
                 <div class={styles.actions}>
                   <NextStep row={row()} asAgent={asAgent()} compose={(kind) => composer?.focus(kind)} />
                   <ActionMenu

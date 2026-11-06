@@ -200,6 +200,39 @@ export const deadlineOf = (
   return { ...due, state, millisLeft }
 }
 
+/** Why a request wants someone now, in words, and how pressing that is. */
+export interface AttentionReason {
+  readonly text: string
+  readonly state: DeadlineState
+}
+
+/**
+ * What opening a request should answer at once: why it is here. Nothing while it has no claim on
+ * anyone: on track, with someone, and not urgent.
+ */
+export const attentionReason = (
+  request: Pick<
+    RequestState,
+    "status" | "firstRepliedAt" | "respondBy" | "resolveBy" | "createdAt" | "assigneeId" | "priority"
+  >,
+  now: DateTime.Utc,
+): AttentionReason | undefined => {
+  const deadline = deadlineOf(request, now)
+  if (deadline === undefined) return undefined
+  const time = shortDuration(deadline.millisLeft)
+  const parts = [
+    deadline.state === "missed"
+      ? `Overdue by ${time}: ${deadline.kind === "reply" ? "nobody has replied yet" : "still not solved"}.`
+      : undefined,
+    deadline.state === "soon"
+      ? `${deadline.kind === "reply" ? "Needs a reply" : "Needs solving"} in ${time}.`
+      : undefined,
+    request.assigneeId === null ? "Nobody has it." : undefined,
+    deadline.state === "ok" && request.assigneeId !== null && request.priority === "urgent" ? "Urgent." : undefined,
+  ].filter((part) => part !== undefined)
+  return parts.length === 0 ? undefined : { text: parts.join(" "), state: deadline.state }
+}
+
 const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR

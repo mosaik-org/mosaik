@@ -5,6 +5,7 @@ import {
   applyChange,
   applyNote,
   applyReply,
+  attentionReason,
   changedFields,
   changeProblem,
   deadlineOf,
@@ -171,5 +172,41 @@ describe("shortDuration", () => {
     expect(shortDuration(12 * 60_000)).toBe("12m")
     expect(shortDuration(-3 * 3_600_000)).toBe("3h")
     expect(shortDuration(2 * 86_400_000)).toBe("2d")
+  })
+})
+
+describe("attentionReason", () => {
+  const taken = { assigneeId: "lin" }
+
+  it("says what is late, and that nobody has it", () => {
+    expect(attentionReason(request(), at(0).pipe(DateTime.add({ minutes: 78 })))).toEqual({
+      text: "Overdue by 18m: nobody has replied yet. Nobody has it.",
+      state: "missed",
+    })
+  })
+
+  it("says solving is late once someone has replied", () => {
+    const replied = request({ ...taken, status: "open", firstRepliedAt: at(5) })
+    expect(attentionReason(replied, at(0).pipe(DateTime.add({ minutes: 250 })))).toEqual({
+      text: "Overdue by 10m: still not solved.",
+      state: "missed",
+    })
+  })
+
+  it("says what is due soon", () => {
+    expect(attentionReason(request(taken), at(50))).toEqual({ text: "Needs a reply in 10m.", state: "soon" })
+  })
+
+  it("says nobody has it while there is time", () => {
+    expect(attentionReason(request(), at(1))).toEqual({ text: "Nobody has it.", state: "ok" })
+  })
+
+  it("says it is urgent when nothing else is wrong", () => {
+    expect(attentionReason(request({ ...taken, priority: "urgent" }), at(1))).toEqual({ text: "Urgent.", state: "ok" })
+  })
+
+  it("is nothing for a request on track, or with the person who asked", () => {
+    expect(attentionReason(request(taken), at(1))).toBeUndefined()
+    expect(attentionReason(request({ status: "waiting" }), at(500))).toBeUndefined()
   })
 })
