@@ -19,6 +19,7 @@ import { bestScore } from "../fuzzy"
 import { withTimeout } from "../loading"
 import { createDebounced } from "../primitives"
 import { CommandPalette, type PaletteGroup, type PaletteItem } from "./CommandPalette"
+import { createShortcuts, firstKeys, ShortcutsPanel } from "./Shortcuts"
 import { sourcesToSearch } from "./scope"
 import type {
   Command,
@@ -43,6 +44,7 @@ const AFFINITY_WEIGHT = 8
 interface CommandRegistry {
   register(commands: Accessor<ReadonlyArray<Command>>): () => void
   open(): void
+  openShortcuts(): void
   findPlaces(query: string): Promise<ReadonlyArray<Place>>
 }
 
@@ -65,7 +67,10 @@ export const useCommands = (commands: Accessor<ReadonlyArray<Command>>): void =>
 }
 
 /** Opens the palette programmatically (e.g. from a search button). */
-export const useCommandPalette = () => ({ open: useRegistry().open })
+export const useCommandPalette = () => {
+  const registry = useRegistry()
+  return { open: registry.open, openShortcuts: registry.openShortcuts }
+}
 
 /**
  * Finds the pages and records the person can open, as the palette would for the same words:
@@ -176,7 +181,20 @@ export const CommandProvider = (props: CommandProviderProps) => {
   const [skipped, setSkipped] = createSignal(0)
   const [searching, setSearching] = createSignal(false)
 
-  const commands = createMemo(() => sources().flatMap((source) => source()))
+  const [shortcutsOpen, setShortcutsOpen] = createSignal(false)
+  const builtIn: ReadonlyArray<Command> = [
+    {
+      id: "shortcuts",
+      title: "Keyboard shortcuts",
+      group: "Help",
+      keys: "?",
+      keywords: ["keys", "hotkeys"],
+      perform: () => setShortcutsOpen(true),
+    },
+  ]
+
+  const commands = createMemo(() => [...builtIn, ...sources().flatMap((source) => source())])
+  const shortcuts = createShortcuts(commands)
 
   const registry: CommandRegistry = {
     register: (commands) => {
@@ -184,6 +202,7 @@ export const CommandProvider = (props: CommandProviderProps) => {
       return () => setSources((current) => current.filter((source) => source !== commands))
     },
     open: () => setOpen(true),
+    openShortcuts: () => setShortcutsOpen(true),
     findPlaces: async (query) => {
       const term = query.trim()
       const pages = commands()
@@ -297,7 +316,7 @@ export const CommandProvider = (props: CommandProviderProps) => {
         title: command.title,
         subtitle: command.subtitle,
         icon: command.icon,
-        hint: command.hint,
+        hint: command.hint ?? firstKeys(command),
         ...(command.app === undefined || scoped !== undefined ? {} : { tabHint: `Search in ${command.app.name}` }),
       },
       run: () => {
@@ -307,7 +326,9 @@ export const CommandProvider = (props: CommandProviderProps) => {
       ...(command.app === undefined ? {} : { app: command.app }),
     })
 
-    const inScope = commands().filter((command) => scoped === undefined || command.app?.id === scoped.id)
+    const inScope = commands().filter(
+      (command) => command.unlisted !== true && (scoped === undefined || command.app?.id === scoped.id),
+    )
 
     if (term.length === 0 && scoped === undefined) {
       const byId = new Map(inScope.map((command) => [command.id, command]))
@@ -405,6 +426,12 @@ export const CommandProvider = (props: CommandProviderProps) => {
         onClearScope={() => setScope(undefined)}
         placeholder={scope() === undefined ? undefined : `Search in ${scope()?.name}…`}
         loading={searching()}
+      />
+      <ShortcutsPanel
+        open={shortcutsOpen()}
+        onOpenChange={setShortcutsOpen}
+        commands={commands()}
+        shortcuts={shortcuts}
       />
     </CommandContext.Provider>
   )

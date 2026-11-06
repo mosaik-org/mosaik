@@ -30,6 +30,16 @@ export interface Command {
   readonly hint?: string
   /** Ranks the command by how much the user uses the app; Tab on it searches only that app. */
   readonly app?: CommandApp
+  /**
+   * Keys that run it while it is registered: "a", "shift+j", "mod+enter", a sequence "g i", or several
+   * ways to the same thing (`["j", "arrowdown"]`). They show in the palette and in the shortcuts panel
+   * (`?`), and do nothing while someone types or a dialog is open. Plain letters can be turned off there.
+   */
+  readonly keys?: string | ReadonlyArray<string>
+  /** Holding the key down repeats it: moving through a list, not opening something. */
+  readonly repeats?: boolean
+  /** Reached by its keys only, not listed in the palette: moving to the next row, say. */
+  readonly unlisted?: boolean
   /** Where the command takes the person, when it opens a page: it can then be found as a place ({@link Place}). */
   readonly to?: string
   readonly perform: () => unknown

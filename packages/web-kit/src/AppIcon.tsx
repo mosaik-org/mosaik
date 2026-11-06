@@ -13,6 +13,7 @@ import FileText from "lucide-solid/icons/file-text"
 import Gauge from "lucide-solid/icons/gauge"
 import Globe from "lucide-solid/icons/globe"
 import LayoutDashboard from "lucide-solid/icons/layout-dashboard"
+import LifeBuoy from "lucide-solid/icons/life-buoy"
 import Mail from "lucide-solid/icons/mail"
 import MapIcon from "lucide-solid/icons/map"
 import Package from "lucide-solid/icons/package"
@@ -47,6 +48,7 @@ const icons = {
   map: MapIcon,
   calendar: Calendar,
   mail: Mail,
+  "life-buoy": LifeBuoy,
   box: Box,
 } satisfies Record<string, Component<LucideProps>>
 

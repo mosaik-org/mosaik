@@ -10,6 +10,13 @@ export interface Toast {
   readonly type: ToastType
   readonly title: string
   readonly description?: string
+  /** A button in the toast, such as Undo. */
+  readonly action?: ToastAction
+}
+
+export interface ToastAction {
+  readonly label: string
+  readonly onClick: () => void
 }
 
 /** Shows toasts: the shell's, or a standalone page's. */
@@ -30,14 +37,20 @@ export const provideToaster = (provided: Toaster): (() => void) => {
   }
 }
 
-const show = (type: ToastType) => (title: string, description?: string) => {
-  const next: Toast = description === undefined ? { type, title } : { type, title, description }
+const show = (type: ToastType) => (title: string, description?: string, action?: ToastAction) => {
+  const next: Toast = {
+    type,
+    title,
+    ...(description === undefined ? {} : { description }),
+    ...(action === undefined ? {} : { action }),
+  }
   if (toaster) toaster.show(next)
   else waiting.push(next)
 }
 
 /**
- * A short message in the corner: `toast.success("Saved")`, `toast.error("Could not save", reason)`.
+ * A short message in the corner: `toast.success("Saved")`, `toast.error("Could not save", reason)`,
+ * `toast.success("Assigned", undefined, { label: "Undo", onClick: undo })`.
  * In the shell it shows with the shell's own toasts; on a standalone page, in its `<Toasts />`.
  */
 export const toast = {

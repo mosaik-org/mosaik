@@ -10,6 +10,7 @@ export {
   pageTheme,
   provideToaster,
   type Toast,
+  type ToastAction,
   type Toaster,
   type ToastType,
   toast,
