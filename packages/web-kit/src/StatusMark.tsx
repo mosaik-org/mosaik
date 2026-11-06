@@ -46,7 +46,7 @@ const styles = {
       inset: "-2px",
       zIndex: "-1",
       borderRadius: "full",
-      bg: "gray.2",
+      bg: "canvas.sunken",
       backgroundImage: "linear-gradient(var(--status-mark-tint, transparent), var(--status-mark-tint, transparent))",
     },
   }),

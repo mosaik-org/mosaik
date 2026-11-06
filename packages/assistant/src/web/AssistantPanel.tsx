@@ -18,7 +18,7 @@ const styles = {
     flexDirection: "column",
     height: "full",
     minHeight: "0",
-    bg: "gray.1",
+    bg: "canvas",
     // Its header overlays its top, as the shell's does a full page's (`FRAME_TOP`): what is below
     // scrolls under it, frosted.
     "--mk-frame-top": "sizes.14",
@@ -34,7 +34,7 @@ const styles = {
     height: "14",
     px: "3",
     borderBottomWidth: "1px",
-    bg: "gray.1/85",
+    bg: "canvas/85",
     backdropFilter: "blur(8px)",
   }),
   heading: css({ display: "flex", alignItems: "center", gap: "1", flex: "1", minW: "0" }),

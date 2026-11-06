@@ -54,9 +54,9 @@ const styles = css({
     fontSize: "xs",
   },
   "& th, & td": { px: "3", py: "1.5", textAlign: "start", borderBottomWidth: "1px", verticalAlign: "top" },
-  "& th": { bg: "gray.2", fontWeight: "semibold", color: "fg.muted", whiteSpace: "nowrap" },
+  "& th": { bg: "gray.a3", fontWeight: "semibold", color: "fg.muted", whiteSpace: "nowrap" },
   "& tr:last-child td": { borderBottomWidth: "0" },
-  "& tbody tr:nth-child(even) td": { bg: "gray.2/50" },
+  "& tbody tr:nth-child(even) td": { bg: "gray.a2" },
 })
 
 const sizes = { sm: css({ fontSize: "sm" }), md: css({ fontSize: "md" }) }

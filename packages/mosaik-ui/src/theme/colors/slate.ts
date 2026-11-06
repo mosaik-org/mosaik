@@ -46,12 +46,12 @@ export const slate = defineSemanticTokens.colors({
     fg: { DEFAULT: { value: { _light: "{colors.slate.12}", _dark: "{colors.slate.12}" } } },
   },
   surface: {
-    // In dark mode a step lighter than the page (`1`): there, shadows hardly show, and a raised
+    // In dark mode a step lighter than the page (`canvas`, `2`): there, shadows hardly show, and a raised
     // surface (a card, a menu, a dialog) stands out by being lighter.
     bg: {
-      DEFAULT: { value: { _light: "{colors.white}", _dark: "{colors.slate.2}" } },
-      hover: { value: { _light: "{colors.slate.2}", _dark: "{colors.slate.3}" } },
-      active: { value: { _light: "{colors.slate.3}", _dark: "{colors.slate.4}" } },
+      DEFAULT: { value: { _light: "{colors.white}", _dark: "{colors.slate.3}" } },
+      hover: { value: { _light: "{colors.slate.2}", _dark: "{colors.slate.4}" } },
+      active: { value: { _light: "{colors.slate.3}", _dark: "{colors.slate.5}" } },
     },
     border: {
       DEFAULT: { value: { _light: "{colors.slate.a6}", _dark: "{colors.slate.a6}" } },

@@ -82,10 +82,18 @@ export const createPreset = (options: ThemeOptions = {}): Preset => {
             ...Object.fromEntries(roleNames.map((role) => [role, alias(roles[role] as PaletteName)])),
             fg: {
               default: { value: "{colors.gray.12}" },
+              // Secondary text, which still has to be read.
               muted: { value: "{colors.gray.11}" },
+              // Marks that need no reading (icons, separators, what is disabled): too faint for text.
               subtle: { value: "{colors.gray.10}" },
             },
-            canvas: { value: "{colors.gray.1}" },
+            // The workspace, and behind it what frames it (a sidebar). The frame is the darker of the
+            // two in both modes, so that the work is what comes forward: in dark mode it does by being
+            // lighter, like everything raised there.
+            canvas: {
+              DEFAULT: { value: { _light: "{colors.gray.1}", _dark: "{colors.gray.2}" } },
+              sunken: { value: { _light: "{colors.gray.3}", _dark: "{colors.gray.1}" } },
+            },
             // The lines between and around things (cards, dividers, table rows): faint and
             // translucent, as quiet tools draw them, blending into any surface below. Controls draw
             // their own edges (`gray.outline.border`), which stay visible.

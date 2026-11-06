@@ -23,7 +23,7 @@ const styles = {
     minHeight: "0",
     overflow: "hidden",
     borderRightWidth: { md: "1px" },
-    bg: "gray.1",
+    bg: "canvas",
   }),
   main: css({ display: "flex", flexDirection: "column", minHeight: "0", minWidth: "0" }),
   // On phones the arrow alone, so the title keeps the room (the button's label says where it goes).

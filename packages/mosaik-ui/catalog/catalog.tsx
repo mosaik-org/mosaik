@@ -76,7 +76,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minH: "0",
-    bg: "gray.2",
+    bg: "canvas.sunken",
     borderBottomWidth: { base: "1px", md: "0" },
     borderRightWidth: { md: "1px" },
     maxH: { base: "40dvh", md: "100dvh" },

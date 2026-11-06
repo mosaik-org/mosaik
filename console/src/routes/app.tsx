@@ -30,7 +30,7 @@ const styles = {
     py: "3",
     borderBottomWidth: "1px",
     borderColor: "border",
-    bg: "canvas",
+    bg: "canvas.sunken",
   }),
   brand: css({ display: "flex", alignItems: "center", gap: "2", fontWeight: "semibold" }),
   mark: css({
@@ -60,7 +60,7 @@ const styles = {
     px: { base: "4", md: "6" },
     borderBottomWidth: "1px",
     borderColor: "border",
-    bg: "canvas",
+    bg: "canvas.sunken",
     overflow: "hidden",
   }),
 }
@@ -82,7 +82,7 @@ function ConsoleLayout() {
   // The console's pages register commands (Ctrl+K), as they do in the shell.
   return (
     <CommandProvider>
-      <div class={css({ minHeight: "100dvh", bg: "gray.2" })}>
+      <div class={css({ minHeight: "100dvh", bg: "canvas" })}>
         <header class={styles.header}>
           <span class={styles.brand}>
             <span class={styles.mark}>M</span> Console
