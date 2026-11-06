@@ -26,7 +26,7 @@ import PanelLeftClose from "lucide-solid/icons/panel-left-close"
 import PanelLeftOpen from "lucide-solid/icons/panel-left-open"
 import Search from "lucide-solid/icons/search"
 import Sparkles from "lucide-solid/icons/sparkles"
-import { createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
+import { type Accessor, createEffect, createSignal, type JSX, on, onCleanup, onMount, Show, Suspense } from "solid-js"
 import { allApps, appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
 import { StatusesProvider } from "../statuses/StatusesProvider"
@@ -43,19 +43,33 @@ const styles = {
   }),
   // A page with the `full` layout gets exactly the window's height, which it fills and scrolls inside.
   shellFull: css({ height: "100dvh", gridTemplateRows: "minmax(0, 1fr)", overflow: "hidden" }),
-  // With the assistant open, a third column on wide screens.
-  shellWithAssistant: css({ gridTemplateColumns: { base: "1fr", md: "auto 1fr", lg: "auto 1fr 400px" } }),
+  // The page beside the assistant: on wide screens it makes room as the assistant slides in, and on
+  // narrower ones the assistant is over it.
+  page: css({
+    display: "flex",
+    flexDirection: "column",
+    flex: "1",
+    minWidth: "0",
+    minHeight: "0",
+    transition: "margin-right token(durations.normal) token(easings.standard)",
+    _motionReduce: { transition: "none" },
+    "&[data-assistant=true]": { marginRight: { lg: "400px" } },
+  }),
+  // Under the header, which stays whole above it, and in from the right edge. Fixed, so that a page
+  // scrolling the document leaves it where it is.
   assistant: css({
-    // Docked on wide screens; over the page on narrower ones.
-    position: { base: "fixed", lg: "sticky" },
-    inset: { base: "0", lg: "auto" },
-    top: { lg: "0" },
+    position: "fixed",
+    top: "14",
+    right: "0",
+    bottom: "0",
     zIndex: { base: "overlay", lg: "auto" },
     width: { base: "full", sm: "400px" },
-    left: { sm: "auto" },
-    height: "100dvh",
     borderLeftWidth: "1px",
     boxShadow: { base: "lg", lg: "none" },
+    translate: "100% 0",
+    transition: "translate token(durations.normal) token(easings.standard)",
+    _motionReduce: { transition: "none" },
+    "&[data-open=true]": { translate: "0 0" },
   }),
   aside: css({
     hideBelow: "md",
@@ -283,6 +297,39 @@ const useAssistantBrowser = (): AssistantBrowser => {
   }
 }
 
+/** How long the assistant takes to slide away: `normal`, the transition's duration. */
+const ASSISTANT_EXIT_MS = 200
+
+/**
+ * Keeps something on the page for as long as it slides: `mounted` from before it comes in until after it
+ * has gone, `shown` for which way it is going. Coming in, it first renders as gone, for there to be
+ * something to move from. Toggled midway, its transition just turns around.
+ */
+const createPresence = (open: Accessor<boolean>) => {
+  const [mounted, setMounted] = createSignal(open())
+  const [shown, setShown] = createSignal(open())
+  createEffect(
+    on(
+      open,
+      (isOpen) => {
+        if (isOpen) {
+          setMounted(true)
+          let frame = requestAnimationFrame(() => {
+            frame = requestAnimationFrame(() => setShown(true))
+          })
+          onCleanup(() => cancelAnimationFrame(frame))
+        } else {
+          setShown(false)
+          const timer = setTimeout(() => setMounted(false), ASSISTANT_EXIT_MS)
+          onCleanup(() => clearTimeout(timer))
+        }
+      },
+      { defer: true },
+    ),
+  )
+  return { mounted, shown }
+}
+
 /** Where the person is, for the assistant: the app, the path and the page's title. */
 const usePageContext = () => {
   const router = useRouterState()
@@ -304,6 +351,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
   const navigate = useNavigate()
   const assistantReady = () => principal().isAuthenticated && status.data?.enabled === true
   const assistantOpen = () => panelOpen() && assistantReady()
+  const assistantPanel = createPresence(assistantOpen)
   const context = usePageContext()
   const assistantBrowser = useAssistantBrowser()
   const layout = usePageLayout()
@@ -345,13 +393,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
   return (
     <StatusesProvider>
       <AssistantBrowserProvider value={assistantBrowser}>
-        <div
-          class={cx(
-            styles.shell,
-            assistantOpen() && styles.shellWithAssistant,
-            layout() === "full" && styles.shellFull,
-          )}
-        >
+        <div class={cx(styles.shell, layout() === "full" && styles.shellFull)}>
           <aside
             class={styles.aside}
             data-rail={sidebar.rail()}
@@ -400,26 +442,34 @@ export const AppShell = (props: { children: JSX.Element }) => {
               </Show>
               <UserMenu />
             </header>
-            <PageMain>
-              <FrameHeaderProvider stack={frameHeader}>{props.children}</FrameHeaderProvider>
-            </PageMain>
+            <div class={styles.page} data-assistant={assistantPanel.shown()}>
+              <PageMain>
+                <FrameHeaderProvider stack={frameHeader}>{props.children}</FrameHeaderProvider>
+              </PageMain>
+            </div>
           </div>
 
-          <Show when={assistantOpen()}>
-            <aside class={styles.assistant}>
-              <AssistantPanel
-                context={context}
-                onClose={() => setPanelOpen(false)}
-                onExpand={(conversation) => {
-                  const from = router().location.href
-                  setPanelOpen(false)
-                  void navigate(
-                    conversation === null
-                      ? { to: "/assistant", search: { from } }
-                      : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
-                  )
-                }}
-              />
+          <Show when={assistantPanel.mounted()}>
+            <aside class={styles.assistant} data-open={assistantPanel.shown()}>
+              {/*
+                  Its own boundary: what it loads the first time would otherwise suspend the page around
+                  it, blanking the page and leaving nothing to slide in until it has loaded.
+                */}
+              <Suspense>
+                <AssistantPanel
+                  context={context}
+                  onClose={() => setPanelOpen(false)}
+                  onExpand={(conversation) => {
+                    const from = router().location.href
+                    setPanelOpen(false)
+                    void navigate(
+                      conversation === null
+                        ? { to: "/assistant", search: { from } }
+                        : { to: "/assistant/$conversation", params: { conversation }, search: { from } },
+                    )
+                  }}
+                />
+              </Suspense>
             </aside>
           </Show>
         </div>
