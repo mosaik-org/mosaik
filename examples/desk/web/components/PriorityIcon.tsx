@@ -11,8 +11,8 @@ const mark = cva({
   variants: {
     priority: {
       urgent: { color: "danger.plain.fg" },
-      high: { color: "orange.plain.fg" },
-      normal: { color: "blue.plain.fg" },
+      high: { color: "fg.subtle" },
+      normal: { color: "fg.subtle" },
       low: { color: "fg.subtle" },
     },
   },
@@ -28,7 +28,8 @@ const styles = {
 }
 
 /**
- * How pressing a request is, by colour and shape together: up for high, down for low. Filled, as a
+ * How pressing a request is, by shape: up for high, down for low, and red only when urgent, for that
+ * to stand out from a list of them. Filled, as a
  * request's status beside it is an outline: a normal priority's circle would otherwise read as a new one's.
  */
 export const PriorityIcon = (props: { priority: Priority }) => (

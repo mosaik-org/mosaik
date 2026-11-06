@@ -40,7 +40,8 @@ export const desk = defineApp({
   // Shown beside its pages in Mosaik's navigation (see server/statuses.ts).
   statuses: {
     inbox: { description: "Requests waiting for you", kind: "count", page: "/" },
-    overdue: { description: "Requests past their deadline", kind: "count", tone: "danger", page: "/all" },
+    // The app's rather than a page's: red beside the app in the sidebar, and no second red in its tabs.
+    overdue: { description: "Requests past their deadline", kind: "count", tone: "danger" },
     mine: { description: "Your requests waiting for your answer", kind: "count", page: "/mine" },
   },
   portal: {

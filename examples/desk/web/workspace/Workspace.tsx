@@ -57,8 +57,6 @@ const styles = {
     fontWeight: "medium",
     color: "fg.muted",
     bg: "canvas",
-    '&[data-section="missed"]': { color: "danger.plain.fg" },
-    '&[data-section="soon"]': { color: "warning.plain.fg" },
   }),
   count: css({ ml: "1.5", fontWeight: "normal" }),
   more: css({
@@ -327,7 +325,7 @@ export const Workspace = (props: WorkspaceProps) => {
               <For each={entries()}>
                 {(entry) =>
                   entry.startsWith("section:") ? (
-                    <div class={styles.section} role="presentation" data-section={entry.slice("section:".length)}>
+                    <div class={styles.section} role="presentation">
                       {SECTION_TITLES[entry.slice("section:".length) as DeadlineState | "none"]}
                       <span class={styles.count}>{sectionCounts().get(entry.slice("section:".length))}</span>
                     </div>

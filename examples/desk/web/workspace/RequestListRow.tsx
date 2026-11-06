@@ -90,7 +90,10 @@ export const RequestListRow = (props: {
             <div class={styles.lines}>
               <div class={styles.line}>
                 <span class={styles.lead}>
-                  <PriorityIcon priority={row().priority} />
+                  {/* Most requests are normal: only what is out of the ordinary gets a mark. */}
+                  <Show when={row().priority !== "normal"}>
+                    <PriorityIcon priority={row().priority} />
+                  </Show>
                 </span>
                 <span class={styles.title} data-unread={row().unread ? "" : undefined}>
                   {row().title}

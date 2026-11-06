@@ -13,7 +13,7 @@ const SetupSearch = Schema.Struct({ tab: Schema.optional(Schema.Literals(["queue
 const NewRequestButton = () => {
   const { newRequest } = useDesk()
   return (
-    <Button size="sm" onClick={() => newRequest.open()}>
+    <Button size="sm" variant="subtle" colorPalette="gray" onClick={() => newRequest.open()}>
       <Plus />
       New request
     </Button>
