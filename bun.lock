@@ -87,6 +87,28 @@
         "vite-plugin-solid": "^2.11.14",
       },
     },
+    "examples/desk": {
+      "name": "@mosaik/example-desk",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/mosaik-ui": "workspace:*",
+        "@mosaik/sdk": "workspace:*",
+        "@tanstack/solid-query": "^5.104.3",
+        "@tanstack/solid-router": "^1.170.41",
+        "effect": "^4.1.2",
+        "lucide-solid": "^1.70.0",
+        "solid-js": "^1.9.17",
+      },
+      "devDependencies": {
+        "@effect/vitest": "^4.1.2",
+        "@pandacss/dev": "^2.2.0",
+        "@types/bun": "^1.4.3",
+        "postcss": "^8.5.0",
+        "typescript": "^7.0.2",
+        "vite": "^8.3.4",
+        "vitest": "^5.0.5",
+      },
+    },
     "examples/issues": {
       "name": "@mosaik/example-issues",
       "version": "0.0.0",
@@ -787,6 +809,7 @@
 
     "@mosaik/db": ["@mosaik/db@workspace:packages/db"],
 
+    "@mosaik/example-desk": ["@mosaik/example-desk@workspace:examples/desk"],
 
     "@mosaik/example-issues": ["@mosaik/example-issues@workspace:examples/issues"],
 

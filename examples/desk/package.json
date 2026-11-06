@@ -1,0 +1,31 @@
+{
+  "name": "@mosaik/example-desk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun scripts/dev.ts",
+    "build": "panda codegen --silent && bun --bun vite build && bun scripts/manifest.ts",
+    "start": "bun server/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mosaik/mosaik-ui": "workspace:*",
+    "@mosaik/sdk": "workspace:*",
+    "@tanstack/solid-query": "^5.104.3",
+    "@tanstack/solid-router": "^1.170.41",
+    "effect": "^4.1.2",
+    "lucide-solid": "^1.70.0",
+    "solid-js": "^1.9.17"
+  },
+  "devDependencies": {
+    "@effect/vitest": "^4.1.2",
+    "@pandacss/dev": "^2.2.0",
+    "@types/bun": "^1.4.3",
+    "postcss": "^8.5.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}

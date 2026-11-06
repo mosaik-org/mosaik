@@ -44,7 +44,9 @@ built-in app needs the printed snippet in `infra/compose.yml` to deploy.
 **Examples.** The apps in `examples/` are written exactly like a team's, so they are the place to look for
 working code. `examples/sales` and `examples/issues` are mounted in the Portal: pages with typed URL state,
 a server-side table, charts, roles, notifications, a command palette search, a database with migrations,
-and a connector to an external system (Jira). `examples/notes` is standalone: its own page, signing
+and a connector to an external system (Jira). `examples/desk` is the fullest: a service desk with a list
+and a request side by side, everything by keyboard, changes shown at once and undoable, live updates,
+deadlines, background work and its own setup pages. `examples/notes` is standalone: its own page, signing
 people in through Core. They differ from a team's repository in two ways only: they link the SDK from this
 repository instead of installing its tarball (`bun examples:verify` builds them against the tarball too),
 and they have no Dockerfile. `bun dev` runs them as apps hosted
@@ -328,7 +330,7 @@ backend, so it registers the new bundle: reload the page to see a change.
   Tab stop with one active row that holds focus, and a selection apart from it. It follows rows by id, so a
   refresh keeps the person's place and a row that leaves hands over to its neighbour. Bind its `move` and
   `toggle` to keys with `useCommands`, and key the rows by id (`<For each={ids()}>`): a row made again loses
-  focus.
+  focus. `examples/desk` puts it together.
   - To search the app's own data, default-export `defineSearchProvider({...})` from `web/search.ts`. It is
     built as a separate file, loaded the first time the palette opens, and gets 5 seconds per query.
   - Results rank by how much the user uses each app. Tab on any page of an app searches only that app.
