@@ -37,7 +37,7 @@ export const files = (t: BuiltinAppTemplate): Record<string, string> => {
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         effect: "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     }),

@@ -1,7 +1,7 @@
 import { css, cx } from "@mosaik/styled-system/css"
 import { FRAME_TOP } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
-import CircleAlert from "lucide-solid/icons/circle-alert"
+import CircleAlert from "lucide-solid/icons/circle-exclamation-point"
 import {
   createEffect,
   createMemo,

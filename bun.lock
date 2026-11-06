@@ -35,7 +35,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     },
@@ -55,7 +55,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     },
@@ -73,7 +73,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
@@ -96,7 +96,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
@@ -133,7 +133,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
@@ -182,7 +182,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "dompurify": "^3.4.17",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "marked": "^18.1.2",
         "solid-js": "^1.9.17",
       },
@@ -245,7 +245,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     },
@@ -279,7 +279,7 @@
         "@testing-library/user-event": "^14.6.8",
         "axe-core": "^4.14.0",
         "jsdom": "^30.1.3",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "postcss": "^8.5.0",
         "solid-js": "^1.9.17",
         "vite": "^8.3.4",
@@ -384,7 +384,7 @@
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
         "@tanstack/solid-table": "^9.3.1",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     },
@@ -425,7 +425,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
     },
@@ -574,7 +574,7 @@
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
-        "lucide-solid": "^1.57.0",
+        "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
       },
       "devDependencies": {
@@ -786,6 +786,7 @@
     "@mosaik/core": ["@mosaik/core@workspace:packages/core"],
 
     "@mosaik/db": ["@mosaik/db@workspace:packages/db"],
+
 
     "@mosaik/example-issues": ["@mosaik/example-issues@workspace:examples/issues"],
 
@@ -1379,7 +1380,7 @@
 
     "lru-cache": ["lru-cache@11.5.3", "", {}, "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg=="],
 
-    "lucide-solid": ["lucide-solid@1.57.0", "", { "peerDependencies": { "solid-js": "^1.4.7" } }, "sha512-GSzxlC+2ZdRo/27adINoXSsMqg3CGJz88ytiBb92sdkm2KW1JonDTitcbVuRBXphFytbxPPxUUAdtg0ZXE8qgw=="],
+    "lucide-solid": ["lucide-solid@1.70.0", "", { "peerDependencies": { "solid-js": "^1.4.7" } }, "sha512-BMCAjXRTa+XB4UjU0HnsTcFKhNGtjkw3Pt/LtuQz3as2GIljPet+6GOEV9Pr0iWF032bna2Qp3iPxY3QgRJtMg=="],
 
     "lz-string": ["lz-string@1.5.0", "", { "bin": { "lz-string": "bin/bin.js" } }, "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ=="],
 
