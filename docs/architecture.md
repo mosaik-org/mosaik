@@ -139,18 +139,22 @@ The page links to its own backend for the rest (`standaloneLinks` in `@mosaik/sd
 
 ## The SDK
 
-Apps depend on one package, `@mosaik/sdk`, whose entry points follow the same two lines as the rest of
-Mosaik: where code runs (both sides, server, pages) and which layer it needs (Core, or the Portal through
-`@mosaik/sdk/portal` and the design system). See [Building apps](apps.md#the-sdk) for the list. Behind it,
+Apps depend on the SDK's two packages: `@mosaik/sdk`, what every app builds on, with none of Mosaik's UI,
+and `@mosaik/web-sdk`, the UI on top of it (components, styles, the page builds, and the shell's frame
+through `@mosaik/web-sdk/portal`). Their entry points follow the same two lines as the rest of Mosaik: where
+code runs (both sides, server, pages) and which layer it needs (Core, or the Portal through `/portal`). See [Building apps](apps.md#the-sdk) for the list. Behind it,
 the internal packages keep the split the monorepo needs; only what the entry points export is public.
 
 Three of those packages hold what pages use, by what they need. `client/solid` needs Solid and no components, so
 an app with its own UI can use it. `web-kit` holds Mosaik's components, on `@mosaik/mosaik-ui`. `frame` holds what
 surrounds a page (its layout, tabs and header, the command palette, status marks): it is Core's rather than the
-Portal's because Core's console hosts pages too, and the console's pages run in both, but only `@mosaik/sdk/portal`
+Portal's because Core's console hosts pages too, and the console's pages run in both, but only `@mosaik/web-sdk/portal`
 offers it to apps, as a standalone app has no frame.
-`bun sdk:pack` ships the entry points with the internal packages' sources in one tarball, their imports
-rewritten to relative paths, so an app sees one package and one version.
+
+`bun sdk:pack` ships each package's entry points with the internal packages' sources in its tarball, their imports
+rewritten to relative paths, so an app sees only what the entry points export. What both build on ships once, in
+`@mosaik/sdk`, which exports it under `internal/` to `@mosaik/web-sdk` alone: two copies in an app would each keep
+their own state.
 
 ## Deliberately left out (for now)
 

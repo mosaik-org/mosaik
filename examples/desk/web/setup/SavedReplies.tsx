@@ -9,9 +9,9 @@ import {
   TextareaField,
   TextField,
 } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/sdk/css"
 import { createForm, useAction } from "@mosaik/sdk/solid"
-import { QueryBoundary } from "@mosaik/sdk/ui"
+import { css } from "@mosaik/web-sdk/css"
+import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import MessageSquareText from "lucide-solid/icons/message-square-text"

@@ -1,4 +1,4 @@
-import { css, cva } from "@mosaik/sdk/css"
+import { css, cva } from "@mosaik/web-sdk/css"
 import Circle from "lucide-solid/icons/circle"
 import Triangle from "lucide-solid/icons/triangle"
 import TriangleExclamationPoint from "lucide-solid/icons/triangle-exclamation-point"

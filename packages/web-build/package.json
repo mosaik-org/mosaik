@@ -1,0 +1,29 @@
+{
+  "name": "@mosaik/web-build",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./panda": "./src/panda.ts",
+    "./vite": "./src/vite.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/styled-system": "workspace:*",
+    "@pandacss/preset-base": "^2.2.0",
+    "@pandacss/preset-panda": "^2.2.0",
+    "vite-plugin-solid": "^2.11.14"
+  },
+  "peerDependencies": {
+    "@pandacss/dev": "^2.2.0",
+    "postcss": "^8.5.0",
+    "vite": "^8.3.4"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "^2.2.0",
+    "postcss": "^8.5.0",
+    "vite": "^8.3.4"
+  }
+}

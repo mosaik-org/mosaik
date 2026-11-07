@@ -1,6 +1,6 @@
 import { toast } from "@mosaik/sdk/client"
-import { useCommands } from "@mosaik/sdk/portal"
 import { createEventStream, useCan, usePrincipal } from "@mosaik/sdk/solid"
+import { useCommands } from "@mosaik/web-sdk/portal"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import { type Accessor, createContext, createEffect, createSignal, on, type ParentProps, useContext } from "solid-js"

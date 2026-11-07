@@ -1,6 +1,6 @@
 /**
- * `@mosaik/sdk/ui`: Mosaik's own components (people, query states, toasts). The components themselves
- * are `@mosaik/mosaik-ui`, which apps import directly; `@mosaik/sdk/ui/styles.css` styles both on a
+ * `@mosaik/web-sdk/ui`: Mosaik's own components (people, query states, toasts). The components themselves
+ * are `@mosaik/mosaik-ui`, which apps import directly; `@mosaik/web-sdk/ui/styles.css` styles both on a
  * standalone page (mounted apps have the shell's stylesheet).
  */
 export {

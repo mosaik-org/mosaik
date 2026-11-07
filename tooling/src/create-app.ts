@@ -82,15 +82,16 @@ const versions = async () => {
   return { pick }
 }
 
-/** Copies the SDK's and the components' tarballs into the app; returns the dependencies on them. */
+/** Copies the SDK's two tarballs and the components' into the app; returns the dependencies on them. */
 const vendor = async (sdk: SdkIndex) => {
   await rm(join(dir, VENDOR), { recursive: true, force: true })
   await mkdir(join(dir, VENDOR), { recursive: true })
-  for (const tarball of [sdk.tarball, sdk.components.tarball]) {
+  for (const tarball of [sdk.tarball, sdk.web.tarball, sdk.components.tarball]) {
     await copyFile(join(SDK_DIR, tarball), join(dir, VENDOR, tarball))
   }
   return {
     "@mosaik/sdk": `file:./${VENDOR}/${sdk.tarball}`,
+    "@mosaik/web-sdk": `file:./${VENDOR}/${sdk.web.tarball}`,
     "@mosaik/mosaik-ui": `file:./${VENDOR}/${sdk.components.tarball}`,
   }
 }
@@ -101,7 +102,7 @@ const mosaik = await vendor(sdk)
 if (values["sdk-only"]) {
   const path = join(dir, "package.json")
   const manifest = (await Bun.file(path).json()) as Record<string, Record<string, string> | undefined>
-  // One SDK package: drop the per-package tarballs of earlier SDKs.
+  // The SDK's packages only: drop the per-package tarballs of earlier SDKs.
   for (const section of ["dependencies", "devDependencies", "overrides"]) {
     const entries = manifest[section]
     if (entries === undefined) continue

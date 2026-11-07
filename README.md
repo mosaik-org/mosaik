@@ -155,7 +155,8 @@ examples/<id>/    Example apps, written like a team's app; `bun dev` runs them
                   notes: standalone, its own page (index.html) and sign-in through Core
                   links: standalone with its own UI: a database and sign-in from Mosaik, nothing of Mosaik's on its page
 packages/         The SDK and shared code
-  sdk             @mosaik/sdk, the one package apps use: entry points per side and layer, re-exporting the packages below
+  sdk             @mosaik/sdk, what every app builds on, with none of Mosaik's UI: entry points per side, re-exporting the packages below
+  web-sdk         @mosaik/web-sdk, Mosaik's UI for apps on top of it: components, tables, charts, styles, the page builds, the shell's frame
   core            Manifests, permissions, roles, principal, errors, AccessControl contract
   auth            contract (tokens, internal, admin and OAuth APIs, AI clients' sign-in) · server (verification, middleware) · web (session, <Can>, live access)
   server          runApp: HTTP, access control, registration, Audit, Messages, Notify, Events, Live (SSE), standalone sign-in, tools for AI clients, observability
@@ -165,7 +166,8 @@ packages/         The SDK and shared code
   platform        contract (app manifest, platform API, registry, access) · server (PlatformClient, app keys)
   portal          The Portal's package: contract (catalog, workspace, installs, permissions) · web (defineWebApp, what the shell mounts) · build (the mounted bundle, the shared-module list)
   console         Core's console pages (administration, apps people manage, access requests), mounted by both UIs
-  app-kit         Building apps (Core): the standalone page, the app's Panda config and styles, the dev loop, the manifest
+  app-kit         Building apps (Core): the dev loop, the manifest
+  web-build       Building pages on Mosaik's UI: the standalone page, the app's Panda config and styles
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (the API, forms, list navigation, URL state, event streams; no components)
   mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README

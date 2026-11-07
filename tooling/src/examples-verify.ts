@@ -1,7 +1,7 @@
 /**
  * `bun examples:verify [id...]` — typechecks, tests and builds every example the way a team's app gets
- * the SDK: copied out of the repository, with `@mosaik/sdk` and `@mosaik/mosaik-ui` installed from the packed
- * tarballs instead of linked from the workspace. That catches what the workspace hides: a file missing
+ * the SDK: copied out of the repository, with `@mosaik/sdk`, `@mosaik/web-sdk` and `@mosaik/mosaik-ui` installed
+ * from the packed tarballs instead of linked from the workspace. That catches what the workspace hides: a file missing
  * from the tarball, an import the SDK does not export, a dependency only the monorepo has.
  * A failed example's copy is kept for a look.
  */
@@ -28,8 +28,9 @@ const only = new Set(process.argv.slice(2))
 const examples = (await discoverExamples()).filter((example) => only.size === 0 || only.has(example.manifest.id))
 const sdk = await packSdk()
 const tarball = join(SDK_DIR, sdk.tarball)
+const web = join(SDK_DIR, sdk.web.tarball)
 const components = join(SDK_DIR, sdk.components.tarball)
-console.log(`SDK ${sdk.version}: ${tarball}, components ${sdk.components.version}\n`)
+console.log(`SDK ${sdk.version}: ${tarball}, ${web}, components ${sdk.components.version}\n`)
 
 let failed = 0
 for (const example of examples) {
@@ -42,14 +43,15 @@ for (const example of examples) {
     scripts?: Record<string, string>
   }
   for (const name of Object.keys(manifest.dependencies ?? {})) {
-    if (name.startsWith("@mosaik/") && name !== "@mosaik/sdk" && name !== "@mosaik/mosaik-ui") {
+    if (name.startsWith("@mosaik/") && !["@mosaik/sdk", "@mosaik/web-sdk", "@mosaik/mosaik-ui"].includes(name)) {
       throw new Error(`${id} depends on ${name}`)
     }
   }
   manifest.dependencies = {
     ...manifest.dependencies,
     "@mosaik/sdk": `file:${tarball}`,
-    // Only for those that use it: an app with its own UI must install without it.
+    // Only for those that use them: an app with its own UI must install without them.
+    ...(manifest.dependencies?.["@mosaik/web-sdk"] === undefined ? {} : { "@mosaik/web-sdk": `file:${web}` }),
     ...(manifest.dependencies?.["@mosaik/mosaik-ui"] === undefined
       ? {}
       : { "@mosaik/mosaik-ui": `file:${components}` }),

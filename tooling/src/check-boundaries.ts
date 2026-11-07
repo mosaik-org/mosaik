@@ -6,32 +6,36 @@
  * 3. Shared contracts (`manifest.ts`, `api/`) stay isomorphic: no server-only or UI imports.
  * 4. App servers never import browser code.
  * 5. Shared packages never depend on apps (built-in or examples).
- * 6. Examples see only the SDK (`@mosaik/sdk` and its entry points), the component library
- *    (`@mosaik/mosaik-ui`) and their own files, like a team's app in its own repository; rules
+ * 6. Examples see only the SDK (`@mosaik/sdk`, `@mosaik/web-sdk` and their entry points), the component
+ *    library (`@mosaik/mosaik-ui`) and their own files, like a team's app in its own repository; rules
  *    2–4 hold for the SDK's entry points too.
  * 7. Core (its services and the shared packages) never depends on the Portal. The SDK spans both
- *    layers for apps, through two modules only (`@mosaik/sdk/portal` and the build plugin): so an
+ *    layers for apps, through two modules only (`@mosaik/web-sdk/portal` and the build plugin): so an
  *    app that imports neither of the Portal's entry points needs nothing of the Portal.
  * 8. The Portal (its service, its package, the shell, built-in apps) uses Core only through its
  *    contracts and the SDK, never the code of Core's services.
  * 9. The testing kit (`@mosaik/sdk/testing`) is for tests (`*.test.ts`), never the code that ships.
  * 10. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
  *    directory, so it can move to a repository of its own.
- * 11. What a team needs to bring its own UI (the packages behind `@mosaik/sdk`, `/server`, `/client`,
- *    `/solid`, `/router`, `/connectors`, `/testing`) imports no component, style or frame, and
- *    `examples/links` shows it: it uses only those, with a page of its own.
+ * 11. `@mosaik/sdk`, what every app builds on, imports none of Mosaik's UI (components, styles, the
+ *    frame, `@mosaik/web-sdk`), so a team can bring its own, and `examples/links` shows it: it uses
+ *    only `@mosaik/sdk`, with a page of its own.
  */
 import { dirname, relative, resolve, sep } from "node:path"
 import { Glob } from "bun"
 import { ROOT } from "./workspace"
 
-/** What apps may import of Mosaik: `@mosaik/sdk` and its entry points. */
-const sdkExports = Object.keys(
-  ((await Bun.file(resolve(ROOT, "packages/sdk/package.json")).json()) as { exports: Record<string, string> }).exports,
-)
-const SDK_ENTRY_POINTS: ReadonlySet<string> = new Set(
-  sdkExports.map((entry) => (entry === "." ? "@mosaik/sdk" : `@mosaik/sdk/${entry.slice(2)}`)),
-)
+/** A package's entry points by name: `@mosaik/sdk`, `@mosaik/sdk/server`, ... */
+const entryPoints = async (dir: string, name: string) =>
+  Object.keys(
+    ((await Bun.file(resolve(ROOT, dir, "package.json")).json()) as { exports: Record<string, string> }).exports,
+  ).map((entry) => (entry === "." ? name : `${name}/${entry.slice(2)}`))
+
+/** What apps may import of Mosaik: the SDK's two packages and their entry points. */
+const SDK_ENTRY_POINTS: ReadonlySet<string> = new Set([
+  ...(await entryPoints("packages/sdk", "@mosaik/sdk")),
+  ...(await entryPoints("packages/web-sdk", "@mosaik/web-sdk")),
+])
 
 interface Rule {
   readonly name: string
@@ -46,7 +50,8 @@ const SERVER_ONLY = [
   /^@mosaik\/auth\/server$/,
   /^@mosaik\/platform\/server$/,
   // The SDK's server and build entry points; a connector's data model is isomorphic.
-  /^@mosaik\/sdk\/(server|build\/.+)$/,
+  /^@mosaik\/(web-)?sdk\/(server|build\/.+)$/,
+  /^@mosaik\/(app-kit|web-build)(\/|$)/,
   /^@mosaik\/sdk\/connectors(?!\/[^/]+\/model$)(\/|$)/,
   /^@mosaik\/portal\/build(\/|$)/,
   // Tests only (see the rule below); they run on the server side.
@@ -65,7 +70,8 @@ const BROWSER_ONLY = [
   /^@mosaik\/portal\/web$/,
   // The component library, except its Panda preset (build time).
   /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
-  /^@mosaik\/sdk\/(client|solid|router|portal|ui|table|charts|css|jsx|patterns|tokens)$/,
+  /^@mosaik\/sdk\/(client|solid|router)$/,
+  /^@mosaik\/web-sdk\/(portal|ui|table|charts|css|jsx|patterns|tokens)$/,
   /^@tanstack\/solid-/,
   /^lucide-solid/,
   /^echarts/,
@@ -87,8 +93,8 @@ const CORE_SERVICES = ["auth", "notifications", "platform", "gateway", "mcp", "a
 
 /** The SDK's modules that give apps the Portal: the only way from the SDK to it (rule 7). */
 const SDK_PORTAL_MODULES: ReadonlySet<string> = new Set([
-  "packages/sdk/src/portal.ts",
-  "packages/sdk/src/build/vite.ts",
+  "packages/web-sdk/src/portal.ts",
+  "packages/web-sdk/src/build/vite.ts",
 ])
 
 const isCore = (path: string) =>
@@ -131,15 +137,13 @@ const MOSAIK_UI = "packages/mosaik-ui/"
 
 /** Behind the entry points of the SDK that a team with its own UI uses, which must stay free of ours. */
 const isUiFree = (path: string) =>
-  /^packages\/(core|db|auth|client|platform|notifications|connectors|server|testing)\/src\//.test(path) ||
-  /^packages\/sdk\/src\/(index|server|client|solid|router|testing)\.ts$/.test(path) ||
-  path.startsWith("packages/sdk/src/connectors/")
+  /^packages\/(sdk|core|db|auth|client|platform|notifications|connectors|server|testing|app-kit)\/src\//.test(path)
 
 /** The example that brings its own UI, proving the SDK does not need ours. */
 const OWN_UI_EXAMPLE = "examples/links/"
 
 const UI = [
-  /^@mosaik\/(mosaik-ui|styled-system|web-kit|frame|table|charts|portal)(\/|$)/,
+  /^@mosaik\/(mosaik-ui|styled-system|web-kit|frame|table|charts|portal|web-sdk|web-build)(\/|$)/,
   /^@ark-ui\//,
   /^lucide-solid/,
   /^echarts/,
@@ -210,7 +214,7 @@ const rules: ReadonlyArray<Rule> = [
     },
   },
   {
-    name: "the SDK's UI-free entry points must import no UI",
+    name: "@mosaik/sdk must import none of Mosaik's UI",
     files: isUiFree,
     forbidden: (specifier) => matchesAny(UI, specifier),
   },
@@ -218,11 +222,7 @@ const rules: ReadonlyArray<Rule> = [
     name: "an app with its own UI uses none of Mosaik's",
     files: (path) => path.startsWith(OWN_UI_EXAMPLE),
     forbidden: (specifier) =>
-      /^@mosaik\/sdk\/(solid|router|portal|ui|table|charts|css|jsx|patterns|tokens|build\/(vite|panda))$/.test(
-        specifier,
-      ) ||
-      /^solid-js/.test(specifier) ||
-      matchesAny(UI, specifier),
+      /^@mosaik\/sdk\/(solid|router)$/.test(specifier) || /^solid-js/.test(specifier) || matchesAny(UI, specifier),
   },
   {
     name: "Core must not depend on the Portal",

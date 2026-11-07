@@ -1,2 +1,2 @@
 // Provided to apps through the import map (see @mosaik/portal/build/shared).
-export * from "@mosaik/sdk/charts"
+export * from "@mosaik/web-sdk/ui"

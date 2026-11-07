@@ -1,5 +1,5 @@
 import { Button, Kbd, Tabs, Textarea } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/sdk/css"
+import { css } from "@mosaik/web-sdk/css"
 import { useQuery } from "@tanstack/solid-query"
 import { createSignal, onMount, Show } from "solid-js"
 import { NewReply, type ReplyKind, type RequestId } from "../../api"

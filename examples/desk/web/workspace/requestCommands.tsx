@@ -1,5 +1,5 @@
-import type { Command } from "@mosaik/sdk/portal"
 import type { ListNavigation } from "@mosaik/sdk/solid"
+import type { Command } from "@mosaik/web-sdk/portal"
 import type { RequestRow } from "../../api"
 import type { RequestPaneHandle } from "../request/RequestPane"
 import type { RequestPickers } from "./pickers"

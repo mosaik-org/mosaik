@@ -1,5 +1,5 @@
-import { AppLayout, defineWebApp } from "@mosaik/sdk/portal"
 import { searchValidator } from "@mosaik/sdk/solid"
+import { AppLayout, defineWebApp } from "@mosaik/web-sdk/portal"
 import { createRoute, lazyRouteComponent } from "@tanstack/solid-router"
 import { IssuesSearch } from "../api"
 import { issues } from "../manifest"

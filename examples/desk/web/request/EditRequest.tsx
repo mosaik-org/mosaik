@@ -1,6 +1,6 @@
 import { Button, Modal, TextareaField, TextField } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/sdk/css"
 import { createForm } from "@mosaik/sdk/solid"
+import { css } from "@mosaik/web-sdk/css"
 import { Schema } from "effect"
 import { createEffect, on } from "solid-js"
 import { NewRequest, type RequestRow } from "../../api"

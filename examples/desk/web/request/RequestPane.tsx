@@ -1,6 +1,6 @@
 import { ActionMenu, ConfirmDialog, Heading, IconButton, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { toast } from "@mosaik/sdk/client"
-import { css } from "@mosaik/sdk/css"
+import { css } from "@mosaik/web-sdk/css"
 import { useQuery } from "@tanstack/solid-query"
 import type { LucideProps } from "lucide-solid"
 import ArrowLeft from "lucide-solid/icons/arrow-left"

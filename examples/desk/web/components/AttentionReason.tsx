@@ -1,5 +1,5 @@
-import { cva } from "@mosaik/sdk/css"
 import { useNow } from "@mosaik/sdk/solid"
+import { cva } from "@mosaik/web-sdk/css"
 import { DateTime } from "effect"
 import { Show } from "solid-js"
 import { attentionReason, type RequestRow } from "../../api"

@@ -96,8 +96,8 @@ Most of the original's infrastructure has a Mosaik counterpart. Use it rather th
 | Activity or history logs | `Audit` (the central audit log) |
 | Its own database | `database: true` with migrations, read through an Effect service |
 | WebSockets, polling for updates | `Live.eventStream` and `createEventStream` |
-| Charts | `@mosaik/sdk/charts` (themed, follows dark mode) |
-| Data tables with paging, sorting, filters | `DataTable` (`@mosaik/sdk/table`), server-side for large data, state in the URL (`useTableSearch`) |
+| Charts | `@mosaik/web-sdk/charts` (themed, follows dark mode) |
+| Data tables with paging, sorting, filters | `DataTable` (`@mosaik/web-sdk/table`), server-side for large data, state in the URL (`useTableSearch`) |
 | Forms | `createForm` with the API payload's Schema, `useAction` for calls |
 | Component libraries (MUI, Ant, Bootstrap, Tailwind UI) | `@mosaik/mosaik-ui` components and the theme's tokens (`css`, `token.var`) |
 | Global stores (Redux, Vuex, Pinia) for server data | TanStack Query through `createApi(Api)`: the server is the store |

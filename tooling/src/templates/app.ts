@@ -8,7 +8,7 @@ export interface AppTemplate {
   readonly description: string
   readonly icon: string
   readonly database: boolean
-  /** `package.json` dependency specifiers: `@mosaik/sdk` as a `file:` tarball, the rest as versions. */
+  /** `package.json` dependency specifiers: the SDK's packages as `file:` tarballs, the rest as versions. */
   readonly dependencies: Record<string, string>
   readonly devDependencies: Record<string, string>
   readonly platformVersion: string
@@ -225,7 +225,7 @@ export default Effect.gen(function* () {
       }
     : {}),
 
-  "web/index.tsx": `import { AppLayout, defineWebApp } from "@mosaik/sdk/portal"
+  "web/index.tsx": `import { AppLayout, defineWebApp } from "@mosaik/web-sdk/portal"
 import { createRoute, lazyRouteComponent } from "@tanstack/solid-router"
 import { app } from "../manifest"
 import "./styles.css"
@@ -254,10 +254,10 @@ import { Api } from "../api"
 export const api = createApi(Api)
 `,
 
-  "web/pages/home.tsx": `import { css } from "@mosaik/sdk/css"
+  "web/pages/home.tsx": `import { css } from "@mosaik/web-sdk/css"
 import { useAction } from "@mosaik/sdk/solid"
 import { Button, Card${t.database ? ", Stat" : ""} } from "@mosaik/mosaik-ui"
-import { QueryBoundary } from "@mosaik/sdk/ui"
+import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { api } from "../api"
 
@@ -304,14 +304,14 @@ export default function Home() {
  */
 export default defineConfig({ test: { server: { deps: { inline: [/node_modules\\/@mosaik\\/sdk\\//] } } } })
 `,
-  "vite.config.ts": `import { mosaikApp } from "@mosaik/sdk/build/vite"
+  "vite.config.ts": `import { mosaikApp } from "@mosaik/web-sdk/build/vite"
 import { defineConfig } from "vite"
 
 /** Builds the browser bundle into dist/web; the backend serves it at /apps/${t.id}/. */
 export default defineConfig({ plugins: [mosaikApp()] })
 `,
 
-  "panda.config.ts": `import { appPandaConfig } from "@mosaik/sdk/build/panda"
+  "panda.config.ts": `import { appPandaConfig } from "@mosaik/web-sdk/build/panda"
 import { defineConfig } from "@pandacss/dev"
 
 // Classes are prefixed with the app id, so they never collide with the shell's; values read the shell's \`--mk-\` variables.

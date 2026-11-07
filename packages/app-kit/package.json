@@ -6,9 +6,7 @@
   "exports": {
     "./bundle": "./src/bundle.ts",
     "./dev": "./src/dev.ts",
-    "./manifest": "./src/manifest.ts",
-    "./panda": "./src/panda.ts",
-    "./vite": "./src/vite.ts"
+    "./manifest": "./src/manifest.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."
@@ -16,20 +14,6 @@
   "dependencies": {
     "@mosaik/core": "workspace:*",
     "@mosaik/platform": "workspace:*",
-    "@mosaik/styled-system": "workspace:*",
-    "@pandacss/preset-base": "^2.2.0",
-    "@pandacss/preset-panda": "^2.2.0",
-    "effect": "^4.1.2",
-    "vite-plugin-solid": "^2.11.14"
-  },
-  "peerDependencies": {
-    "@pandacss/dev": "^2.2.0",
-    "postcss": "^8.5.0",
-    "vite": "^8.3.4"
-  },
-  "devDependencies": {
-    "@pandacss/dev": "^2.2.0",
-    "postcss": "^8.5.0",
-    "vite": "^8.3.4"
+    "effect": "^4.1.2"
   }
 }

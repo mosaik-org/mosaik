@@ -19,7 +19,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 - **Layout:** `shell/` (the Portal's web UI), `console/` (Core's, without the Portal; its pages are in
   `packages/console`, which the shell mounts too), `services/` (Core: gateway, auth, notifications,
   platform; Portal: portal), `apps/` (the Portal's built-in apps), `examples/` (example apps, written like a team's app: they
-  import only `@mosaik/sdk`), `packages/` (`packages/sdk` is the one package apps use, re-exporting the
+  import only the SDK), `packages/` (`packages/sdk` and `packages/web-sdk` are the packages apps use, re-exporting the
   internal packages; `packages/portal` is the Portal's package: its contract, the mount API and the mounted build; `packages/mosaik-ui` is a component
   library that stands alone, importing nothing of Mosaik, to be moved to its own repository),
   `tooling/`, `infra/`, `docs/`.
@@ -36,7 +36,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 | `bun run build` | build the shell and the console (also regenerates their `src/routeTree.gen.ts`) |
 | `bun dev` | run everything (needs `bun infra:up`); `--headless`: Core and standalone examples only |
 | `bun sdk:pack` | pack the SDK, after changing `packages/` that apps use |
-| `bun examples:verify` | build the examples against the packed SDK, after changing what `@mosaik/sdk` exports or packs |
+| `bun examples:verify` | build the examples against the packed SDK, after changing what `@mosaik/sdk` or `@mosaik/web-sdk` exports or packs |
 
 ## Working rules
 
@@ -47,7 +47,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
   Report failures as they are.
 - **Match the surrounding code:** its Effect patterns, naming, comment density and doc comments that say
   why. Keep contracts (`manifest.ts`, `api/`, `@mosaik/core`) isomorphic and respect the boundaries
-  `bun lint` checks. Something new for apps is exported from the right `@mosaik/sdk` entry point.
+  `bun lint` checks. Something new for apps is exported from the right entry point: `@mosaik/sdk` if it needs no UI, `@mosaik/web-sdk` if it does.
 - **Early development (0.0.0):** no backward-compatibility shims. Migrations may be rewritten; say so and
   tell the user to reset their development databases.
 - **User-visible behavior changes** come with their documentation (README or `docs/`).

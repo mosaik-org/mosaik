@@ -34,7 +34,7 @@ export default appPandaConfig({ prefix: "crm", include: ["./page.ts"] })`,
     )
     writeFileSync(
       join(root, "page.ts"),
-      `import { css } from "@mosaik/sdk/css"\nexport const card = css({ px: "4", bg: "accent.subtle.bg", _dark: { color: "fg.muted" } })\n`,
+      `import { css } from "@mosaik/web-sdk/css"\nexport const card = css({ px: "4", bg: "accent.subtle.bg", _dark: { color: "fg.muted" } })\n`,
     )
     const result = await postcss([...appPostcssPlugins(root)]).process(
       "@layer reset, base, tokens, recipes, utilities;",

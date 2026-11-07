@@ -1,6 +1,6 @@
 import { Button, IconButton } from "@mosaik/mosaik-ui"
 import { errorMessage, formatBytes, toast, uploadFile } from "@mosaik/sdk/client"
-import { css } from "@mosaik/sdk/css"
+import { css } from "@mosaik/web-sdk/css"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import Paperclip from "lucide-solid/icons/paperclip"
 import X from "lucide-solid/icons/x"

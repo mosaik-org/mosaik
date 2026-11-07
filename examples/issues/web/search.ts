@@ -1,4 +1,4 @@
-import { defineSearchProvider } from "@mosaik/sdk/portal"
+import { defineSearchProvider } from "@mosaik/web-sdk/portal"
 import { issues } from "../manifest"
 import { issuesApi } from "./queries"
 

@@ -11,7 +11,7 @@ const decodeBundle = Schema.decodeUnknownEffect(Schema.fromJsonString(WebBundleS
 
 /**
  * The app's browser bundle (`MOSAIK_WEB_DIR`, default `dist/web`, built by `mosaikApp()` from
- * `@mosaik/sdk/build/vite`), if there is one. Built-in apps have none: they are compiled into the shell.
+ * `@mosaik/web-sdk/build/vite`), if there is one. Built-in apps have none: they are compiled into the shell.
  */
 export const loadWebBundle = Effect.gen(function* () {
   const dir = resolve(yield* Config.String("MOSAIK_WEB_DIR").pipe(Config.withDefault("dist/web")))

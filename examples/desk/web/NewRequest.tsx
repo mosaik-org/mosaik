@@ -1,7 +1,7 @@
 import { Button, Modal, SelectField, TextareaField, TextField } from "@mosaik/mosaik-ui"
 import { errorMessage, toast } from "@mosaik/sdk/client"
-import { css } from "@mosaik/sdk/css"
 import { createForm, useCan } from "@mosaik/sdk/solid"
+import { css } from "@mosaik/web-sdk/css"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import { createEffect, on, Show } from "solid-js"

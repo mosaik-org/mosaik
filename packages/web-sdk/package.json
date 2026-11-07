@@ -1,0 +1,36 @@
+{
+  "name": "@mosaik/web-sdk",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mosaik's UI for apps: its components, tables and charts, styles, and the shell's frame for mounted apps.",
+  "exports": {
+    "./portal": "./src/portal.ts",
+    "./ui": "./src/ui.ts",
+    "./ui/styles.css": "./src/ui.css",
+    "./table": "./src/table.ts",
+    "./charts": "./src/charts.ts",
+    "./css": "./src/css.ts",
+    "./jsx": "./src/jsx.ts",
+    "./patterns": "./src/patterns.ts",
+    "./tokens": "./src/tokens.ts",
+    "./build/vite": "./src/build/vite.ts",
+    "./build/panda": "./src/build/panda.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/charts": "workspace:*",
+    "@mosaik/frame": "workspace:*",
+    "@mosaik/portal": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@mosaik/table": "workspace:*",
+    "@mosaik/web-build": "workspace:*",
+    "@mosaik/web-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.3",
+    "vite": "^8.3.4"
+  }
+}

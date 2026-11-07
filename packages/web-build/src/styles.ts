@@ -9,7 +9,7 @@ const APP_LAYER = "utilities"
 /**
  * Keeps only the `utilities` layer of Panda's output: the app's own atomic classes. The reset,
  * global styles, tokens and recipes are the page's already (the shell's stylesheet, or
- * `@mosaik/sdk/ui/styles.css`), and an app that repeated them would pin the theme to its build.
+ * `@mosaik/web-sdk/ui/styles.css`), and an app that repeated them would pin the theme to its build.
  * The layer order statement (`@layer reset, base, ...;`) stays, so the app's layer sorts as the
  * page's does.
  */

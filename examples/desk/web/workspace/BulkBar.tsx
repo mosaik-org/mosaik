@@ -1,6 +1,6 @@
 import { Button } from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/sdk/css"
 import type { ListNavigation } from "@mosaik/sdk/solid"
+import { css } from "@mosaik/web-sdk/css"
 import { Show } from "solid-js"
 import type { RequestRow } from "../../api"
 import type { RequestPickers } from "./pickers"

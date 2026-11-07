@@ -1,13 +1,13 @@
 import { Button, Card, EmptyState, TextareaField, ThemeProvider, ThemeToggle } from "@mosaik/mosaik-ui"
 import { errorMessage, IdentityApi, makeApiClient, standaloneLinks, toast } from "@mosaik/sdk/client"
 import { createForm } from "@mosaik/sdk/solid"
-import { Toasts } from "@mosaik/sdk/ui"
+import { Toasts } from "@mosaik/web-sdk/ui"
 import { createResource, For, Show } from "solid-js"
 import { render } from "solid-js/web"
 import { NewNote, type Note, NotesApi } from "../api"
 import { notes as app } from "../manifest"
 // The UI kit's stylesheet: a standalone page has no shell to provide it.
-import "@mosaik/sdk/ui/styles.css"
+import "@mosaik/web-sdk/ui/styles.css"
 import "./styles.css"
 
 const notesApi = makeApiClient(NotesApi)

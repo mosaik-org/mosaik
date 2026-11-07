@@ -1,5 +1,5 @@
 import { formatCurrency } from "@mosaik/sdk/client"
-import { defineSearchProvider } from "@mosaik/sdk/portal"
+import { defineSearchProvider } from "@mosaik/web-sdk/portal"
 import { sales } from "../manifest"
 import { salesApi } from "./queries"
 

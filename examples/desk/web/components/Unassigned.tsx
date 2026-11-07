@@ -1,4 +1,4 @@
-import { css } from "@mosaik/sdk/css"
+import { css } from "@mosaik/web-sdk/css"
 import CircleDashed from "lucide-solid/icons/circle-dashed"
 
 const styles = { nobody: css({ display: "inline-grid", placeItems: "center", flexShrink: "0", color: "fg.subtle" }) }

@@ -1,6 +1,6 @@
 import { formatRelativeTime } from "@mosaik/sdk/client"
-import { css } from "@mosaik/sdk/css"
-import { UserAvatar } from "@mosaik/sdk/ui"
+import { css } from "@mosaik/web-sdk/css"
+import { UserAvatar } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Lock from "lucide-solid/icons/lock"
 import { createEffect, For, Match, on, Show, Suspense, Switch } from "solid-js"

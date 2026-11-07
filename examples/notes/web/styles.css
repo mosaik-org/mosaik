@@ -1,5 +1,5 @@
 /*
- * The page's layout. Everything else is the UI kit's (`@mosaik/sdk/ui/styles.css`), whose tokens
+ * The page's layout. Everything else is the UI kit's (`@mosaik/web-sdk/ui/styles.css`), whose tokens
  * are CSS variables a page can use without Panda: `var(--mk-colors-fg-muted)`, `var(--mk-spacing-4)`.
  */
 .header {

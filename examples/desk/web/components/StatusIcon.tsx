@@ -1,4 +1,4 @@
-import { cva } from "@mosaik/sdk/css"
+import { cva } from "@mosaik/web-sdk/css"
 import Circle from "lucide-solid/icons/circle"
 import CircleCheck from "lucide-solid/icons/circle-check"
 import CirclePause from "lucide-solid/icons/circle-pause"

@@ -74,7 +74,7 @@ Portal's `portal` and `shell`; `sdk` (the `packages/` apps build on), `ui`, `db`
 `examples/<id>`, `tooling`, `infra`, `docs`. Leave the scope out when a change spans many parts.
 
 **Breaking changes** for apps get a `!` (`feat(sdk)!: …`) and a `BREAKING CHANGE:` footer saying what apps
-must change. That covers the manifest, the platform API, what `@mosaik/sdk` exports and the shared modules: apps are
+must change. That covers the manifest, the platform API, what `@mosaik/sdk` and `@mosaik/web-sdk` export and the shared modules: apps are
 rebuilt against them.
 
 The hook checks the form; only you can supply the reason. This passes the hook and still says nothing
@@ -104,7 +104,7 @@ change and keep `main` passing.
 
 Everything is `0.0.0` while Mosaik is in early development, and anything may change: apps are rebuilt
 along with the platform. From the first release on, `PLATFORM_VERSION` follows semantic versioning, the SDK
-(`@mosaik/sdk`) shares it, and a breaking change for apps means a new major version (apps declare the major they
+(`@mosaik/sdk`, `@mosaik/web-sdk`) shares it, and a breaking change for apps means a new major version (apps declare the major they
 were built for, and the platform refuses others).
 
 Besides the SDK's API, apps depend on two things at runtime that a change can break without a type error:

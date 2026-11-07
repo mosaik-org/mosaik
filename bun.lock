@@ -96,6 +96,7 @@
       "dependencies": {
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/sdk": "workspace:*",
+        "@mosaik/web-sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
@@ -118,6 +119,7 @@
       "dependencies": {
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/sdk": "workspace:*",
+        "@mosaik/web-sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
@@ -155,6 +157,8 @@
       "dependencies": {
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/sdk": "workspace:*",
+        "@mosaik/web-sdk": "workspace:*",
+        "@tanstack/solid-query": "^5.104.3",
         "effect": "^4.1.2",
         "solid-js": "^1.9.17",
       },
@@ -170,6 +174,7 @@
       "dependencies": {
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/sdk": "workspace:*",
+        "@mosaik/web-sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
@@ -192,21 +197,7 @@
       "dependencies": {
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
-        "@mosaik/styled-system": "workspace:*",
-        "@pandacss/preset-base": "^2.2.0",
-        "@pandacss/preset-panda": "^2.2.0",
         "effect": "^4.1.2",
-        "vite-plugin-solid": "^2.11.14",
-      },
-      "devDependencies": {
-        "@pandacss/dev": "^2.2.0",
-        "postcss": "^8.5.0",
-        "vite": "^8.3.4",
-      },
-      "peerDependencies": {
-        "@pandacss/dev": "^2.2.0",
-        "postcss": "^8.5.0",
-        "vite": "^8.3.4",
       },
     },
     "packages/assistant": {
@@ -371,6 +362,7 @@
         "@mosaik/app-kit": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/platform": "workspace:*",
+        "@mosaik/web-build": "workspace:*",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
         "solid-js": "^1.9.17",
@@ -389,19 +381,13 @@
       "dependencies": {
         "@mosaik/app-kit": "workspace:*",
         "@mosaik/auth": "workspace:*",
-        "@mosaik/charts": "workspace:*",
         "@mosaik/client": "workspace:*",
         "@mosaik/connectors": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
-        "@mosaik/frame": "workspace:*",
         "@mosaik/platform": "workspace:*",
-        "@mosaik/portal": "workspace:*",
         "@mosaik/server": "workspace:*",
-        "@mosaik/styled-system": "workspace:*",
-        "@mosaik/table": "workspace:*",
         "@mosaik/testing": "workspace:*",
-        "@mosaik/web-kit": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.3",
@@ -468,6 +454,26 @@
         "effect": "^4.1.2",
       },
     },
+    "packages/web-build": {
+      "name": "@mosaik/web-build",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/styled-system": "workspace:*",
+        "@pandacss/preset-base": "^2.2.0",
+        "@pandacss/preset-panda": "^2.2.0",
+        "vite-plugin-solid": "^2.11.14",
+      },
+      "devDependencies": {
+        "@pandacss/dev": "^2.2.0",
+        "postcss": "^8.5.0",
+        "vite": "^8.3.4",
+      },
+      "peerDependencies": {
+        "@pandacss/dev": "^2.2.0",
+        "postcss": "^8.5.0",
+        "vite": "^8.3.4",
+      },
+    },
     "packages/web-kit": {
       "name": "@mosaik/web-kit",
       "version": "0.0.0",
@@ -479,6 +485,23 @@
         "effect": "^4.1.2",
         "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
+      },
+    },
+    "packages/web-sdk": {
+      "name": "@mosaik/web-sdk",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/charts": "workspace:*",
+        "@mosaik/frame": "workspace:*",
+        "@mosaik/portal": "workspace:*",
+        "@mosaik/styled-system": "workspace:*",
+        "@mosaik/table": "workspace:*",
+        "@mosaik/web-build": "workspace:*",
+        "@mosaik/web-kit": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.4.3",
+        "vite": "^8.3.4",
       },
     },
     "services/assistant": {
@@ -624,6 +647,7 @@
         "@mosaik/styled-system": "workspace:*",
         "@mosaik/table": "workspace:*",
         "@mosaik/web-kit": "workspace:*",
+        "@mosaik/web-sdk": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
@@ -886,7 +910,11 @@
 
     "@mosaik/tools": ["@mosaik/tools@workspace:packages/tools"],
 
+    "@mosaik/web-build": ["@mosaik/web-build@workspace:packages/web-build"],
+
     "@mosaik/web-kit": ["@mosaik/web-kit@workspace:packages/web-kit"],
+
+    "@mosaik/web-sdk": ["@mosaik/web-sdk@workspace:packages/web-sdk"],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.2.5", "", { "dependencies": { "@tybys/wasm-util": "^0.10.3" }, "peerDependencies": { "@emnapi/core": "^1.7.1 || ^2.0.0-alpha.4", "@emnapi/runtime": "^1.7.1 || ^2.0.0-alpha.4" } }, "sha512-HshSvXzmBxNzqejd3k/KemgQ3hdREUYFRRrgxOZ+gPljDIsO2SDZrVZMd4Z/HsxudQbE62OVyVFE8z9BCurfjA=="],
 

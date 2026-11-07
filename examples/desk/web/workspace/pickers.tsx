@@ -1,4 +1,4 @@
-import { UserAvatar } from "@mosaik/sdk/ui"
+import { UserAvatar } from "@mosaik/web-sdk/ui"
 import {
   PRIORITIES,
   PRIORITY_LABELS,

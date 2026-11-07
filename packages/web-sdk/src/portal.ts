@@ -1,4 +1,4 @@
-/** `@mosaik/sdk/portal`: an app mounted in the Portal's shell: its pages, frame, icon and commands. */
+/** `@mosaik/web-sdk/portal`: an app mounted in the Portal's shell: its pages, frame, icon and commands. */
 
 export {
   AccessDenied,

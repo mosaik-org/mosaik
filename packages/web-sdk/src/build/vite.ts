@@ -1,6 +1,7 @@
-/** `@mosaik/sdk/build/vite`: the Vite plugin that builds the app's pages. */
-import { type StandaloneAppOptions, standaloneApp } from "@mosaik/app-kit/vite"
+/** `@mosaik/web-sdk/build/vite`: the Vite plugin that builds the app's pages. */
+
 import { type MountedAppOptions, mountedApp } from "@mosaik/portal/build"
+import { type StandaloneAppOptions, standaloneApp } from "@mosaik/web-build/vite"
 
 export interface MosaikAppOptions extends MountedAppOptions, StandaloneAppOptions {
   /**

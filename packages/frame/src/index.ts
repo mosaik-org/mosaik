@@ -1,7 +1,7 @@
 /**
  * The frame around a page: its layout, tabs and header, the command palette and shortcuts, status marks
  * and app icons. It serves whatever hosts pages, the Portal's shell and Core's console alike, as the
- * console's pages run in both. Apps mounted in the shell get it from `@mosaik/sdk/portal`; a standalone
+ * console's pages run in both. Apps mounted in the shell get it from `@mosaik/web-sdk/portal`; a standalone
  * app has no frame, so it is not part of the rest of the SDK.
  */
 export { AccessDenied } from "./AccessDenied"
