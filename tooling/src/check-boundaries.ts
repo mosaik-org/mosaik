@@ -18,7 +18,8 @@
  * 10. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
  *    directory, so it can move to a repository of its own.
  * 11. What a team needs to bring its own UI (the packages behind `@mosaik/sdk`, `/server`, `/client`,
- *    `/solid`, `/router`, `/connectors`, `/testing`) imports no component, style or frame.
+ *    `/solid`, `/router`, `/connectors`, `/testing`) imports no component, style or frame, and
+ *    `examples/links` shows it: it uses only those, with a page of its own.
  */
 import { dirname, relative, resolve, sep } from "node:path"
 import { Glob } from "bun"
@@ -134,6 +135,9 @@ const isUiFree = (path: string) =>
   /^packages\/sdk\/src\/(index|server|client|solid|router|testing)\.ts$/.test(path) ||
   path.startsWith("packages/sdk/src/connectors/")
 
+/** The example that brings its own UI, proving the SDK does not need ours. */
+const OWN_UI_EXAMPLE = "examples/links/"
+
 const UI = [
   /^@mosaik\/(mosaik-ui|styled-system|web-kit|frame|table|charts|portal)(\/|$)/,
   /^@ark-ui\//,
@@ -209,6 +213,16 @@ const rules: ReadonlyArray<Rule> = [
     name: "the SDK's UI-free entry points must import no UI",
     files: isUiFree,
     forbidden: (specifier) => matchesAny(UI, specifier),
+  },
+  {
+    name: "an app with its own UI uses none of Mosaik's",
+    files: (path) => path.startsWith(OWN_UI_EXAMPLE),
+    forbidden: (specifier) =>
+      /^@mosaik\/sdk\/(solid|router|portal|ui|table|charts|css|jsx|patterns|tokens|build\/(vite|panda))$/.test(
+        specifier,
+      ) ||
+      /^solid-js/.test(specifier) ||
+      matchesAny(UI, specifier),
   },
   {
     name: "Core must not depend on the Portal",

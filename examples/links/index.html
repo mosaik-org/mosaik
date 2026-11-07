@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Links</title>
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <header>
+      <strong>Links</strong>
+      <div id="account"></div>
+    </header>
+    <main>
+      <form id="add" hidden>
+        <input name="title" placeholder="Title" aria-label="Title" maxlength="120" required />
+        <input name="url" type="url" placeholder="https://" aria-label="Address" required />
+        <button type="submit">Add</button>
+      </form>
+      <p id="problem" role="alert" hidden></p>
+      <ul id="links"></ul>
+    </main>
+    <script type="module" src="/web/main.ts"></script>
+  </body>
+</html>

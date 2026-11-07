@@ -153,6 +153,7 @@ apps/<id>/        The Portal's built-in apps: admin (lists Core's administration
 examples/<id>/    Example apps, written like a team's app; `bun dev` runs them
                   sales, issues: mounted in the Portal; web/index.tsx is the bundle (defineWebApp) the shell loads
                   notes: standalone, its own page (index.html) and sign-in through Core
+                  links: standalone with its own UI: a database and sign-in from Mosaik, nothing of Mosaik's on its page
 packages/         The SDK and shared code
   sdk             @mosaik/sdk, the one package apps use: entry points per side and layer, re-exporting the packages below
   core            Manifests, permissions, roles, principal, errors, AccessControl contract
@@ -189,7 +190,7 @@ docs/             Architecture, building apps, operating Mosaik
 - Examples see only the SDK (`@mosaik/sdk` and its entry points, each on its side) and their own files,
   like a team's app in its own repository.
 - Core (its services and the shared packages) never depends on the Portal.
-- What a team with its own UI uses of the SDK imports no components, styles or frame.
+- What a team with its own UI uses of the SDK imports no components, styles or frame, and `examples/links` shows it.
 - The Portal (its service, the shell, built-in apps) uses Core only through its contracts and the SDK.
 
 ## License

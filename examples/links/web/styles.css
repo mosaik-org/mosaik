@@ -1,0 +1,59 @@
+/* The page's own styles: none of Mosaik's, to show an app does not need them. */
+body {
+  margin: 0;
+  font:
+    15px / 1.5 system-ui,
+    sans-serif;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+}
+#account,
+#account form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+#add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+/* `display` above would otherwise show it to those who may not add links. */
+#add[hidden] {
+  display: none;
+}
+#add input {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.4rem 0.6rem;
+}
+#problem {
+  color: #c40006;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+small {
+  display: block;
+  opacity: 0.7;
+}

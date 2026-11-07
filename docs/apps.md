@@ -47,7 +47,8 @@ a server-side table, charts, roles, notifications, a command palette search, a d
 and a connector to an external system (Jira). `examples/desk` is the fullest: a service desk with a list
 and a request side by side, everything by keyboard, changes shown at once and undoable, live updates,
 deadlines, background work and its own setup pages. `examples/notes` is standalone: its own page, signing
-people in through Core. They differ from a team's repository in two ways only: they link the SDK from this
+people in through Core. `examples/links` brings its own UI: a database, sign-in and permissions from Mosaik,
+and a plain page with nothing of Mosaik's on it. They differ from a team's repository in two ways only: they link the SDK from this
 repository instead of installing its tarball (`bun examples:verify` builds them against the tarball too),
 and they have no Dockerfile. `bun dev` runs them as apps hosted
 elsewhere (Core knows them from [`CONFIGURED_APPS`](operations.md#deployment)); they are never deployed.
@@ -82,7 +83,7 @@ code runs and which layer of Mosaik it needs:
   (standalone); the rest of the SDK is Core, and the components work either way. `bun lint` checks that
   only `/portal` and `mosaikApp()` (whose default is the bundle for the shell) reach the Portal's code.
 - **Your own UI.** `@mosaik/sdk`, `/server`, `/client`, `/solid`, `/router`, `/connectors` and `/testing`
-  import no components, styles or frame, and `bun lint` keeps it so.
+  import no components, styles or frame, and `bun lint` keeps it so: see [Standalone apps](#standalone-apps).
 - **Sides.** Server code never imports a page's entry points and pages never import `server`,
   `connectors` or `build`; `bun lint` checks it for the examples.
 - **Public API.** What the entry points export is the SDK; the packages behind them are internal and change
@@ -655,7 +656,8 @@ Center) or `JIRA_EMAIL` + `JIRA_API_TOKEN` (Cloud). Without `JIRA_URL` outside p
 
 A standalone app serves its own page on its own address, with its own header and styles, and still uses
 Core: sign-in, permissions and roles, owners and access requests, audit, notifications, messages and
-events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
+events. `examples/notes` is one, on Mosaik's components, and `examples/links` is one with its own UI
+(`bun dev --headless` runs them with Core alone).
 
 - **Manifest.** No `portal` section: the shell does not list it.
 - **Page.** `index.html` at the app's root, built with `mosaikApp({ standalone: true })` in
@@ -672,6 +674,11 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
     shell). People who are not signed in get no token: the API answers 401.
 - **Calling the API.** `createApi(Api)` and `createForm` as in the Portal (or `makeApiClient(Api)` from
   `@mosaik/sdk/client` without Solid); requests go to the app's own address.
+- **Your own UI.** Nothing on the page has to come from Mosaik. Build it with any tool, as long as it ends
+  up in `dist/web`: `examples/links` uses a plain Vite config and no framework, calling the API with
+  `makeApiClient` from `@mosaik/sdk/client`. Its backend is written as any other's, with a database of its own.
+  For now the SDK's tarball still installs what its other entry points need (Solid, ECharts and more), though
+  the app bundles none of it.
 - **Components.** The kit works there too.
   - Import its stylesheet once: `import "@mosaik/sdk/ui/styles.css"`, which carries the reset, the tokens
     and every component. A page without components needs it too: its own styles read those tokens.

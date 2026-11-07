@@ -49,7 +49,10 @@ for (const example of examples) {
   manifest.dependencies = {
     ...manifest.dependencies,
     "@mosaik/sdk": `file:${tarball}`,
-    "@mosaik/mosaik-ui": `file:${components}`,
+    // Only for those that use it: an app with its own UI must install without it.
+    ...(manifest.dependencies?.["@mosaik/mosaik-ui"] === undefined
+      ? {}
+      : { "@mosaik/mosaik-ui": `file:${components}` }),
   }
   await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 
