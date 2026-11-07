@@ -166,6 +166,7 @@ colors.blue.surface.border.hover
 colors.blue.surface.fg
 colors.border
 colors.canvas
+colors.canvas.sunken
 colors.chart.1
 colors.chart.2
 colors.chart.3
@@ -222,6 +223,7 @@ colors.colorPalette.subtle.bg
 colors.colorPalette.subtle.bg.active
 colors.colorPalette.subtle.bg.hover
 colors.colorPalette.subtle.fg
+colors.colorPalette.sunken
 colors.colorPalette.surface.bg
 colors.colorPalette.surface.bg.active
 colors.colorPalette.surface.bg.hover
