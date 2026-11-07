@@ -1,5 +1,5 @@
 import { makeApiClient } from "@mosaik/client"
-import { createApi } from "@mosaik/web-kit"
+import { createApi } from "@mosaik/client/solid"
 import { ASSISTANT_API_PREFIX, AssistantApi, type Resolution, type SendMessage, type TurnEvent } from "../contract"
 import { readEvents } from "./events"
 

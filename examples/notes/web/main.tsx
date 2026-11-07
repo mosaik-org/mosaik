@@ -1,6 +1,7 @@
 import { Button, Card, EmptyState, TextareaField, ThemeProvider, ThemeToggle } from "@mosaik/mosaik-ui"
 import { errorMessage, IdentityApi, makeApiClient, standaloneLinks, toast } from "@mosaik/sdk/client"
-import { createForm, Toasts } from "@mosaik/sdk/solid"
+import { createForm } from "@mosaik/sdk/solid"
+import { Toasts } from "@mosaik/sdk/ui"
 import { createResource, For, Show } from "solid-js"
 import { render } from "solid-js/web"
 import { NewNote, type Note, NotesApi } from "../api"

@@ -1,15 +1,9 @@
 /**
- * `@mosaik/sdk/ui`: Mosaik's own components (the app icons, query states). The components themselves
+ * `@mosaik/sdk/ui`: Mosaik's own components (people, query states, toasts). The components themselves
  * are `@mosaik/mosaik-ui`, which apps import directly; `@mosaik/sdk/ui/styles.css` styles both on a
  * standalone page (mounted apps have the shell's stylesheet).
  */
 export {
-  AppIcon,
-  type AppIconName,
-  type AppIconProps,
-  appColor,
-  appColorClass,
-  appIconNames,
   Freshness,
   type FreshnessProps,
   type FreshnessQuery,
@@ -17,7 +11,7 @@ export {
   type QueryBoundaryProps,
   QueryFreshness,
   type QueryState,
+  Toasts,
   UserAvatar,
   type UserAvatarProps,
-  userColor,
 } from "@mosaik/web-kit"

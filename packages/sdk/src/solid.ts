@@ -1,26 +1,21 @@
 /**
- * `@mosaik/sdk/solid`: who is signed in, the API (queries, actions), forms and live data, in Solid pages
- * (Core); `<Toasts />` and `usePageTheme` for the shell's contract (`toast`, `pageTheme` in `/client`).
+ * `@mosaik/sdk/solid`: who is signed in, the API (queries, actions), forms, lists and live data, in Solid
+ * pages (Core), with no components: they fit a page with its own. `usePageTheme` follows `pageTheme`.
  */
 export { Can, useCan, usePrincipal, useSession } from "@mosaik/auth/web"
-export {
-  createEventStream,
-  createQueryClient,
-  type EventStream,
-  type EventStreamStatus,
-  type QueryClientOptions,
-  useBusy,
-  useStatus,
-} from "@mosaik/client/solid"
 export {
   type Action,
   type ActionOptions,
   type ContractApi,
   createApi,
   createDebounced,
+  createEventStream,
   createForm,
   createListNavigation,
+  createQueryClient,
   type EndpointApi,
+  type EventStream,
+  type EventStreamStatus,
   type FieldBinding,
   type Form,
   type FormOptions,
@@ -28,8 +23,17 @@ export {
   type Keyed,
   type ListNavigation,
   type ListNavigationOptions,
-  Toasts,
+  type QueryClientOptions,
+  type SearchValidator,
+  type SortDirection,
+  searchValidator,
+  type TableSearch,
+  type TableSearchDefaults,
+  type TableSearchOptions,
   useAction,
+  useBusy,
   useNow,
   usePageTheme,
-} from "@mosaik/web-kit"
+  useStatus,
+  useTableSearch,
+} from "@mosaik/client/solid"

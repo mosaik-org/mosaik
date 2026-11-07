@@ -143,6 +143,12 @@ Apps depend on one package, `@mosaik/sdk`, whose entry points follow the same tw
 Mosaik: where code runs (both sides, server, pages) and which layer it needs (Core, or the Portal through
 `@mosaik/sdk/portal` and the design system). See [Building apps](apps.md#the-sdk) for the list. Behind it,
 the internal packages keep the split the monorepo needs; only what the entry points export is public.
+
+Three of those packages hold what pages use, by what they need. `client/solid` needs Solid and no components, so
+an app with its own UI can use it. `web-kit` holds Mosaik's components, on `@mosaik/mosaik-ui`. `frame` holds what
+surrounds a page (its layout, tabs and header, the command palette, status marks): it is Core's rather than the
+Portal's because Core's console hosts pages too, and the console's pages run in both, but only `@mosaik/sdk/portal`
+offers it to apps, as a standalone app has no frame.
 `bun sdk:pack` ships the entry points with the internal packages' sources in one tarball, their imports
 rewritten to relative paths, so an app sees one package and one version.
 

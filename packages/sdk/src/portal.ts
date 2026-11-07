@@ -1,10 +1,15 @@
-/** `@mosaik/sdk/portal`: an app mounted in the Portal's shell: its pages, frame, URL state and commands. */
+/** `@mosaik/sdk/portal`: an app mounted in the Portal's shell: its pages, frame, icon and commands. */
 
-export { defineWebApp, type WebApp } from "@mosaik/portal/web"
 export {
   AccessDenied,
+  AppIcon,
+  type AppIconName,
+  type AppIconProps,
   AppLayout,
   type AppLayoutProps,
+  appColor,
+  appColorClass,
+  appIconNames,
   type Command,
   type CommandApp,
   defineSearchProvider,
@@ -17,14 +22,7 @@ export {
   type SearchProviderLoader,
   type SearchResult,
   type SearchSource,
-  type SearchValidator,
-  type SortDirection,
-  searchValidator,
-  type TableSearch,
-  type TableSearchDefaults,
-  type TableSearchOptions,
   useCommandPalette,
   useCommands,
-  useSearchParams,
-  useTableSearch,
-} from "@mosaik/web-kit"
+} from "@mosaik/frame"
+export { defineWebApp, type WebApp } from "@mosaik/portal/web"

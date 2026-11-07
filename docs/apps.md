@@ -71,15 +71,18 @@ code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/server` | `server/` | `runApp`, `Audit`, `Notify`, `Messages`, `Events`, `Settings`, `Status`, `Storage`, `Live`, `Database` and migrations |
 | `@mosaik/sdk/connectors`, `/connectors/jira` | `server/` | clients for external systems; `/connectors/jira/model` is isomorphic |
 | `@mosaik/sdk/client` | any page | `makeApiClient`, error helpers, formatters, the session API, the shell's contract (`toast`, `pageTheme`, `markBusy`); no framework |
-| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `usePageTheme`, `useBusy`, `useStatus`, `<Toasts />` |
-| `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useSearchParams`, `useTableSearch`, `useCommands`, `defineSearchProvider` |
-| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`AppIcon`, `appColor`, `UserAvatar`, `QueryBoundary`, `QueryFreshness`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
+| `@mosaik/sdk/solid` | Solid pages | `createApi`, `useAction`, `createForm`, `usePrincipal`, `useCan`, `<Can>`, `createEventStream`, `createQueryClient`, `createListNavigation`, `searchValidator`, `useTableSearch`, `usePageTheme`, `useBusy`, `useStatus`; imports no components |
+| `@mosaik/sdk/router` | pages on TanStack Router | `useSearchParams` |
+| `@mosaik/sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useCommands`, `defineSearchProvider`, `AppIcon`, `appColor` |
+| `@mosaik/sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`UserAvatar`, `QueryBoundary`, `QueryFreshness`, `<Toasts />`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
 | `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version the SDK names |
 | `@mosaik/sdk/build/*` | `vite.config.ts`, `panda.config.ts`, `scripts/` | `mosaikApp`, `appPandaConfig`, `runAppDev`, `writeAppManifest` |
 
 - **Core or Portal.** An app that imports nothing from `@mosaik/sdk/portal` runs without the Portal
   (standalone); the rest of the SDK is Core, and the components work either way. `bun lint` checks that
   only `/portal` and `mosaikApp()` (whose default is the bundle for the shell) reach the Portal's code.
+- **Your own UI.** `@mosaik/sdk`, `/server`, `/client`, `/solid`, `/router`, `/connectors` and `/testing`
+  import no components, styles or frame, and `bun lint` keeps it so.
 - **Sides.** Server code never imports a page's entry points and pages never import `server`,
   `connectors` or `build`; `bun lint` checks it for the examples.
 - **Public API.** What the entry points export is the SDK; the packages behind them are internal and change
@@ -310,9 +313,9 @@ backend, so it registers the new bundle: reload the page to see a change.
   page, or on a scroll area so what scrolls passes under the bar).
 - **State in the URL.** Filters, sorting and pagination live in typed search params: the route validates
   them with `searchValidator(Schema)`, ideally the same Schema as the API query. An installed app's page
-  reads and writes them with `const [search, setSearch] = useSearchParams(Schema)`, since its routes are
+  reads and writes them with `const [search, setSearch] = useSearchParams(Schema)` (`@mosaik/sdk/router`), since its routes are
   created at runtime and it cannot import them; a built-in app's page uses its `Route`. Server-side tables
-  use `useTableSearch` from `@mosaik/sdk/portal`. Discrete changes push history entries; typing replaces the
+  use `useTableSearch` from `@mosaik/sdk/solid`. Discrete changes push history entries; typing replaces the
   entry. `examples/sales` puts it together with a server-side table.
 - **Freshness.** `<QueryFreshness query={q} />` next to data shows "Updated 2 min ago", stale warnings and a
   refresh button. Data older than the response (cached aggregates, external APIs) returns `Fresh(schema)`
@@ -673,7 +676,7 @@ events. `examples/notes` is one (`bun dev --headless` runs it with Core alone).
   - Import its stylesheet once: `import "@mosaik/sdk/ui/styles.css"`, which carries the reset, the tokens
     and every component. A page without components needs it too: its own styles read those tokens.
   - Wrap the page in `ThemeProvider` (and offer `ThemeToggle`) for dark mode, and render `<Toasts />`
-    from `@mosaik/sdk/solid` once: there is no shell to show `toast`'s toasts.
+    from `@mosaik/sdk/ui` once: there is no shell to show `toast`'s toasts.
   - Its tokens are CSS variables a page's own CSS can use without Panda: `var(--mk-colors-fg-muted)`,
     `var(--mk-spacing-4)`.
   - `examples/notes` puts it together.

@@ -16,6 +16,7 @@ export default defineConfig({
           ],
           exclude: [
             "packages/web-kit/**",
+            "packages/frame/**",
             "packages/client/**",
             "packages/auth/src/web/**",
             "packages/charts/**",
@@ -33,6 +34,7 @@ export default defineConfig({
           environment: "node",
           include: [
             "packages/web-kit/src/**/*.test.ts",
+            "packages/frame/src/**/*.test.ts",
             "packages/client/src/**/*.test.ts",
             "packages/auth/src/web/**/*.test.ts",
             "packages/assistant/src/web/**/*.test.ts",

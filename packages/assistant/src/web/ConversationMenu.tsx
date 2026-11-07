@@ -1,5 +1,5 @@
+import { useAction } from "@mosaik/client/solid"
 import { ActionMenu, Button, ConfirmDialog, IconButton, Modal, TextField } from "@mosaik/mosaik-ui"
-import { useAction } from "@mosaik/web-kit"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import Pencil from "lucide-solid/icons/pencil"
 import Trash from "lucide-solid/icons/trash"

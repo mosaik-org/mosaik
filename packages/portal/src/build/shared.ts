@@ -19,6 +19,7 @@ export const SHARED_MODULES = [
   "@mosaik/sdk",
   "@mosaik/sdk/client",
   "@mosaik/sdk/solid",
+  "@mosaik/sdk/router",
   "@mosaik/sdk/portal",
   "@mosaik/sdk/ui",
   "@mosaik/sdk/table",

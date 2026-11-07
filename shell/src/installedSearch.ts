@@ -1,4 +1,4 @@
-import type { SearchSource } from "@mosaik/web-kit"
+import type { SearchSource } from "@mosaik/frame"
 
 /**
  * Search providers of installed apps (their `web/search.ts`), filled by `registerInstalledApps`.

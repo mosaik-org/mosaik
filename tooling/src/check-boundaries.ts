@@ -17,6 +17,8 @@
  * 9. The testing kit (`@mosaik/sdk/testing`) is for tests (`*.test.ts`), never the code that ships.
  * 10. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
  *    directory, so it can move to a repository of its own.
+ * 11. What a team needs to bring its own UI (the packages behind `@mosaik/sdk`, `/server`, `/client`,
+ *    `/solid`, `/router`, `/connectors`, `/testing`) imports no component, style or frame.
  */
 import { dirname, relative, resolve, sep } from "node:path"
 import { Glob } from "bun"
@@ -57,12 +59,12 @@ const SERVER_ONLY = [
 ]
 const BROWSER_ONLY = [
   /^solid-js/,
-  /^@mosaik\/(table|charts|web-kit|styled-system)(\/|$)/,
+  /^@mosaik\/(table|charts|web-kit|frame|styled-system)(\/|$)/,
   /^@mosaik\/auth\/web$/,
   /^@mosaik\/portal\/web$/,
   // The component library, except its Panda preset (build time).
   /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
-  /^@mosaik\/sdk\/(client|solid|portal|ui|table|charts|css|jsx|patterns|tokens)$/,
+  /^@mosaik\/sdk\/(client|solid|router|portal|ui|table|charts|css|jsx|patterns|tokens)$/,
   /^@tanstack\/solid-/,
   /^lucide-solid/,
   /^echarts/,
@@ -106,7 +108,7 @@ const exampleOf = (path: string) => /^examples\/([^/]+)\//.exec(path)?.[1]
 
 const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
-  /^packages\/(table|charts|web-kit|client|console)\//.test(path) ||
+  /^packages\/(table|charts|web-kit|frame|client|console)\//.test(path) ||
   path.startsWith("packages/portal/src/web/") ||
   path.startsWith("packages/mosaik-ui/src/") ||
   path.startsWith("packages/auth/src/web/") ||
@@ -125,6 +127,19 @@ const isContract = (path: string) =>
   path.startsWith("packages/platform/src/contract/")
 
 const MOSAIK_UI = "packages/mosaik-ui/"
+
+/** Behind the entry points of the SDK that a team with its own UI uses, which must stay free of ours. */
+const isUiFree = (path: string) =>
+  /^packages\/(core|db|auth|client|platform|notifications|connectors|server|testing)\/src\//.test(path) ||
+  /^packages\/sdk\/src\/(index|server|client|solid|router|testing)\.ts$/.test(path) ||
+  path.startsWith("packages/sdk/src/connectors/")
+
+const UI = [
+  /^@mosaik\/(mosaik-ui|styled-system|web-kit|frame|table|charts|portal)(\/|$)/,
+  /^@ark-ui\//,
+  /^lucide-solid/,
+  /^echarts/,
+]
 
 const rules: ReadonlyArray<Rule> = [
   {
@@ -189,6 +204,11 @@ const rules: ReadonlyArray<Rule> = [
       const resolved = target(specifier, file)
       return resolved !== null && !`${resolved}/`.startsWith(MOSAIK_UI)
     },
+  },
+  {
+    name: "the SDK's UI-free entry points must import no UI",
+    files: isUiFree,
+    forbidden: (specifier) => matchesAny(UI, specifier),
   },
   {
     name: "Core must not depend on the Portal",

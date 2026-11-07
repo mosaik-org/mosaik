@@ -8,8 +8,6 @@ import {
   setPanelOpen,
 } from "@mosaik/assistant/web"
 import { usePrincipal } from "@mosaik/auth/web"
-import { IconButton, Kbd, Tooltip } from "@mosaik/mosaik-ui"
-import { css, cx } from "@mosaik/styled-system/css"
 import {
   createFrameHeaderStack,
   FrameHeaderProvider,
@@ -18,7 +16,9 @@ import {
   useCommands,
   useFindPlaces,
   usePageLayout,
-} from "@mosaik/web-kit"
+} from "@mosaik/frame"
+import { IconButton, Kbd, Tooltip } from "@mosaik/mosaik-ui"
+import { css, cx } from "@mosaik/styled-system/css"
 import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"

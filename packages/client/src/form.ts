@@ -1,7 +1,7 @@
-import { errorMessage } from "@mosaik/client"
 import { Schema } from "effect"
 import { batch, createMemo, createSignal } from "solid-js"
 import { createStore, reconcile } from "solid-js/store"
+import { errorMessage } from "./errors"
 
 /** What a form edits: the Schema's encoded side, which is what inputs hold (strings, booleans, lists). */
 type Values<S extends Schema.ConstraintDecoder<unknown>> = S["Encoded"] & object

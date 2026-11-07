@@ -3,8 +3,9 @@
  *
  * The SDK's entry points follow where code runs and which layer it needs:
  * - `@mosaik/sdk` (both), `@mosaik/sdk/server`, `@mosaik/sdk/connectors/*` (server): Core
- * - `@mosaik/sdk/client` (any page), `@mosaik/sdk/solid` (Solid pages), `/ui`, `/table`, `/charts`,
- *   `/css`: Core (Core's console uses the components and the table too)
+ * - `@mosaik/sdk/client` (any page), `@mosaik/sdk/solid` (Solid pages), `@mosaik/sdk/router` (pages on
+ *   TanStack Router): Core, with none of Mosaik's UI, for an app that brings its own
+ * - `/ui`, `/table`, `/charts`, `/css`: Core, on the component library (Core's console uses them too)
  * - `@mosaik/sdk/portal` (mounted in the shell): the Portal
  * - `@mosaik/sdk/build/*`: building and running the app; `mosaikApp()` builds for the Portal's
  *   shell or, with `standalone`, Core's own page

@@ -1,0 +1,22 @@
+{
+  "name": "@mosaik/frame",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@mosaik/auth": "workspace:*",
+    "@mosaik/client": "workspace:*",
+    "@mosaik/core": "workspace:*",
+    "@mosaik/mosaik-ui": "workspace:*",
+    "@mosaik/styled-system": "workspace:*",
+    "@tanstack/solid-router": "^1.170.41",
+    "lucide-solid": "^1.70.0",
+    "solid-js": "^1.9.17"
+  }
+}

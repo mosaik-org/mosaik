@@ -1,5 +1,6 @@
 import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik/client"
 import { PLATFORM_EVENT_DESCRIPTIONS } from "@mosaik/core"
+import { AppIcon, appColor } from "@mosaik/frame"
 import {
   ActionMenu,
   type ActionMenuItem,
@@ -35,7 +36,7 @@ import {
 } from "@mosaik/portal/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { AppIcon, appColor, QueryBoundary, SettingField } from "@mosaik/web-kit"
+import { QueryBoundary, SettingField } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import Ellipsis from "lucide-solid/icons/ellipsis"

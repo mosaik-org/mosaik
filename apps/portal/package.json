@@ -12,6 +12,7 @@
   "dependencies": {
     "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
+    "@mosaik/frame": "workspace:*",
     "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/platform": "workspace:*",
     "@mosaik/portal": "workspace:*",

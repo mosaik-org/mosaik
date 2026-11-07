@@ -1,4 +1,5 @@
 import { type DateInput, formatDateTime, formatRelativeTime } from "@mosaik/client"
+import { useNow } from "@mosaik/client/solid"
 import { isFresh } from "@mosaik/core"
 import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
@@ -6,7 +7,6 @@ import { DateTime, type Duration } from "effect"
 import RefreshCw from "lucide-solid/icons/refresh-cw"
 import { createMemo, type JSX, Show } from "solid-js"
 import { freshnessState } from "./freshness-state"
-import { useNow } from "./primitives"
 
 export interface FreshnessProps {
   /** When the data was produced. */

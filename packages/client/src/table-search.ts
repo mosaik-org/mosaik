@@ -1,7 +1,15 @@
-import type { PaginationState, SortingState } from "@mosaik/table"
 import { type Accessor, createMemo } from "solid-js"
 
 export type SortDirection = "asc" | "desc"
+
+/** A table's page, as `DataTable` and other table libraries take it. */
+interface PaginationState {
+  pageIndex: number
+  pageSize: number
+}
+
+/** A table's sorting, as `DataTable` and other table libraries take it. */
+type SortingState = Array<{ id: string; desc: boolean }>
 
 /** URL search params of a server-side table. Filters are any additional keys. */
 export interface TableSearch<Sort extends string = string> {

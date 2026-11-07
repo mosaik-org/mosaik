@@ -1,5 +1,5 @@
 import { admin } from "@mosaik/auth/contract"
-import { AppLayout } from "@mosaik/web-kit"
+import { AppLayout } from "@mosaik/frame"
 import { createFileRoute } from "@tanstack/solid-router"
 
 /** Core's administration: users, roles, notification channels, the audit log and AI clients (its pages: its manifest). */

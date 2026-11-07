@@ -14,6 +14,7 @@
     "@mosaik/client": "workspace:*",
     "@mosaik/console": "workspace:*",
     "@mosaik/core": "workspace:*",
+    "@mosaik/frame": "workspace:*",
     "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
     "@mosaik/web-kit": "workspace:*",

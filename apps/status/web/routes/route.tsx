@@ -1,4 +1,4 @@
-import { AppLayout } from "@mosaik/web-kit"
+import { AppLayout } from "@mosaik/frame"
 import { createFileRoute } from "@tanstack/solid-router"
 import { status } from "../../manifest"
 

@@ -1,6 +1,7 @@
 import type { AppMember, AppRole } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
+import { createDebounced } from "@mosaik/client/solid"
 import type { PrincipalUser } from "@mosaik/core"
 import {
   Badge,
@@ -16,7 +17,7 @@ import {
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
-import { createDebounced, QueryBoundary, UserAvatar } from "@mosaik/web-kit"
+import { QueryBoundary, UserAvatar } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import UserPlus from "lucide-solid/icons/user-plus"
 import Users from "lucide-solid/icons/users"

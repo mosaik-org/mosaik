@@ -1,4 +1,5 @@
 import { useCan } from "@mosaik/auth/web"
+import { createDebounced } from "@mosaik/client/solid"
 import { useRouter } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 import History from "lucide-solid/icons/clock"
@@ -17,7 +18,6 @@ import {
 } from "solid-js"
 import { bestScore } from "../fuzzy"
 import { withTimeout } from "../loading"
-import { createDebounced } from "../primitives"
 import { CommandPalette, type PaletteGroup, type PaletteItem } from "./CommandPalette"
 import { createShortcuts, firstKeys, ShortcutsPanel } from "./Shortcuts"
 import { sourcesToSearch } from "./scope"

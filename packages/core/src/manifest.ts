@@ -91,6 +91,19 @@ export const isAppColor = (name: string | null | undefined): name is AppColor =>
   (appColors as ReadonlyArray<string | null | undefined>).includes(name)
 
 /**
+ * A colour picked from an id, so that whatever has none of its own keeps one wherever and whenever
+ * it shows. A small string hash (FNV-1a): stable across sessions and browsers.
+ */
+export const colorOf = (id: string): AppColor => {
+  let hash = 0x811c9dc5
+  for (let i = 0; i < id.length; i++) {
+    hash ^= id.charCodeAt(i)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return appColors[(hash >>> 0) % appColors.length] ?? "blue"
+}
+
+/**
  * How the Portal lists and runs the app. Core's services ignore it; a standalone app (on its own
  * address, without the Portal) leaves it out.
  */

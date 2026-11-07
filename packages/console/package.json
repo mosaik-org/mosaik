@@ -10,6 +10,7 @@
     "@mosaik/auth": "workspace:*",
     "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
+    "@mosaik/frame": "workspace:*",
     "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/notifications": "workspace:*",
     "@mosaik/platform": "workspace:*",

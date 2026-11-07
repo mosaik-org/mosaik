@@ -1,8 +1,10 @@
-import { type ApiClient, type BrowserApi, errorMessage, makeApiClient, toast } from "@mosaik/client"
 import { type QueryKey, queryOptions, useQueryClient } from "@tanstack/solid-query"
 import type { Types } from "effect"
 import type { HttpApiClient, HttpApiEndpoint, HttpApiGroup } from "effect/http-api"
 import { createSignal } from "solid-js"
+import { type ApiClient, type BrowserApi, makeApiClient } from "./client"
+import { errorMessage } from "./errors"
+import { toast } from "./shell"
 
 type Endpoint = HttpApiEndpoint.ConstraintRequest
 

@@ -16,6 +16,7 @@
     "@mosaik/charts": "workspace:*",
     "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
+    "@mosaik/frame": "workspace:*",
     "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/server": "workspace:*",
     "@mosaik/styled-system": "workspace:*",

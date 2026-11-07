@@ -1,6 +1,6 @@
+import { FRAME_TOP, FrameHeader } from "@mosaik/frame"
 import { Button } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { FRAME_TOP, FrameHeader } from "@mosaik/web-kit"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import { type JSX, Show } from "solid-js"
 import { Conversation } from "./Conversation"

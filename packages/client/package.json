@@ -5,15 +5,17 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./solid": "./src/solid.ts"
+    "./solid": "./src/solid.ts",
+    "./router": "./src/router.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@mosaik/core": "workspace:*",
-    "effect": "^4.1.2",
     "@tanstack/solid-query": "^5.104.3",
+    "@tanstack/solid-router": "^1.170.41",
+    "effect": "^4.1.2",
     "solid-js": "^1.9.17"
   }
 }

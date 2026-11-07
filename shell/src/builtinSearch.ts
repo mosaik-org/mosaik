@@ -1,4 +1,4 @@
-import type { SearchProvider, SearchSource } from "@mosaik/web-kit"
+import type { SearchProvider, SearchSource } from "@mosaik/frame"
 
 /**
  * Search providers of built-in apps (`apps/<id>/web/search.ts`), each loaded on first use of the

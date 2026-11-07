@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
-import { defineApp, isApp, toManifestPayload } from "./manifest"
+import { appColors, colorOf, defineApp, isApp, toManifestPayload } from "./manifest"
 import { expandRoleGrants } from "./roles"
 
 const sales = defineApp({
@@ -30,6 +30,17 @@ const crm = defineApp({
     editor: { name: "Editor", description: "Changes deals", grants: ["deals.*", "export"] },
     admin: { name: "Admin", grants: ["*"] },
   },
+})
+
+describe("colorOf", () => {
+  it("is the same each time", () => {
+    expect(colorOf("ada")).toBe(colorOf("ada"))
+  })
+
+  it("uses every colour, for things to be told apart", () => {
+    const picked = new Set(Array.from({ length: 200 }, (_, i) => colorOf(`user-${i}`)))
+    expect(picked).toEqual(new Set(appColors))
+  })
 })
 
 describe("defineApp", () => {

@@ -1,7 +1,7 @@
+import { colorOf } from "@mosaik/core"
 import { Avatar } from "@mosaik/mosaik-ui"
 import type { JSX } from "solid-js"
 import { splitProps } from "solid-js"
-import { userColor } from "./userColor"
 
 export interface UserAvatarProps extends Omit<Avatar.RootProps, "children" | "colorPalette"> {
   readonly user: {
@@ -18,7 +18,7 @@ export interface UserAvatarProps extends Omit<Avatar.RootProps, "children" | "co
 export const UserAvatar = (props: UserAvatarProps): JSX.Element => {
   const [local, rest] = splitProps(props, ["user"])
   return (
-    <Avatar.Root title={local.user.name} {...rest} colorPalette={userColor(local.user.id)}>
+    <Avatar.Root title={local.user.name} {...rest} colorPalette={colorOf(local.user.id)}>
       <Avatar.Fallback name={local.user.name} />
       <Avatar.Image src={local.user.image ?? undefined} alt="" />
     </Avatar.Root>

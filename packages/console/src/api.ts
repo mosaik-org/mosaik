@@ -1,8 +1,8 @@
 import { AdminApi } from "@mosaik/auth/contract"
 import { makeApiClient } from "@mosaik/client"
+import { createApi } from "@mosaik/client/solid"
 import { NotificationsApi } from "@mosaik/notifications/contract"
 import { PlatformWebApi } from "@mosaik/platform/contract"
-import { createApi } from "@mosaik/web-kit"
 
 /** Users, roles and the audit log (the auth service). */
 export const adminApi = makeApiClient(AdminApi)

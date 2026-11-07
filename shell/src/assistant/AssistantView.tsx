@@ -1,5 +1,5 @@
 import { AssistantPage, openPanel } from "@mosaik/assistant/web"
-import { searchValidator } from "@mosaik/web-kit"
+import { searchValidator } from "@mosaik/client/solid"
 import { useNavigate } from "@tanstack/solid-router"
 import { Schema } from "effect"
 

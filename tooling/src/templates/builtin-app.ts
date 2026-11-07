@@ -29,6 +29,7 @@ export const files = (t: BuiltinAppTemplate): Record<string, string> => {
         "@mosaik/core": ws,
         ...(t.database ? { "@mosaik/db": ws } : {}),
         "@mosaik/client": ws,
+        "@mosaik/frame": ws,
         "@mosaik/server": ws,
         "@mosaik/styled-system": ws,
         "@mosaik/table": ws,
@@ -199,7 +200,7 @@ export const itemsQuery = () =>
   queryOptions({ queryKey: keys.items, queryFn: () => api((client) => client.items.list()) })
 `,
 
-    "web/routes/route.tsx": `import { AppLayout } from "@mosaik/web-kit"
+    "web/routes/route.tsx": `import { AppLayout } from "@mosaik/frame"
 import { createFileRoute } from "@tanstack/solid-router"
 import manifest from "../../manifest"
 

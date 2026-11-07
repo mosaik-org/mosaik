@@ -166,11 +166,12 @@ packages/         The SDK and shared code
   console         Core's console pages (administration, apps people manage, access requests), mounted by both UIs
   app-kit         Building apps (Core): the standalone page, the app's Panda config and styles, the dev loop, the manifest
   db              Postgres layer + migrations, per-service provisioning
-  client          Typed browser API client and formatters · solid (query defaults, event streams)
+  client          Typed browser API client and formatters · solid (the API, forms, list navigation, URL state, event streams; no components)
   mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README
   table           DataTable (TanStack Table, client or server-side)
   charts          ECharts wrapper drawing with the theme's tokens (chart.1…6, text, lines), option builders
-  web-kit         Mosaik's page pieces: AppLayout, NavTabs, QueryBoundary, AppIcon, the command palette, forms and actions, Toasts
+  web-kit         Mosaik's components, on mosaik-ui: QueryBoundary, Freshness, UserAvatar, SettingField, Toasts
+  frame           Around a page, in the shell and the console: AppLayout, tabs, header, the command palette and shortcuts, status marks, AppIcon
   connectors      Server-side clients for external systems (Jira, SMTP, Slack, Teams)
   styled-system   Mosaik's theme for @mosaik/mosaik-ui, the generated runtime and the kit's stylesheet
 tooling/          Dev runner, provisioning, scaffolding, boundary checks
@@ -188,6 +189,7 @@ docs/             Architecture, building apps, operating Mosaik
 - Examples see only the SDK (`@mosaik/sdk` and its entry points, each on its side) and their own files,
   like a team's app in its own repository.
 - Core (its services and the shared packages) never depends on the Portal.
+- What a team with its own UI uses of the SDK imports no components, styles or frame.
 - The Portal (its service, the shell, built-in apps) uses Core only through its contracts and the SDK.
 
 ## License

@@ -26,6 +26,7 @@
       "dependencies": {
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/portal": "workspace:*",
@@ -47,6 +48,7 @@
         "@mosaik/charts": "workspace:*",
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/server": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
@@ -67,6 +69,7 @@
         "@mosaik/client": "workspace:*",
         "@mosaik/console": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
         "@mosaik/web-kit": "workspace:*",
@@ -198,9 +201,9 @@
         "@mosaik/auth": "workspace:*",
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
-        "@mosaik/web-kit": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
         "dompurify": "^3.4.17",
         "effect": "^4.1.2",
@@ -238,6 +241,7 @@
       "dependencies": {
         "@mosaik/core": "workspace:*",
         "@tanstack/solid-query": "^5.104.3",
+        "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
         "solid-js": "^1.9.17",
       },
@@ -258,6 +262,7 @@
         "@mosaik/auth": "workspace:*",
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/notifications": "workspace:*",
         "@mosaik/platform": "workspace:*",
@@ -284,6 +289,20 @@
       "dependencies": {
         "@effect/sql-pg": "^4.1.2",
         "effect": "^4.1.2",
+      },
+    },
+    "packages/frame": {
+      "name": "@mosaik/frame",
+      "version": "0.0.0",
+      "dependencies": {
+        "@mosaik/auth": "workspace:*",
+        "@mosaik/client": "workspace:*",
+        "@mosaik/core": "workspace:*",
+        "@mosaik/mosaik-ui": "workspace:*",
+        "@mosaik/styled-system": "workspace:*",
+        "@tanstack/solid-router": "^1.170.41",
+        "lucide-solid": "^1.70.0",
+        "solid-js": "^1.9.17",
       },
     },
     "packages/mosaik-ui": {
@@ -360,6 +379,7 @@
         "@mosaik/connectors": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/db": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/platform": "workspace:*",
         "@mosaik/portal": "workspace:*",
         "@mosaik/server": "workspace:*",
@@ -437,15 +457,10 @@
       "name": "@mosaik/web-kit",
       "version": "0.0.0",
       "dependencies": {
-        "@ark-ui/solid": "^5.40.0",
-        "@mosaik/auth": "workspace:*",
         "@mosaik/client": "workspace:*",
         "@mosaik/core": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/styled-system": "workspace:*",
-        "@mosaik/table": "workspace:*",
-        "@tanstack/solid-query": "^5.104.3",
-        "@tanstack/solid-router": "^1.170.41",
         "effect": "^4.1.2",
         "lucide-solid": "^1.70.0",
         "solid-js": "^1.9.17",
@@ -585,6 +600,7 @@
         "@mosaik/client": "workspace:*",
         "@mosaik/console": "workspace:*",
         "@mosaik/core": "workspace:*",
+        "@mosaik/frame": "workspace:*",
         "@mosaik/mosaik-ui": "workspace:*",
         "@mosaik/notifications": "workspace:*",
         "@mosaik/platform": "workspace:*",
@@ -813,9 +829,12 @@
 
     "@mosaik/example-issues": ["@mosaik/example-issues@workspace:examples/issues"],
 
+
     "@mosaik/example-notes": ["@mosaik/example-notes@workspace:examples/notes"],
 
     "@mosaik/example-sales": ["@mosaik/example-sales@workspace:examples/sales"],
+
+    "@mosaik/frame": ["@mosaik/frame@workspace:packages/frame"],
 
     "@mosaik/gateway": ["@mosaik/gateway@workspace:services/gateway"],
 

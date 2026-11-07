@@ -1,4 +1,5 @@
-import { AppLayout, defineWebApp, searchValidator } from "@mosaik/sdk/portal"
+import { AppLayout, defineWebApp } from "@mosaik/sdk/portal"
+import { searchValidator } from "@mosaik/sdk/solid"
 import { createRoute, lazyRouteComponent, stripSearchParams } from "@tanstack/solid-router"
 import { ORDERS_DEFAULTS, OrdersSearch, SUMMARY_DEFAULTS, SummarySearch } from "../api"
 import { sales } from "../manifest"

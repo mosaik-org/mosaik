@@ -1,6 +1,7 @@
 import { EmptyState, type EmptyStateProps, Input, InputGroup, SelectField, Spinner, Tabs } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/sdk/css"
-import { FRAME_TOP, useCommands, useSearchParams } from "@mosaik/sdk/portal"
+import { FRAME_TOP, useCommands } from "@mosaik/sdk/portal"
+import { useSearchParams } from "@mosaik/sdk/router"
 import { createDebounced, createListNavigation, useNow } from "@mosaik/sdk/solid"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { DateTime } from "effect"
