@@ -4,10 +4,14 @@ const MORNING = 9
 const at = (date: Date, days: number, hour: number) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate() + days, hour, 0, 0, 0)
 
-export interface SnoozeChoice {
-  readonly id: "hour" | "tomorrow" | "week"
+/** A time to snooze until, and how to say it ("Tomorrow", "Thu 12 Nov, 13:00"). */
+export interface SnoozeTime {
   readonly label: string
   readonly until: Date
+}
+
+export interface SnoozeChoice extends SnoozeTime {
+  readonly id: "hour" | "tomorrow" | "week"
 }
 
 /**
@@ -32,4 +36,21 @@ export const untilLabel = (until: Date, now: Date, locale?: string): string => {
   if (days === 1) return `tomorrow ${time}`
   if (days < 7) return `${until.toLocaleDateString(locale, { weekday: "short" })} ${time}`
   return until.toLocaleDateString(locale, { day: "numeric", month: "short" })
+}
+
+/** The times of day a picked date offers: the start of the morning, of the afternoon, and the day's end. */
+export const SNOOZE_HOURS: ReadonlyArray<number> = [MORNING, 13, 17]
+
+/** A picked day (`2026-11-12`, as a date field gives it) at an hour, in the person's own time. */
+export const snoozeAt = (day: string, hour: number, locale?: string): SnoozeTime => {
+  const [year = 0, month = 1, date = 1] = day.split("-").map(Number)
+  const until = new Date(year, month - 1, date, hour, 0, 0, 0)
+  const label = until.toLocaleString(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+  return { label, until }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { snoozeChoices, untilLabel } from "./snooze"
+import { snoozeAt, snoozeChoices, untilLabel } from "./snooze"
 
 // Local times: the choices are in the person's own day.
 const friday = new Date(2026, 10, 6, 16, 30) // Friday 6 November, 16:30
@@ -27,5 +27,13 @@ describe("untilLabel", () => {
     expect(label(new Date(2026, 10, 7, 9, 0))).toBe("tomorrow 9:00")
     expect(label(new Date(2026, 10, 9, 9, 0))).toBe("Mon 9:00")
     expect(label(new Date(2026, 10, 20, 9, 0))).toBe("20 Nov")
+  })
+})
+
+describe("snoozeAt", () => {
+  it("is the picked day at the hour, in local time, said in full", () => {
+    const picked = snoozeAt("2026-11-12", 13, "en-GB")
+    expect(picked.until).toEqual(new Date(2026, 10, 12, 13, 0))
+    expect(picked.label).toBe("Thu 12 Nov, 13:00")
   })
 })

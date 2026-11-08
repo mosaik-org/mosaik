@@ -1,19 +1,19 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, usePrincipal } from "@mosaik/auth/web"
-import { errorMessage, toast } from "@mosaik/client"
 import type { PersonalChannel } from "@mosaik/core"
 import { PageTitle } from "@mosaik/frame"
 import { Card, EmptyState, SwitchField } from "@mosaik/mosaik-ui"
-import type { NotificationSettings, NotificationTypeSettings } from "@mosaik/notifications/contract"
+import type { NotificationTypeSettings } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
 import { QueryBoundary } from "@mosaik/web-kit"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, redirect } from "@tanstack/solid-router"
 import BellOff from "lucide-solid/icons/bell-off"
 import Settings from "lucide-solid/icons/settings"
 import { For, Show } from "solid-js"
 import { sourceName } from "../../apps"
-import { notificationKeys, notificationsApi, settingsQuery } from "../../notifications/api"
+import { settingsQuery } from "../../notifications/api"
+import { CHANNELS, useChannelSetting } from "../../notifications/settings"
 
 export const Route = createFileRoute("/_app/notifications/settings")({
   staticData: { title: "Notification settings", keywords: ["email", "slack", "preferences", "mute"] },
@@ -23,12 +23,6 @@ export const Route = createFileRoute("/_app/notifications/settings")({
   },
   component: SettingsPage,
 })
-
-const CHANNELS: ReadonlyArray<{ value: PersonalChannel; label: string }> = [
-  { value: "inApp", label: "In app" },
-  { value: "email", label: "E-mail" },
-  { value: "slack", label: "Slack" },
-]
 
 const styles = {
   row: css({
@@ -44,31 +38,7 @@ const styles = {
 }
 
 const TypeRow = (props: { type: NotificationTypeSettings; available: ReadonlyArray<PersonalChannel> }) => {
-  const queryClient = useQueryClient()
-  const update = useMutation(() => ({
-    mutationFn: (input: { channel: PersonalChannel; enabled: boolean }) =>
-      notificationsApi((client) => client.settings.set({ payload: { type: props.type.key, ...input } })),
-    onMutate: async (input) => {
-      // Flip the switch right away; the response (or a refetch on error) settles it.
-      await queryClient.cancelQueries({ queryKey: notificationKeys.settings })
-      queryClient.setQueryData<NotificationSettings>(notificationKeys.settings, (settings) =>
-        settings === undefined
-          ? settings
-          : {
-              ...settings,
-              types: settings.types.map((type) =>
-                type.key === props.type.key
-                  ? { ...type, channels: { ...type.channels, [input.channel]: input.enabled } }
-                  : type,
-              ),
-            },
-      )
-    },
-    onError: (error: unknown) => {
-      toast.error("Could not save the setting", errorMessage(error))
-      void queryClient.invalidateQueries({ queryKey: notificationKeys.settings })
-    },
-  }))
+  const update = useChannelSetting()
 
   return (
     <div class={styles.row}>
@@ -79,7 +49,7 @@ const TypeRow = (props: { type: NotificationTypeSettings; available: ReadonlyArr
             <SwitchField
               label={channel.label}
               checked={props.type.channels[channel.value]}
-              onCheckedChange={(enabled) => update.mutate({ channel: channel.value, enabled })}
+              onCheckedChange={(enabled) => update.mutate({ type: props.type.key, channel: channel.value, enabled })}
             />
           )}
         </For>

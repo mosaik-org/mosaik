@@ -2,7 +2,7 @@ import { createEventStream } from "@mosaik/client/solid"
 import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
-import { useInfiniteQuery } from "@tanstack/solid-query"
+import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
 import BellOff from "lucide-solid/icons/bell-off"
@@ -12,7 +12,8 @@ import Settings from "lucide-solid/icons/settings"
 import { createEffect, createSignal, on, Show, Suspense } from "solid-js"
 import { Portal } from "solid-js/web"
 import { useInboxActions } from "./actions"
-import { inboxQuery } from "./api"
+import { openQuery } from "./api"
+import { sectionsOf } from "./model"
 import { NotificationList, severityToast } from "./NotificationList"
 
 /**
@@ -74,11 +75,11 @@ export const NotificationBell = () => {
   const [open, setOpen] = createSignal(false)
   const actions = useInboxActions()
   const live = createEventStream(inboxLiveUrl, InboxEvent)
-  // What is open, and nothing else: everything is on the notifications page. Loaded with the bell (the
-  // first page, shared with that page's Open tab), so opening never waits.
-  const inbox = useInfiniteQuery(() => inboxQuery("open"))
-  const items = () => inbox.data?.pages[0]?.items ?? []
-  const counts = () => live.data()?.counts ?? inbox.data?.pages[0]?.counts
+  // What is open, and nothing else: everything is on the notifications page. Loaded with the bell, so
+  // opening never waits.
+  const inbox = useQuery(openQuery)
+  const items = () => inbox.data?.items ?? []
+  const counts = () => live.data()?.counts ?? inbox.data?.counts
   const todo = () => counts()?.actions ?? 0
   const unread = () => counts()?.unread ?? 0
 
@@ -209,13 +210,12 @@ export const NotificationBell = () => {
                   }
                 >
                   <NotificationList
-                    items={items()}
-                    grouping="kind"
+                    sections={sectionsOf(items(), "kind", Date.now())}
                     lines={1}
                     actions={actions}
                     onOpen={(item) => {
                       close()
-                      actions.open(item)
+                      actions.show(item)
                     }}
                     empty={
                       <EmptyState

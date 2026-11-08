@@ -409,11 +409,18 @@ yield* notify.resolve(`refund:${refund.id}`, { by: actor.id })  // resolved for 
   it first, which says who resolved it and when, so nobody does the work twice.
 - **In-app.** The bell shows how many action items are open, a dot when only information is unread, red if
   something `critical` is among the newest, and a toast for each new one. So keep `critical` for what
-  someone should look at now. Its panel lists what is open (everything is at `/notifications`): each with
-  your app's icon in its colour (a warning or a critical one in theirs), the title on one line and the
-  start of the body's first paragraph after your app's name. Write the title so it stands alone, and put
-  the gist first in the body.
-- **Snooze.** People can put any open item away until a time they choose; it comes back unread.
+  someone should look at now: in the inbox it also goes before everything else. The bell's panel lists
+  what is open: each with your app's icon in its colour (a warning or a critical one in theirs), the title
+  on one line and the start of the body's first paragraph after your app's name. Write the title so it
+  stands alone, and put the gist first in the body.
+- **The inbox** (`/notifications`) has four lists: *To do* (open actions), *Updates* (open information,
+  which *Mark all done* clears), *Snoozed* and *Resolved*, each narrowed to one app if the person likes.
+  The item they are on opens beside the list, read as it is shown: the whole body, the `fields`, a button
+  for the `link` (`linkLabel`), and the notifications about its subject that came before, as its history.
+  So your app's notifications about one subject tell a story when read in order; the person goes to your
+  app when there is something to do there. They can also switch the type off, per channel, from there.
+- **Snooze.** People can put any open item away until a time they choose (in an hour, tomorrow, next week,
+  or a day and time they pick); it comes back unread.
 - **Clean-up.** Resolved items, and information read and left, leave the inbox after 30 days
   (`INBOX_RETENTION_DAYS`).
 - **Idempotency.** `idempotencyKey` makes a retried `send` count once; `subject` says what the notification

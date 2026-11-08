@@ -15,6 +15,7 @@ import { For, type JSX, Show } from "solid-js"
 import { allApps, appHref } from "../apps"
 import { useInboxActions } from "../notifications/actions"
 import { previewQuery } from "../notifications/api"
+import { sectionsOf } from "../notifications/model"
 import { NotificationList } from "../notifications/NotificationList"
 import { NeedsYou } from "../statuses/NeedsYou"
 import { FEW_APPS, useMyApps } from "../workspace/myApps"
@@ -189,10 +190,9 @@ const Personal = (props: { user: string }) => {
         >
           <Card.Root>
             <NotificationList
-              items={open.data?.items ?? []}
-              grouping="kind"
+              sections={sectionsOf(open.data?.items ?? [], "kind", Date.now())}
               actions={inbox}
-              onOpen={inbox.open}
+              onOpen={inbox.show}
               empty={<div class={styles.muted}>You are all caught up.</div>}
             />
           </Card.Root>
