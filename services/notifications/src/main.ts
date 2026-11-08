@@ -11,9 +11,10 @@ import * as Worker from "./delivery/Worker"
 import { AdminHandlers } from "./http/Admin"
 import { InboxHandlers } from "./http/Inbox"
 import { MessagesHandlers, NotificationsHandlers } from "./http/Internal"
-import { PreferencesPage } from "./http/Pages"
+import { LinkPage, PreferencesPage } from "./http/Pages"
 import { SettingsHandlers } from "./http/Settings"
 import { Fanout } from "./inbox/Fanout"
+import * as Housekeeping from "./inbox/Housekeeping"
 import { Inbox } from "./inbox/Inbox"
 import { Directory } from "./messages/Directory"
 import { Dispatcher } from "./messages/Dispatcher"
@@ -25,20 +26,17 @@ import { NotificationTypes } from "./notify/Types"
 import { Routes } from "./targets/Routes"
 import { Targets } from "./targets/Targets"
 
-const Repositories = Layer.mergeAll(
-  Outbox.layer,
-  Targets.layer,
-  Routes.layer,
-  NotificationTypes.layer,
-  Preferences.layer,
-  Inbox.layer,
-).pipe(Layer.provideMerge(Database.layer({ serviceId: "notifications", migrations })))
+const Repositories = Layer.mergeAll(Targets.layer, Routes.layer, NotificationTypes.layer, Preferences.layer).pipe(
+  // The outbox files notifications in inboxes, in the transaction that queues them.
+  Layer.provideMerge(Outbox.layer.pipe(Layer.provideMerge(Inbox.layer))),
+  Layer.provideMerge(Database.layer({ serviceId: "notifications", migrations })),
+)
 
 const Infrastructure = Layer.mergeAll(Channels.layer, Fanout.layer, Directory.layer).pipe(
   Layer.provideMerge(Repositories),
 )
 
-const Domain = Layer.mergeAll(Dispatcher.layer, Notifier.layer, Worker.layer).pipe(
+const Domain = Layer.mergeAll(Dispatcher.layer, Notifier.layer, Worker.layer, Housekeeping.layer).pipe(
   Layer.provideMerge(Infrastructure),
   Layer.provideMerge(InternalClient.layer),
   Layer.provideMerge(FetchHttpClient.layer),
@@ -59,7 +57,7 @@ const Middleware = Layer.mergeAll(InternalAuthLive, AccessControlUsers, CorePage
   Layer.provide(TokenVerifier.layerRemote("notifications")),
 )
 
-const Main = serve(Layer.mergeAll(InternalHttp, PublicHttp, PreferencesPage), {
+const Main = serve(Layer.mergeAll(InternalHttp, PublicHttp, PreferencesPage, LinkPage), {
   name: "mosaik-notifications",
   port: 4001,
 }).pipe(Layer.provide(Middleware), Layer.provide(Domain))

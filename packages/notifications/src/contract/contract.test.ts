@@ -2,7 +2,7 @@ import { describe, expect, it } from "@effect/vitest"
 import { Schema } from "effect"
 import { Content } from "./content"
 import { Destination } from "./destination"
-import { MessageRequest } from "./internal"
+import { MessageRequest, NotificationTypeInput } from "./internal"
 
 const isContent = Schema.is(Content)
 const isDestination = Schema.is(Destination)
@@ -47,5 +47,15 @@ describe("MessageRequest", () => {
   it("accepts targets", () => {
     expect(decode({ ...base, to: [{ _tag: "Target", targetId: "ops-alerts" }] }).to).toHaveLength(1)
     expect(() => decode({ ...base, to: [{ _tag: "Target", targetId: "Ops Alerts" }] })).toThrow()
+  })
+})
+
+describe("NotificationTypeInput", () => {
+  const decode = Schema.decodeUnknownSync(NotificationTypeInput)
+
+  it("reads a type registered before actions as information anyone may clear", () => {
+    const stored = { key: "sales:order.refunded", description: "Refunded", defaultChannels: ["inApp"] }
+    expect(decode(stored)).toMatchObject({ action: false, resolvedBy: "anyone" })
+    expect(decode({ ...stored, action: true, resolvedBy: "app" })).toMatchObject({ action: true, resolvedBy: "app" })
   })
 })

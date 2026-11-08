@@ -12,6 +12,8 @@ export interface OutgoingDelivery {
   readonly category: "message" | "notification"
   readonly source: string
   readonly kind: string | null
+  /** A notification's subject, whose page its links to people go through. */
+  readonly subject: string | null
   readonly channel: string
   /** Channel-specific address, e.g. an e-mail address. */
   readonly recipient: string

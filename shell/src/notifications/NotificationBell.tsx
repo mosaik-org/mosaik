@@ -2,7 +2,7 @@ import { createEventStream } from "@mosaik/client/solid"
 import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
-import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
+import { useInfiniteQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
 import BellOff from "lucide-solid/icons/bell-off"
@@ -11,28 +11,37 @@ import Inbox from "lucide-solid/icons/inbox"
 import Settings from "lucide-solid/icons/settings"
 import { createEffect, createSignal, on, Show, Suspense } from "solid-js"
 import { Portal } from "solid-js/web"
-import { inboxQuery, latestQuery } from "./api"
-import { NotificationList, severityToast, useInboxActions } from "./NotificationList"
+import { useInboxActions } from "./actions"
+import { inboxQuery } from "./api"
+import { NotificationList, severityToast } from "./NotificationList"
 
 /**
- * That something is unread, on the bell's shoulder: a dot and no number, since a growing count nags
- * and the panel has it. Red only for something critical, so that red can be trusted; a ring of the
- * page's colour keeps it apart from the icon.
+ * On the bell's shoulder: how many things wait for the person, as a number, since each needs doing;
+ * otherwise a dot while information is unread, which needs nothing. Red only for something critical, so
+ * that red can be trusted; a ring of the page's colour keeps it apart from the icon.
  */
-const dot = cva({
+const mark = cva({
   base: {
     position: "absolute",
-    top: "1.5",
-    insetEnd: "1.5",
-    boxSize: "2",
+    top: "1",
+    insetEnd: "1",
+    display: "grid",
+    placeItems: "center",
+    minW: "2",
+    h: "2",
     borderRadius: "full",
     pointerEvents: "none",
     outline: "2px solid token(colors.canvas)",
+    fontSize: "2xs",
+    fontWeight: "semibold",
+    lineHeight: "1",
+    fontVariantNumeric: "tabular-nums",
+    "&[data-count]": { minW: "4", h: "4", px: "1", top: "0.5", insetEnd: "0.5" },
   },
   variants: {
     critical: {
-      true: { bg: "danger.solid.bg" },
-      false: { bg: "accent.solid.bg" },
+      true: { bg: "danger.solid.bg", color: "danger.solid.fg" },
+      false: { bg: "accent.solid.bg", color: "accent.solid.fg" },
     },
   },
 })
@@ -58,15 +67,20 @@ const styles = {
 }
 
 /**
- * The header's notification bell: a dot for what is unread, the newest items and live updates
- * (a toast for every new notification). Rendered for logged-in users only.
+ * The header's notification bell: how many things wait for the person, what is open in its panel, and
+ * live updates (a toast for every new notification). Rendered for logged-in users only.
  */
 export const NotificationBell = () => {
   const [open, setOpen] = createSignal(false)
-  const latest = useQuery(latestQuery)
   const actions = useInboxActions()
   const live = createEventStream(inboxLiveUrl, InboxEvent)
-  const unread = () => live.data()?.unread ?? latest.data?.unread ?? 0
+  // What is open, and nothing else: everything is on the notifications page. Loaded with the bell (the
+  // first page, shared with that page's Open tab), so opening never waits.
+  const inbox = useInfiniteQuery(() => inboxQuery("open"))
+  const items = () => inbox.data?.pages[0]?.items ?? []
+  const counts = () => live.data()?.counts ?? inbox.data?.pages[0]?.counts
+  const todo = () => counts()?.actions ?? 0
+  const unread = () => counts()?.unread ?? 0
 
   createEffect(
     on(live.data, (event) => {
@@ -79,15 +93,15 @@ export const NotificationBell = () => {
     }),
   )
 
-  // What is new, and nothing else: everything, read or not, is on the notifications page. Loaded
-  // with the bell (the newest page, shared with that page's Unread tab), so opening never waits.
-  const inbox = useInfiniteQuery(() => inboxQuery(true))
-  const items = () => inbox.data?.pages[0]?.items ?? []
   // Among the newest page: one older than that does not turn the bell red, and is rarely still news.
-  const critical = () => items().some((item) => item.content.severity === "critical")
+  const critical = () => items().some((item) => item.readAt === null && item.content.severity === "critical")
   const label = () => {
-    if (unread() === 0) return "Notifications"
-    return `Notifications (${unread()} unread${critical() ? ", some critical" : ""})`
+    const parts = [
+      ...(todo() > 0 ? [`${todo()} to do`] : []),
+      ...(unread() > 0 ? [`${unread()} unread`] : []),
+      ...(critical() ? ["some critical"] : []),
+    ]
+    return parts.length === 0 ? "Notifications" : `Notifications (${parts.join(", ")})`
   }
   const close = () => setOpen(false)
 
@@ -101,8 +115,17 @@ export const NotificationBell = () => {
         asChild={(trigger) => (
           <IconButton {...trigger()} variant="plain" aria-label={label()} class={styles.trigger}>
             <Bell size={18} />
-            <Show when={unread() > 0}>
-              <span class={dot({ critical: critical() })} aria-hidden="true" />
+            <Show
+              when={todo() > 0}
+              fallback={
+                <Show when={unread() > 0}>
+                  <span class={mark({ critical: critical() })} aria-hidden="true" />
+                </Show>
+              }
+            >
+              <span class={mark({ critical: critical() })} data-count aria-hidden="true">
+                {todo() > 9 ? "9+" : todo()}
+              </span>
             </Show>
           </IconButton>
         )}
@@ -112,11 +135,11 @@ export const NotificationBell = () => {
           <Popover.Content aria-label="Notifications" class={styles.panel}>
             <div class={styles.header}>
               <span class={styles.title}>
-                Notifications
-                <Show when={unread() > 0}>
+                Inbox
+                <Show when={todo() > 0}>
                   <Badge size="sm" colorPalette="gray">
-                    <span class={css({ srOnly: true })}>Unread: </span>
-                    {unread() > 99 ? "99+" : unread()}
+                    <span class={css({ srOnly: true })}>To do: </span>
+                    {todo() > 99 ? "99+" : todo()}
                   </Badge>
                 </Show>
               </span>
@@ -187,18 +210,18 @@ export const NotificationBell = () => {
                 >
                   <NotificationList
                     items={items()}
+                    grouping="kind"
                     lines={1}
+                    actions={actions}
                     onOpen={(item) => {
                       close()
                       actions.open(item)
                     }}
-                    onMarkRead={(item) => actions.markRead.mutate([item.id])}
-                    unreadOnly
                     empty={
                       <EmptyState
                         icon={<BellOff />}
                         title="You're all caught up"
-                        description="Nothing new since you last looked."
+                        description="Nothing waits for you."
                       />
                     }
                   />

@@ -364,32 +364,62 @@ Every backend gets two services, both delivered by the notifications service:
 
 ### Notifications
 
-Declare the types in the manifest (`notifications`). They are registered when the backend starts and appear
-in every user's notification settings.
+Each person's notifications are an inbox, not a feed: what asks something of them stays until it is
+handled, and the rest is cleared as they go. Declare the types in the manifest (`notifications`). They
+are registered when the backend starts and appear in every user's notification settings.
+
+```ts
+notifications: {
+  "refund.approval": { description: "A refund waits for your approval", action: true, resolvedBy: "app" },
+  "request.assigned": { description: "A request was given to you", action: true },
+  "order.refunded": { description: "An order was refunded" },
+},
+```
+
+- **Action or information.** An `action` type asks something of the person: its items stay open, and count
+  on the bell, until they are resolved. Any other type is information: it never counts on the bell,
+  opening it marks it read, and *Done* clears it.
+- **Who resolves.** The app resolves an action item when the thing it is about is handled, by anyone,
+  anywhere. With `resolvedBy: "anyone"` (the default) the person may also mark it resolved, for work done
+  outside Mosaik; with `resolvedBy: "app"` only the app can, where "resolved" must be true (an approval
+  still pending), and the person can only snooze it.
+- **Subject.** What the notification is about, e.g. `refund:42`, required for action types. A notification
+  about a subject that already has an open item updates that item (its newest title and body, and how many
+  updates it folded) instead of adding another, whatever its type: an item stays an action if any of its
+  notifications was one.
 
 ```ts
 const notify = yield* Notify
 yield* notify.send({
-  type: sales.notification("order.refunded"),                  // type-checked
-  audience: Audiences.permission(sales.perm("orders.refund")), // or Audiences.users(id, …) / Audiences.everyone
-  exclude: [actor.id],                                         // e.g. whoever triggered it
-  content: { title: `${order.number} was refunded`, link: `/sales/orders?search=${order.number}` },
-  idempotencyKey: `refund-${order.id}`,
+  type: sales.notification("refund.approval"),                  // type-checked
+  audience: Audiences.permission(sales.perm("orders.refund")),  // or Audiences.users(id, …) / Audiences.everyone
+  exclude: [actor.id],                                          // e.g. whoever triggered it
+  subject: `refund:${refund.id}`,
+  content: { title: `Approve the refund of ${order.number}`, link: `/sales/orders?search=${order.number}` },
 })
+
+// Wherever the refund is approved or rejected, by whoever:
+yield* notify.resolve(`refund:${refund.id}`, { by: actor.id })  // resolved for everyone it reached
 ```
 
 - **Audience.** A permission audience is everyone whose roles grant it (wildcards and the built-in roles
   included), resolved when the notification is sent.
 - **Channels.** Users choose per type at `/notifications/settings`; until they do, `defaultChannels` apply.
-- **In-app.** The bell shows a dot while something is unread, red if something `critical` is among
-  the newest, and the newest items live, with a toast for each new one. So keep `critical` for what
-  someone should look at now.
-  Its panel lists the unread ones (all of them are at `/notifications`), under the day they came:
-  each with your app's icon in its colour (a warning or a critical one in theirs), the title on one
-  line and the start of the body's first paragraph after your app's name. Write the title so it
-  stands alone, and put the gist first in the body.
-- **Failures.** A failed `send` returns `NotifyError` and is logged. Callers usually ignore it, so a
-  notification never fails the action that triggered it.
+  An e-mail or a Slack message cannot be taken back: the link in one about a subject opens Core's page for
+  it first, which says who resolved it and when, so nobody does the work twice.
+- **In-app.** The bell shows how many action items are open, a dot when only information is unread, red if
+  something `critical` is among the newest, and a toast for each new one. So keep `critical` for what
+  someone should look at now. Its panel lists what is open (everything is at `/notifications`): each with
+  your app's icon in its colour (a warning or a critical one in theirs), the title on one line and the
+  start of the body's first paragraph after your app's name. Write the title so it stands alone, and put
+  the gist first in the body.
+- **Snooze.** People can put any open item away until a time they choose; it comes back unread.
+- **Clean-up.** Resolved items, and information read and left, leave the inbox after 30 days
+  (`INBOX_RETENTION_DAYS`).
+- **Idempotency.** `idempotencyKey` makes a retried `send` count once; `subject` says what the notification
+  is about. They are separate: a second notification about the same subject is an update, not a retry.
+- **Failures.** A failed `send` or `resolve` returns `NotifyError` and is logged. Callers usually ignore
+  it, so a notification never fails the action that triggered it.
 
 ### Messages
 

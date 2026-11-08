@@ -230,7 +230,13 @@ export const planServices = (
         SMTP_URL: env("SMTP_URL"),
         MAIL_FROM: env("MAIL_FROM"),
         MAIL_ALLOWED_DOMAINS: env("MAIL_ALLOWED_DOMAINS"),
-        ...pick("MESSAGES_PER_MINUTE", "DELIVERY_MAX_ATTEMPTS", "SLACK_BOT_TOKEN", "SLACK_API_URL"),
+        ...pick(
+          "MESSAGES_PER_MINUTE",
+          "DELIVERY_MAX_ATTEMPTS",
+          "INBOX_RETENTION_DAYS",
+          "SLACK_BOT_TOKEN",
+          "SLACK_API_URL",
+        ),
       },
     },
     {

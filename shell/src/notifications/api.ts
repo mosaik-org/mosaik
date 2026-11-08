@@ -1,40 +1,31 @@
 import { makeApiClient } from "@mosaik/client"
-import { NotificationsApi } from "@mosaik/notifications/contract"
+import { type InboxState, NotificationsApi } from "@mosaik/notifications/contract"
 import { infiniteQueryOptions, queryOptions } from "@tanstack/solid-query"
 
 export const notificationsApi = makeApiClient(NotificationsApi)
 
 export const notificationKeys = {
   all: ["notifications"] as const,
-  inbox: (unreadOnly: boolean) => ["notifications", "inbox", unreadOnly ? "unread" : "all"] as const,
-  latest: ["notifications", "inbox", "latest"] as const,
-  unreadPreview: ["notifications", "inbox", "unread-preview"] as const,
+  inbox: (state: InboxState) => ["notifications", "inbox", state] as const,
+  preview: ["notifications", "inbox", "preview"] as const,
   settings: ["notifications", "settings"] as const,
 }
 
-/** The few newest items, for the bell. */
-export const latestQuery = () =>
-  queryOptions({
-    queryKey: notificationKeys.latest,
-    queryFn: () => notificationsApi((client) => client.inbox.list({ query: { limit: 8 } })),
-  })
-
-/** The few newest unread items, for the overview. */
-export const unreadPreviewQuery = () =>
-  queryOptions({
-    queryKey: notificationKeys.unreadPreview,
-    queryFn: () => notificationsApi((client) => client.inbox.list({ query: { limit: 5, unread: "true" } })),
-  })
-
-export const inboxQuery = (unreadOnly: boolean) =>
+/** Items in one state, page by page, the newest first (the bell's panel shows the first page of open ones). */
+export const inboxQuery = (state: InboxState) =>
   infiniteQueryOptions({
-    queryKey: notificationKeys.inbox(unreadOnly),
+    queryKey: notificationKeys.inbox(state),
     queryFn: ({ pageParam }) =>
-      notificationsApi((client) =>
-        client.inbox.list({ query: { before: pageParam, limit: 30, unread: unreadOnly ? "true" : undefined } }),
-      ),
+      notificationsApi((client) => client.inbox.list({ query: { state, before: pageParam, limit: 30 } })),
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
+  })
+
+/** The few newest open items, for the overview. */
+export const previewQuery = () =>
+  queryOptions({
+    queryKey: notificationKeys.preview,
+    queryFn: () => notificationsApi((client) => client.inbox.list({ query: { state: "open", limit: 5 } })),
   })
 
 export const settingsQuery = () =>

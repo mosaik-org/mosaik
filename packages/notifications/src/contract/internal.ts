@@ -1,6 +1,6 @@
 import { InternalAuth } from "@mosaik/auth/contract"
-import { BadRequest, PersonalChannel, UserId } from "@mosaik/core"
-import { Schema } from "effect"
+import { BadRequest, NotificationResolver, PersonalChannel, UserId } from "@mosaik/core"
+import { Effect, Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
 import { Audience } from "./audience"
 import { Content } from "./content"
@@ -45,7 +45,19 @@ export class NotificationTypeInput extends Schema.Class<NotificationTypeInput>(
   key: Schema.String,
   description: Schema.String,
   defaultChannels: Schema.Array(PersonalChannel),
+  /**
+   * Its items stay open until resolved (see `NotificationSpec.action`). The platform keeps the manifests
+   * apps registered, and one from before these were declared described information, which is the default.
+   */
+  action: Schema.Boolean.pipe(Schema.withDecodingDefaultKey(Effect.succeed(false))),
+  resolvedBy: NotificationResolver.pipe(Schema.withDecodingDefaultKey(Effect.succeed("anyone" as const))),
 }) {}
+
+/**
+ * What a notification is about, e.g. `refund:42`, unique within its source. A notification about a
+ * subject with an open item updates that item; resolving the subject resolves it.
+ */
+export const Subject = Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(200))
 
 export class NotificationTypesPayload extends Schema.Class<NotificationTypesPayload>(
   "@mosaik/notifications/NotificationTypesPayload",
@@ -64,9 +76,24 @@ export class NotificationRequest extends Schema.Class<NotificationRequest>("@mos
     content: Content,
     /** Users left out even if they are in the audience, typically whoever triggered it. */
     exclude: Schema.Array(UserId),
+    /** What it is about; required for an action type. */
+    subject: Schema.NullOr(Subject),
     idempotencyKey: Schema.NullOr(Schema.String.check(Schema.isMinLength(1), Schema.isMaxLength(200))),
   },
 ) {}
+
+/** The source handled what a subject is about: its open items are resolved, for everyone. */
+export class ResolveRequest extends Schema.Class<ResolveRequest>("@mosaik/notifications/ResolveRequest")({
+  source: Slug,
+  subject: Subject,
+  /** Who handled it, shown with the items ("Resolved by Ada"); the app itself otherwise. */
+  by: Schema.NullOr(UserId),
+}) {}
+
+export class Resolved extends Schema.Class<Resolved>("@mosaik/notifications/Resolved")({
+  /** Open items resolved: one per person it reached, none if nothing was open. */
+  items: Schema.Number,
+}) {}
 
 export class NotificationAccepted extends Schema.Class<NotificationAccepted>(
   "@mosaik/notifications/NotificationAccepted",
@@ -109,6 +136,12 @@ export class NotificationsGroup extends HttpApiGroup.make("notifications")
     HttpApiEndpoint.post("send", "/notifications", {
       payload: NotificationRequest,
       success: NotificationAccepted,
+      error: BadRequest,
+    }),
+    /** Resolve the open items about a subject, for everyone they reached. */
+    HttpApiEndpoint.post("resolve", "/notifications/resolve", {
+      payload: ResolveRequest,
+      success: Resolved,
       error: BadRequest,
     }),
   )

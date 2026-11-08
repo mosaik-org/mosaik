@@ -1,3 +1,4 @@
+import { NOTIFICATION_LINK_PAGE } from "@mosaik/notifications/contract"
 import { Duration, Effect, Layer, Option } from "effect"
 import { NotificationsConfig } from "../NotificationsConfig"
 import { retryDelay } from "./Backoff"
@@ -9,6 +10,19 @@ const BATCH = 20
 const CONCURRENCY = 5
 /** Picks up retries and deliveries queued by other instances. */
 const POLL = Duration.seconds(5)
+
+/**
+ * A notification about a subject, sent to a person, links through Core's page for it: an e-mail cannot
+ * be taken back, so the page says who resolved it before anyone does the work twice. A channel admins
+ * route it to keeps the link as it is, as its readers did not receive it as people.
+ */
+export const linkedThroughCore = (delivery: OutgoingDelivery): OutgoingDelivery =>
+  delivery.category === "notification" &&
+  delivery.subject !== null &&
+  delivery.channel !== "target" &&
+  delivery.content.link !== undefined
+    ? { ...delivery, content: { ...delivery.content, link: `${NOTIFICATION_LINK_PAGE}?message=${delivery.messageId}` } }
+    : delivery
 
 /**
  * Sends due deliveries in the background: woken right after a message is queued and
@@ -28,7 +42,7 @@ export const layer = Layer.effectDiscard(
           yield* Effect.logWarning(`Channel "${delivery.channel}" is not configured`, { delivery: delivery.id })
           return yield* outbox.markFailed(delivery.id, `Channel "${delivery.channel}" is not configured`, Option.none())
         }
-        const result = yield* Effect.result(channel.value.send(delivery))
+        const result = yield* Effect.result(channel.value.send(linkedThroughCore(delivery)))
         if (result._tag === "Success") {
           return yield* outbox.markSent(delivery.id, result.success.providerId)
         }

@@ -1,9 +1,15 @@
 import { BadRequest } from "@mosaik/core"
-import { NotificationAccepted, type NotificationRequest } from "@mosaik/notifications/contract"
+import {
+  NotificationAccepted,
+  type NotificationRequest,
+  Resolved,
+  type ResolveRequest,
+} from "@mosaik/notifications/contract"
 import { Context, Effect, Layer, Option } from "effect"
 import { Channels } from "../delivery/Channels"
 import { Outbox, type Recipient } from "../delivery/Outbox"
 import { Fanout } from "../inbox/Fanout"
+import { Inbox } from "../inbox/Inbox"
 import { Directory } from "../messages/Directory"
 import { Routes } from "../targets/Routes"
 import { isEnabled, Preferences } from "./Preferences"
@@ -16,7 +22,11 @@ import { NotificationTypes } from "./Types"
  */
 export class Notifier extends Context.Service<
   Notifier,
-  { notify(request: NotificationRequest): Effect.Effect<NotificationAccepted, BadRequest> }
+  {
+    notify(request: NotificationRequest): Effect.Effect<NotificationAccepted, BadRequest>
+    /** The source handled what a subject is about: everyone's open items about it are resolved. */
+    resolve(request: ResolveRequest): Effect.Effect<Resolved, BadRequest>
+  }
 >()("@mosaik/notifications-service/Notifier") {
   static readonly layer = Layer.effect(
     Notifier,
@@ -28,6 +38,7 @@ export class Notifier extends Context.Service<
       const routes = yield* Routes
       const outbox = yield* Outbox
       const fanout = yield* Fanout
+      const inbox = yield* Inbox
 
       return Notifier.of({
         notify: Effect.fn("Notifier.notify")(function* (request: NotificationRequest) {
@@ -48,6 +59,12 @@ export class Notifier extends Context.Service<
           if (Option.isNone(type) || type.value.source !== request.source) {
             return yield* new BadRequest({
               message: `Unknown notification type "${request.type}" (declare it in the manifest of "${request.source}")`,
+            })
+          }
+          // What it is about is what the app resolves it by: an action without one could never close.
+          if (type.value.action && request.subject === null) {
+            return yield* new BadRequest({
+              message: `"${request.type}" asks for action: send it with a subject, which resolving it names`,
             })
           }
 
@@ -84,7 +101,8 @@ export class Notifier extends Context.Service<
             content: request.content,
             idempotencyKey: request.idempotencyKey,
             recipients,
-            inbox,
+            subject: request.subject,
+            inbox: { userIds: inbox, action: type.value.action, guarded: type.value.resolvedBy === "app" },
           })
           if (!queued.duplicate) {
             if (queued.inbox > 0) yield* fanout.announce(queued.id)
@@ -103,6 +121,25 @@ export class Notifier extends Context.Service<
             deliveries: queued.deliveries,
             duplicate: queued.duplicate,
           })
+        }),
+
+        resolve: Effect.fn("Notifier.resolve")(function* (request: ResolveRequest) {
+          // Named as people know them; an unknown id is the app's mistake, not something to show.
+          const by = request.by === null ? null : (yield* directory.users([request.by]))[0]
+          const userIds = yield* inbox.resolveSubject(
+            request.source,
+            request.subject,
+            by === undefined || by === null ? null : { id: by.id, name: by.name },
+          )
+          if (userIds.length > 0) {
+            yield* fanout.announceChanged(userIds)
+            yield* Effect.logInfo("Resolved notifications", {
+              source: request.source,
+              subject: request.subject,
+              items: userIds.length,
+            })
+          }
+          return new Resolved({ items: userIds.length })
         }),
       })
     }),

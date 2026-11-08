@@ -5,7 +5,7 @@ export { type EventHandler, type EventHandlerMap, EventHandlers, type EventInfo,
 export { followEventStream } from "./follow"
 export * as Live from "./Live"
 export { MessageError, Messages, type SendMessage } from "./Messages"
-export { Notify, NotifyError, type SendNotification } from "./Notify"
+export { Notify, NotifyError, type ResolveOptions, type SendNotification } from "./Notify"
 export * as Observability from "./Observability"
 export {
   type Branding,

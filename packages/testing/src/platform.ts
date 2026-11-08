@@ -10,8 +10,9 @@ import {
   type SettingValue,
   type StatusAudience,
   type StatusValue,
+  type UserId,
 } from "@mosaik/core"
-import { MessageAccepted, NotificationAccepted } from "@mosaik/notifications/contract"
+import { MessageAccepted, NotificationAccepted, Resolved } from "@mosaik/notifications/contract"
 import {
   AppEvent,
   type StatusEntry,
@@ -68,14 +69,24 @@ export class TestAudit extends Context.Service<
   )
 }
 
-/** The notifications the app sent, in order (nobody receives them). */
+/** A subject the app resolved, and by whom. */
+export interface ResolvedSubject {
+  readonly subject: string
+  readonly by: UserId | null
+}
+
+/** The notifications the app sent, and the subjects it resolved, in order (nobody receives them). */
 export class TestNotify extends Context.Service<
   TestNotify,
-  { readonly sent: Effect.Effect<ReadonlyArray<SendNotification>> }
+  {
+    readonly sent: Effect.Effect<ReadonlyArray<SendNotification>>
+    readonly resolved: Effect.Effect<ReadonlyArray<ResolvedSubject>>
+  }
 >()("@mosaik/testing/TestNotify") {
   static readonly layer = Layer.unwrap(
     Effect.gen(function* () {
       const sent = yield* Ref.make<ReadonlyArray<SendNotification>>([])
+      const resolved = yield* Ref.make<ReadonlyArray<ResolvedSubject>>([])
       return Layer.mergeAll(
         Layer.succeed(
           Notify,
@@ -85,9 +96,13 @@ export class TestNotify extends Context.Service<
                 new NotificationAccepted({ id: all.length + 1, recipients: 0, deliveries: 0, duplicate: false }),
                 [...all, notification],
               ]),
+            resolve: (subject, options) =>
+              Ref.update(resolved, (all) => [...all, { subject, by: options?.by ?? null }]).pipe(
+                Effect.as(new Resolved({ items: 0 })),
+              ),
           }),
         ),
-        Layer.succeed(TestNotify, TestNotify.of({ sent: Ref.get(sent) })),
+        Layer.succeed(TestNotify, TestNotify.of({ sent: Ref.get(sent), resolved: Ref.get(resolved) })),
       )
     }),
   )

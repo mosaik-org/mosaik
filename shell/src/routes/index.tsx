@@ -13,8 +13,9 @@ import LayoutDashboard from "lucide-solid/icons/layout-dashboard"
 import LayoutGrid from "lucide-solid/icons/layout-grid"
 import { For, type JSX, Show } from "solid-js"
 import { allApps, appHref } from "../apps"
-import { unreadPreviewQuery } from "../notifications/api"
-import { NotificationList, useInboxActions } from "../notifications/NotificationList"
+import { useInboxActions } from "../notifications/actions"
+import { previewQuery } from "../notifications/api"
+import { NotificationList } from "../notifications/NotificationList"
 import { NeedsYou } from "../statuses/NeedsYou"
 import { FEW_APPS, useMyApps } from "../workspace/myApps"
 import { readRecentPages } from "../workspace/recentPages"
@@ -121,7 +122,7 @@ const AllAppsLink = () => (
 /** The logged-in user's start page: their apps, what happened, and where they were. */
 const Personal = (props: { user: string }) => {
   const apps = useMyApps()
-  const unread = useQuery(unreadPreviewQuery)
+  const open = useQuery(previewQuery)
   const inbox = useInboxActions()
   const pages = readRecentPages(props.user)
   const pageApp = (id: string | undefined) => allApps.find((app) => app.id === id)?.name
@@ -179,7 +180,7 @@ const Personal = (props: { user: string }) => {
           </Section>
         </Show>
         <Section
-          title="Unread notifications"
+          title="Inbox"
           aside={
             <Link to="/notifications" class={styles.more}>
               All <ArrowRight size={14} />
@@ -188,7 +189,9 @@ const Personal = (props: { user: string }) => {
         >
           <Card.Root>
             <NotificationList
-              items={unread.data?.items ?? []}
+              items={open.data?.items ?? []}
+              grouping="kind"
+              actions={inbox}
               onOpen={inbox.open}
               empty={<div class={styles.muted}>You are all caught up.</div>}
             />

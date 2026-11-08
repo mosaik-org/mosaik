@@ -5,6 +5,8 @@ import {
   NotificationAccepted,
   NotificationRequest,
   RateLimited,
+  Resolved,
+  ResolveRequest,
 } from "@mosaik/notifications/contract"
 import { Context, Schema } from "effect"
 import {
@@ -60,6 +62,7 @@ export class AuditRequest extends Schema.Class<AuditRequest>("@mosaik/platform/A
 
 const { source: _messageSource, ...messageFields } = MessageRequest.fields
 const { source: _notificationSource, ...notificationFields } = NotificationRequest.fields
+const { source: _resolveSource, ...resolveFields } = ResolveRequest.fields
 
 /** A message; its source is the calling app. */
 export class AppMessageRequest extends Schema.Class<AppMessageRequest>("@mosaik/platform/AppMessageRequest")(
@@ -70,6 +73,11 @@ export class AppMessageRequest extends Schema.Class<AppMessageRequest>("@mosaik/
 export class AppNotificationRequest extends Schema.Class<AppNotificationRequest>(
   "@mosaik/platform/AppNotificationRequest",
 )(notificationFields) {}
+
+/** The calling app handled what a subject is about. */
+export class AppResolveRequest extends Schema.Class<AppResolveRequest>("@mosaik/platform/AppResolveRequest")(
+  resolveFields,
+) {}
 
 /** A platform event as an app receives it; `data` matches `PlatformEventData[type]`. */
 export class AppEvent extends Schema.Class<AppEvent>("@mosaik/platform/AppEvent")({
@@ -117,6 +125,11 @@ export class AppGroup extends HttpApiGroup.make("app")
     HttpApiEndpoint.post("notifications", "/notifications", {
       payload: AppNotificationRequest,
       success: NotificationAccepted,
+      error: BadRequest,
+    }),
+    HttpApiEndpoint.post("resolveNotifications", "/notifications/resolve", {
+      payload: AppResolveRequest,
+      success: Resolved,
       error: BadRequest,
     }),
     /**

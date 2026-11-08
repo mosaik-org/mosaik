@@ -23,6 +23,7 @@ export const NotificationsHandlers = HttpApiBuilder.group(
     return handlers.handleAll({
       registerTypes: ({ payload }) => types.register(payload),
       send: ({ payload }) => notifier.notify(payload),
+      resolve: ({ payload }) => notifier.resolve(payload),
     })
   }),
 )

@@ -7,6 +7,7 @@ export {
   AppTest,
   type AppTestOptions,
   type RecordedAudit,
+  type ResolvedSubject,
   TestAudit,
   TestEvents,
   type TestFile,

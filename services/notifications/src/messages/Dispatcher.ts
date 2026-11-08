@@ -130,7 +130,8 @@ export class Dispatcher extends Context.Service<
             content: request.content,
             idempotencyKey: request.idempotencyKey,
             recipients,
-            inbox: [],
+            subject: null,
+            inbox: { userIds: [], action: false, guarded: false },
           })
           if (!queued.duplicate) {
             if (queued.deliveries > 0) yield* outbox.wake

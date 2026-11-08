@@ -1,10 +1,12 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import type { PersonalChannel } from "@mosaik/core"
-import { NOTIFICATION_SETTINGS_PAGE } from "@mosaik/notifications/contract"
+import { NOTIFICATION_LINK_PAGE, NOTIFICATION_SETTINGS_PAGE, type Resolution } from "@mosaik/notifications/contract"
 import { CorePages, escapeHtml, formOf, pathOf } from "@mosaik/server"
-import { Effect } from "effect"
+import { Effect, Option } from "effect"
 import { HttpRouter, type HttpServerRequest, HttpServerResponse } from "effect/http"
 import { Channels } from "../delivery/Channels"
+import { Inbox } from "../inbox/Inbox"
+import { NotificationsConfig } from "../NotificationsConfig"
 import { effectiveSettings, Preferences } from "../notify/Preferences"
 import { NotificationTypes } from "../notify/Types"
 
@@ -90,6 +92,62 @@ ${rows
           }
         }
         return HttpServerResponse.redirect(`${NOTIFICATION_SETTINGS_PAGE}?saved`, { status: 303 })
+      }),
+    )
+  }),
+)
+
+/** "2 hours ago": as near as it matters, and the same in every time zone. */
+export const timeAgo = (then: number, now: number): string => {
+  const minutes = Math.round((now - then) / 60_000)
+  const plural = (count: number, unit: string) => `${count} ${unit}${count === 1 ? "" : "s"} ago`
+  if (minutes < 1) return "just now"
+  if (minutes < 60) return plural(minutes, "minute")
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return plural(hours, "hour")
+  return plural(Math.round(hours / 24), "day")
+}
+
+const resolvedBy = (resolution: Resolution, now: number) =>
+  `Resolved ${resolution.by === null ? "" : `by ${escapeHtml(resolution.by.name)} `}${timeAgo(resolution.at.epochMilliseconds, now)}.`
+
+/**
+ * Where a link in an e-mail or a Slack message about a subject leads first. Such a message cannot be
+ * taken back, so before going on to what it links to, this page says when it was already resolved,
+ * and by whom. The link is the notification's own, read from it: the page sends nobody anywhere else.
+ */
+export const LinkPage = HttpRouter.use(
+  Effect.fn(function* (router) {
+    const pages = yield* CorePages
+    const inbox = yield* Inbox
+    const config = yield* NotificationsConfig
+
+    const absolute = (link: string) => (link.startsWith("/") ? new URL(link, config.publicUrl).toString() : link)
+
+    yield* router.add(
+      "GET",
+      NOTIFICATION_LINK_PAGE,
+      Effect.fn("Notifications.link")(function* (request: HttpServerRequest.HttpServerRequest) {
+        const user = (yield* pages.principal(request)).user
+        if (user === null) return HttpServerResponse.redirect(signInUrl(pathOf(request)))
+        const message = Number(new URL(request.url, "http://core").searchParams.get("message"))
+        const target = Number.isSafeInteger(message) ? yield* inbox.linkTarget(user.id, message) : Option.none()
+        if (Option.isNone(target)) {
+          return pages.page({
+            title: "Notification",
+            status: 404,
+            body: `<h1>Nothing to show</h1>\n<p>This notification was not sent to ${escapeHtml(user.email)}, or is gone.</p>`,
+          })
+        }
+        const { title, link, resolution, itemId } = target.value
+        if (Option.isSome(itemId)) yield* inbox.markRead(user.id, [itemId.value])
+        if (Option.isNone(resolution) && link !== undefined) return HttpServerResponse.redirect(absolute(link))
+        return pages.page({
+          title: "Notification",
+          body: `<h1>${escapeHtml(title)}</h1>
+${Option.isSome(resolution) ? `<p>${resolvedBy(resolution.value, Date.now())}</p>` : ""}
+${link === undefined ? "" : `<p><a href="${escapeHtml(absolute(link))}">${Option.isSome(resolution) ? "Open it anyway" : "Open it"}</a></p>`}`,
+        })
       }),
     )
   }),

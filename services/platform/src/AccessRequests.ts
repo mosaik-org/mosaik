@@ -21,6 +21,7 @@ import {
   NotificationRequest,
   NotificationTypeInput,
   NotificationTypesPayload,
+  ResolveRequest,
 } from "@mosaik/notifications/contract"
 import { AccessAdmin, AccessRequest, type AccessRequestStatus, canManageApp } from "@mosaik/platform/contract"
 import { Context, Effect, Layer, Option, PubSub, Schedule, Schema, Stream } from "effect"
@@ -41,13 +42,21 @@ const NOTIFICATION_TYPES = [
     key: AccessNotifications.requested,
     description: "Someone asked for access to an app",
     defaultChannels: ["inApp", "email"],
+    // Resolved when the request is answered, by whichever of its reviewers does.
+    action: true,
+    resolvedBy: "app",
   }),
   new NotificationTypeInput({
     key: AccessNotifications.answered,
     description: "Your request for access to an app was answered",
     defaultChannels: ["inApp", "email"],
+    action: false,
+    resolvedBy: "anyone",
   }),
 ]
+
+/** What a request's notifications are about: answering it resolves them. */
+const subjectOf = (id: number) => `access-request:${id}`
 
 /** Where owners and admins answer an app's requests: the console's app page, with or without the Portal. */
 const reviewPath = (app: string) => `/manage/${app}?tab=requests`
@@ -169,14 +178,29 @@ export class AccessRequests extends Context.Service<
         type: string,
         audience: Audience,
         content: Content,
+        request: number,
         idempotencyKey: string,
         exclude: ReadonlyArray<UserId> = [],
       ) =>
         notifications.notifications
           .send({
-            payload: new NotificationRequest({ source: SOURCE, type, audience, content, exclude, idempotencyKey }),
+            payload: new NotificationRequest({
+              source: SOURCE,
+              type,
+              audience,
+              content,
+              exclude,
+              subject: subjectOf(request),
+              idempotencyKey,
+            }),
           })
           .pipe(Effect.catchCause((cause) => Effect.logWarning("Could not send an access notification", cause)))
+
+      /** The request is answered or gone: nobody needs to review it any more. */
+      const resolve = (request: number, by: UserId | null) =>
+        notifications.notifications
+          .resolve({ payload: new ResolveRequest({ source: SOURCE, subject: subjectOf(request), by }) })
+          .pipe(Effect.catchCause((cause) => Effect.logWarning("Could not resolve an access notification", cause)))
 
       /** Where the app opens: a standalone app's own address, else its path in the Portal. */
       const openLink = (app: string) =>
@@ -206,6 +230,7 @@ export class AccessRequests extends Context.Service<
                   title: `Your request for access to ${request.appName} was declined`,
                   ...(request.response === null ? {} : { body: request.response }),
                 },
+            request.id,
             `access-request-${request.id}-${request.status}`,
           ),
         )
@@ -237,9 +262,23 @@ export class AccessRequests extends Context.Service<
         if (rows.length === 0) return yield* new Conflict({ message: "The request was already answered" })
         yield* announce
         const request = yield* get(id).pipe(Effect.orDie)
+        yield* resolve(id, answer.decidedBy?.id ?? null)
         yield* tellRequester(request)
         return request
       })
+
+      const forget = (
+        removal: Effect.Effect<ReadonlyArray<{ readonly id: number; readonly status: string }>, unknown>,
+      ) =>
+        Effect.gen(function* () {
+          const removed = yield* removal.pipe(Effect.orDie)
+          yield* announce
+          yield* Effect.forEach(
+            removed.filter((row) => row.status === "pending"),
+            (row) => resolve(row.id, null),
+            { discard: true },
+          )
+        })
 
       /** A pending request the principal may answer. */
       const reviewable = Effect.fn(function* (principal: Principal, id: number) {
@@ -337,6 +376,7 @@ export class AccessRequests extends Context.Service<
                 ...(wanted === null ? [] : [{ label: "Role", value: wanted.name }]),
               ],
             },
+            request.id,
             `access-request-${request.id}`,
             [user.id],
           )
@@ -392,10 +432,18 @@ export class AccessRequests extends Context.Service<
           }
         }),
 
+        // Requests that go unanswered leave nothing for their reviewers to do.
         forgetUser: (user) =>
-          sql`DELETE FROM access_requests WHERE user_id = ${user}`.pipe(Effect.andThen(announce), Effect.orDie),
+          forget(
+            sql<{
+              id: number
+              status: string
+            }>`DELETE FROM access_requests WHERE user_id = ${user} RETURNING id, status`,
+          ),
         forgetApp: (app) =>
-          sql`DELETE FROM access_requests WHERE app_id = ${app}`.pipe(Effect.andThen(announce), Effect.orDie),
+          forget(
+            sql<{ id: number; status: string }>`DELETE FROM access_requests WHERE app_id = ${app} RETURNING id, status`,
+          ),
         changes: Stream.unwrap(
           // Subscribed before the first tick, so a change right after it is not missed.
           Effect.map(PubSub.subscribe(changed), (subscription) =>

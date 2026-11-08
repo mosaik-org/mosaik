@@ -1,5 +1,5 @@
 import { PgClient } from "@effect/sql-pg"
-import { BadRequest, PersonalChannel } from "@mosaik/core"
+import { BadRequest, NotificationResolver, PersonalChannel } from "@mosaik/core"
 import type { NotificationTypesPayload } from "@mosaik/notifications/contract"
 import { Context, Effect, Layer, type Option, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
@@ -9,6 +9,8 @@ const TypeRow = Schema.Struct({
   source: Schema.String,
   description: Schema.String,
   defaultChannels: Schema.Array(PersonalChannel),
+  action: Schema.Boolean,
+  resolvedBy: NotificationResolver,
 })
 export type NotificationType = typeof TypeRow.Type
 
@@ -26,18 +28,18 @@ export class NotificationTypes extends Context.Service<
     NotificationTypes,
     Effect.gen(function* () {
       const sql = yield* PgClient.PgClient
+      const columns = sql.literal("key, source, description, default_channels, action, resolved_by")
 
       const findByKey = SqlSchema.findOneOption({
         Request: Schema.String,
         Result: TypeRow,
-        execute: (key) =>
-          sql`SELECT key, source, description, default_channels FROM notification_types WHERE key = ${key} AND NOT stale`,
+        execute: (key) => sql`SELECT ${columns} FROM notification_types WHERE key = ${key} AND NOT stale`,
       })
       const findAll = SqlSchema.findAll({
         Request: Schema.Void,
         Result: TypeRow,
         execute: () => sql`
-          SELECT key, source, description, default_channels FROM notification_types
+          SELECT ${columns} FROM notification_types
           WHERE NOT stale ORDER BY source, key
         `,
       })
@@ -60,9 +62,12 @@ export class NotificationTypes extends Context.Service<
                       source: payload.source,
                       description: type.description,
                       defaultChannels: sql.json(type.defaultChannels),
+                      action: type.action,
+                      resolvedBy: type.resolvedBy,
                     })}
                     ON CONFLICT (key) DO UPDATE SET
                       description = excluded.description, default_channels = excluded.default_channels,
+                      action = excluded.action, resolved_by = excluded.resolved_by,
                       stale = false, updated_at = now()
                   `
                 }

@@ -1,4 +1,4 @@
-import { Config, Context, Effect, Layer, Option, Redacted } from "effect"
+import { Config, Context, Duration, Effect, Layer, Option, Redacted } from "effect"
 import { DomainPolicy } from "./messages/DomainPolicy"
 
 export interface SlackConfig {
@@ -29,6 +29,8 @@ export class NotificationsConfig extends Context.Service<
     readonly deliveriesPerMinute: number
     /** Attempts per delivery before it is marked failed. */
     readonly maxAttempts: number
+    /** How long resolved items, and information read and left, stay in inboxes. */
+    readonly inboxRetention: Duration.Duration
   }
 >()("@mosaik/notifications-service/NotificationsConfig") {
   static readonly layer = Layer.effect(
@@ -62,6 +64,9 @@ export class NotificationsConfig extends Context.Service<
         allowedDomains: DomainPolicy.parse(yield* Config.String("MAIL_ALLOWED_DOMAINS").pipe(Config.withDefault(""))),
         deliveriesPerMinute: yield* Config.Int("MESSAGES_PER_MINUTE").pipe(Config.withDefault(120)),
         maxAttempts: yield* Config.Int("DELIVERY_MAX_ATTEMPTS").pipe(Config.withDefault(8)),
+        inboxRetention: Duration.days(
+          Math.max(1, yield* Config.Int("INBOX_RETENTION_DAYS").pipe(Config.withDefault(30))),
+        ),
       })
     }),
   )

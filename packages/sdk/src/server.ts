@@ -27,6 +27,7 @@ export {
   Notify,
   NotifyError,
   type ReportProgress,
+  type ResolveOptions,
   type RespondOptions,
   runApp,
   type SendMessage,

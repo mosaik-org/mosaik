@@ -1,7 +1,7 @@
 import { AuditEventInput, JWKS_PATH } from "@mosaik/auth/contract"
 import { InternalClient } from "@mosaik/auth/server"
 import { BadRequest } from "@mosaik/core"
-import { MessageRequest, NotificationRequest } from "@mosaik/notifications/contract"
+import { MessageRequest, NotificationRequest, ResolveRequest } from "@mosaik/notifications/contract"
 import { CurrentApp, PlatformApi } from "@mosaik/platform/contract"
 import { Cache, Config, Duration, Effect, Exit, Option, Schema } from "effect"
 import { HttpClient, HttpClientResponse, HttpMiddleware } from "effect/http"
@@ -83,6 +83,18 @@ export const AppHandlers = HttpApiBuilder.group(
         const app = yield* CurrentApp
         return yield* notifications.notifications
           .send({ payload: new NotificationRequest({ ...payload, source: app.id }) })
+          .pipe(
+            Effect.catchIf(
+              (error) => error._tag !== "BadRequest",
+              (error) => Effect.die(error),
+            ),
+          )
+      }),
+
+      resolveNotifications: Effect.fn("Platform.resolveNotifications")(function* ({ payload }) {
+        const app = yield* CurrentApp
+        return yield* notifications.notifications
+          .resolve({ payload: new ResolveRequest({ ...payload, source: app.id }) })
           .pipe(
             Effect.catchIf(
               (error) => error._tag !== "BadRequest",

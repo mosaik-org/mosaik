@@ -162,6 +162,8 @@ export const toAppManifest = (app: AnyApp, web: WebBundle | null = null): AppMan
           key: app.notification(name),
           description: spec.description,
           defaultChannels: spec.defaultChannels ?? ["inApp"],
+          action: spec.action ?? false,
+          resolvedBy: spec.resolvedBy ?? "anyone",
         }),
     ),
     events: app.events,

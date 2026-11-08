@@ -54,6 +54,20 @@ describe("defineApp", () => {
     expect(sales.notification("order.refunded")).toBe("sales:order.refunded")
   })
 
+  it("lets only an action say who resolves it", () => {
+    const withNotification = (spec: { action?: boolean; resolvedBy?: "anyone" | "app" }) => () =>
+      defineApp({
+        id: "x",
+        name: "X",
+        access: "view",
+        permissions: { view: { description: "" } },
+        notifications: { "thing.done": { description: "A thing", ...spec } },
+      })
+    expect(withNotification({ resolvedBy: "app" })).toThrow(/not an action/)
+    expect(withNotification({ action: true, resolvedBy: "app" })).not.toThrow()
+    expect(withNotification({})).not.toThrow()
+  })
+
   it("rejects invalid or reserved ids", () => {
     expect(() =>
       defineApp({ id: "Sales", name: "x", access: "view", permissions: { view: { description: "" } } }),

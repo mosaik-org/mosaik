@@ -9,6 +9,7 @@ import {
 } from "@mosaik/notifications/contract"
 import { Array as Arr, Context, Duration, Effect, Layer, Option, Queue, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
+import { Inbox } from "../inbox/Inbox"
 import type { ChannelName, OutgoingDelivery } from "./channels/Channel"
 
 /** How long a claimed delivery stays locked; after that another worker may pick it up again. */
@@ -31,8 +32,15 @@ export interface NewMessage {
   readonly content: Content
   readonly idempotencyKey: string | null
   readonly recipients: ReadonlyArray<Recipient>
-  /** Users who get it in their in-app inbox. */
-  readonly inbox: ReadonlyArray<string>
+  /** A notification's subject, which its inbox items and links follow. */
+  readonly subject: string | null
+  /** Users who get it in their in-app inbox, and how it goes there. */
+  readonly inbox: {
+    readonly userIds: ReadonlyArray<string>
+    readonly action: boolean
+    /** Only the app may resolve it. */
+    readonly guarded: boolean
+  }
 }
 
 export interface Enqueued {
@@ -57,6 +65,7 @@ const DeliveryRow = Schema.Struct({
   category: Schema.Literals(["message", "notification"]),
   source: Schema.String,
   kind: Schema.NullOr(Schema.String),
+  subject: Schema.NullOr(Schema.String),
   channel: Schema.String,
   recipient: Schema.String,
   recipientName: Schema.NullOr(Schema.String),
@@ -111,6 +120,7 @@ export class Outbox extends Context.Service<
     Outbox,
     Effect.gen(function* () {
       const sql = yield* PgClient.PgClient
+      const inboxes = yield* Inbox
       const signal = yield* Queue.dropping<void>(1)
 
       const findExisting = SqlSchema.findOneOption({
@@ -152,7 +162,7 @@ export class Outbox extends Context.Service<
             FROM due WHERE d.id = due.id
             RETURNING d.id, d.message_id, d.channel, d.recipient, d.recipient_name, d.attempts
           )
-          SELECT c.*, m.category, m.source, m.kind, m.content
+          SELECT c.*, m.category, m.source, m.kind, m.subject, m.content
           FROM claimed c JOIN messages m ON m.id = c.message_id
           ORDER BY c.id
         `,
@@ -190,6 +200,7 @@ export class Outbox extends Context.Service<
                     kind: message.kind,
                     content: sql.json(message.content),
                     idempotencyKey: message.idempotencyKey,
+                    subject: message.subject,
                   })}
                   ON CONFLICT (source, idempotency_key) DO NOTHING
                   RETURNING id
@@ -214,21 +225,20 @@ export class Outbox extends Context.Service<
                     ON CONFLICT DO NOTHING
                   `
                 }
-                const inbox = [...new Set(message.inbox)]
-                if (Arr.isReadonlyArrayNonEmpty(inbox)) {
-                  yield* sql`
-                    INSERT INTO inbox ${sql.insert(Arr.map(inbox, (userId) => ({ messageId: id, userId })))}
-                    ON CONFLICT DO NOTHING
-                  `
-                }
+                const filed = yield* inboxes.file({
+                  messageId: id,
+                  source: message.source,
+                  subject: message.subject,
+                  ...message.inbox,
+                })
                 const users = new Set([
-                  ...inbox,
+                  ...message.inbox.userIds,
                   ...message.recipients.flatMap((r) => (r.userId === null ? [] : [r.userId])),
                 ])
                 return {
                   id,
                   deliveries: message.recipients.length,
-                  inbox: inbox.length,
+                  inbox: filed,
                   users: users.size,
                   duplicate: false,
                 }

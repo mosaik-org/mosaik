@@ -6,6 +6,7 @@ import {
   type PermissionKey,
   PersonalChannel,
   RequiredPermission,
+  UserId,
 } from "@mosaik/core"
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api"
@@ -24,44 +25,102 @@ export const NotificationsAdmin = {
 
 // --- Inbox ------------------------------------------------------------------------------
 
+/** Where an item is: waiting for someone, put away until a time, or handled. */
+export const InboxState = Schema.Literals(["open", "snoozed", "resolved"])
+export type InboxState = typeof InboxState.Type
+
+/** When an item was resolved, and by whom. */
+export class Resolution extends Schema.Class<Resolution>("@mosaik/notifications/Resolution")({
+  at: Schema.DateTimeUtc,
+  /** Who handled it; null when the app did not say. */
+  by: Schema.NullOr(Schema.Struct({ id: UserId, name: Schema.String })),
+  /**
+   * The app resolved it, as what it is about was handled (anywhere, by `by`); otherwise the person
+   * resolved their item themselves, and may open it again.
+   */
+  app: Schema.Boolean,
+}) {}
+
+/**
+ * One thing in someone's inbox: a notification, or several about the same subject folded into one
+ * (its content the newest's).
+ */
 export class InboxItem extends Schema.Class<InboxItem>("@mosaik/notifications/InboxItem")({
   id: Schema.Number,
-  /** Notification type key, e.g. `sales:order.refunded`. */
+  /** Notification type key of the newest notification, e.g. `sales:order.refunded`. */
   type: Schema.String,
   /** Sending app. */
   source: Schema.String,
+  /** What it is about, e.g. `refund:42`; null for a notification that stands alone. */
+  subject: Schema.NullOr(Schema.String),
   content: Content,
+  /** It asks something of the person: open, it counts on the bell. */
+  action: Schema.Boolean,
+  /** The person may resolve it (information always; an action unless only its app may). */
+  resolvable: Schema.Boolean,
+  state: InboxState,
+  /** How many notifications it holds: more than one when later ones about its subject updated it. */
+  updates: Schema.Number,
   createdAt: Schema.DateTimeUtc,
+  /** When the newest notification came. */
+  updatedAt: Schema.DateTimeUtc,
   readAt: Schema.NullOr(Schema.DateTimeUtc),
+  snoozedUntil: Schema.NullOr(Schema.DateTimeUtc),
+  resolution: Schema.NullOr(Resolution),
+}) {}
+
+/** What the bell shows: open actions (a number), and whether anything open is unread (a dot). */
+export class InboxCounts extends Schema.Class<InboxCounts>("@mosaik/notifications/InboxCounts")({
+  /** Open action items, not snoozed. */
+  actions: Schema.Number,
+  /** Open items not yet read. */
+  unread: Schema.Number,
 }) {}
 
 export class InboxPage extends Schema.Class<InboxPage>("@mosaik/notifications/InboxPage")({
   items: Schema.Array(InboxItem),
-  unread: Schema.Number,
+  counts: InboxCounts,
   nextCursor: Schema.NullOr(Schema.Number),
 }) {}
 
-/** Sent on the live stream: when connecting (`item: null`) and for every new notification. */
+/**
+ * Sent on the live stream: when connecting and whenever the person's inbox changes, with `item` when a
+ * notification added or updated one (to show it as it comes).
+ */
 export class InboxEvent extends Schema.Class<InboxEvent>("@mosaik/notifications/InboxEvent")({
-  unread: Schema.Number,
+  counts: InboxCounts,
   item: Schema.NullOr(InboxItem),
 }) {}
 
+const ItemIds = Schema.Struct({ ids: Schema.Array(Schema.Number).check(Schema.isMaxLength(500)) })
+
 export class InboxGroup extends HttpApiGroup.make("inbox")
   .add(
+    /** The items in one state, the newest first (by their newest notification). */
     HttpApiEndpoint.get("list", "/", {
       query: {
+        state: Schema.optional(InboxState),
         before: Schema.optional(Schema.NumberFromString),
         limit: Schema.optional(Schema.NumberFromString),
-        unread: Schema.optional(Schema.Literals(["true", "false"])),
       },
       success: InboxPage,
     }),
-    HttpApiEndpoint.post("markRead", "/read", {
-      payload: Schema.Struct({ ids: Schema.Array(Schema.Number).check(Schema.isMaxLength(500)) }),
-      success: HttpApiSchema.NoContent,
-    }),
+    HttpApiEndpoint.post("markRead", "/read", { payload: ItemIds, success: HttpApiSchema.NoContent }),
     HttpApiEndpoint.post("markAllRead", "/read-all", { success: HttpApiSchema.NoContent }),
+    /** Resolves the items (information: done). An item only its app may resolve refuses all of them. */
+    HttpApiEndpoint.post("resolve", "/resolve", {
+      payload: ItemIds,
+      success: HttpApiSchema.NoContent,
+      error: Conflict,
+    }),
+    /** Opens again what the person resolved or snoozed (to undo); what the app resolved stays so. */
+    HttpApiEndpoint.post("reopen", "/reopen", { payload: ItemIds, success: HttpApiSchema.NoContent }),
+    /** Puts open items away until a time; they come back unread. */
+    HttpApiEndpoint.post("snooze", "/snooze", {
+      payload: Schema.Struct({ ...ItemIds.fields, until: Schema.DateTimeUtc }),
+      success: HttpApiSchema.NoContent,
+      error: BadRequest,
+    }),
     /** Server-Sent Events of `InboxEvent`. */
     HttpApiEndpoint.get("live", "/live", {
       success: Schema.String.pipe(HttpApiSchema.asText({ contentType: "text/event-stream" })),
@@ -70,6 +129,12 @@ export class InboxGroup extends HttpApiGroup.make("inbox")
   .prefix("/inbox") {}
 
 export const inboxLiveUrl = `${NOTIFICATIONS_API_PREFIX}/inbox/live`
+
+/**
+ * Core's page that an e-mail or a Slack message about a subject links to (`?message=<id>`): it goes on
+ * to the notification's link, or first says who resolved it and when, as a message cannot be taken back.
+ */
+export const NOTIFICATION_LINK_PAGE = `${NOTIFICATIONS_API_PREFIX}/go`
 
 // --- Settings ---------------------------------------------------------------------------
 

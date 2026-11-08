@@ -30,6 +30,13 @@ export interface PermissionSpec {
 export const PersonalChannel = Schema.Literals(["inApp", "email", "slack"])
 export type PersonalChannel = typeof PersonalChannel.Type
 
+/**
+ * Who may resolve an action item: the person too (`anyone`), for work done outside Mosaik, or the app
+ * alone (`app`), where "resolved" must be true, such as an approval still pending.
+ */
+export const NotificationResolver = Schema.Literals(["anyone", "app"])
+export type NotificationResolver = typeof NotificationResolver.Type
+
 export interface NotificationSpec {
   /** Shown in notification settings, e.g. "An order was refunded". */
   readonly description: string
@@ -38,6 +45,14 @@ export interface NotificationSpec {
    * Admins can additionally route a type to Teams or Slack channels.
    */
   readonly defaultChannels?: ReadonlyArray<PersonalChannel>
+  /**
+   * It asks something of the person: its items stay open in their inbox, counting on the bell, until
+   * they are resolved. Every notification of it needs a `subject`, which the app resolves it by.
+   * Otherwise it is information, which opening marks read and *Done* clears.
+   */
+  readonly action?: boolean
+  /** Who may resolve its items (an action's only): `anyone` by default, or the `app` alone. */
+  readonly resolvedBy?: NotificationResolver
 }
 
 export type NotificationKey<Id extends string = string, Name extends string = string> = `${Id}:${Name}`
@@ -240,9 +255,12 @@ export const defineApp = <
       throw new Error(`Invalid permission name "${name}" in app "${spec.id}"`)
     }
   }
-  for (const name of Object.keys(spec.notifications ?? {})) {
+  for (const [name, notification] of Object.entries<NotificationSpec>(spec.notifications ?? {})) {
     if (!PermissionNamePattern.test(name)) {
       throw new Error(`Invalid notification name "${name}" in app "${spec.id}"`)
+    }
+    if (notification.resolvedBy !== undefined && notification.action !== true) {
+      throw new Error(`Notification "${name}" in app "${spec.id}" says who resolves it, but is not an action`)
     }
   }
   for (const [name, setting] of Object.entries<SettingsSpec[string]>(spec.settings ?? {})) {

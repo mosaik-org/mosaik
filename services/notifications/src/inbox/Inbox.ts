@@ -1,108 +1,235 @@
 import { PgClient } from "@effect/sql-pg"
-import { Content, InboxItem, InboxPage } from "@mosaik/notifications/contract"
-import { Context, Effect, Layer, Schema } from "effect"
+import { Conflict, type UserId } from "@mosaik/core"
+import { Content, InboxCounts, InboxItem, InboxPage, InboxState, Resolution } from "@mosaik/notifications/contract"
+import { Array as Arr, Context, type DateTime, Effect, Layer, Option, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
 
 const ItemRow = Schema.Struct({
   id: Schema.Number,
+  userId: Schema.String,
   type: Schema.String,
   source: Schema.String,
+  subject: Schema.NullOr(Schema.String),
   content: Content,
+  action: Schema.Boolean,
+  guarded: Schema.Boolean,
+  state: InboxState,
+  updates: Schema.Number,
+  position: Schema.Number,
   createdAt: Schema.DateTimeUtcFromDate,
+  updatedAt: Schema.DateTimeUtcFromDate,
   readAt: Schema.NullOr(Schema.DateTimeUtcFromDate),
+  snoozedUntil: Schema.NullOr(Schema.DateTimeUtcFromDate),
+  resolvedAt: Schema.NullOr(Schema.DateTimeUtcFromDate),
+  resolvedVia: Schema.NullOr(Schema.Literals(["app", "person"])),
+  resolvedById: Schema.NullOr(Schema.String),
+  resolvedByName: Schema.NullOr(Schema.String),
 })
+type ItemRow = typeof ItemRow.Type
+
+/** An item as people see it: whether they may resolve it, and who did. */
+export const toItem = (row: ItemRow): InboxItem =>
+  new InboxItem({
+    id: row.id,
+    type: row.type,
+    source: row.source,
+    subject: row.subject,
+    content: row.content,
+    action: row.action,
+    // Information is the person's to clear; an action is unless only its app may resolve it.
+    resolvable: !(row.action && row.guarded),
+    state: row.state,
+    updates: row.updates,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    readAt: row.readAt,
+    snoozedUntil: row.state === "snoozed" ? row.snoozedUntil : null,
+    resolution:
+      row.resolvedAt === null
+        ? null
+        : new Resolution({
+            at: row.resolvedAt,
+            by:
+              row.resolvedById === null
+                ? null
+                : { id: row.resolvedById as UserId, name: row.resolvedByName ?? row.resolvedById },
+            app: row.resolvedVia === "app",
+          }),
+  })
+
+/** Who handled something: a person, or the app that sent it (`null`). */
+export interface Resolver {
+  readonly id: string
+  readonly name: string
+}
+
+/** A new notification's place in its people's inboxes. */
+export interface Filing {
+  readonly messageId: number
+  readonly source: string
+  readonly subject: string | null
+  readonly action: boolean
+  /** Only the app may resolve it. */
+  readonly guarded: boolean
+  readonly userIds: ReadonlyArray<string>
+}
+
+export interface UserItem {
+  readonly userId: string
+  readonly item: InboxItem
+}
 
 export interface InboxQuery {
+  readonly state?: InboxState | undefined
   readonly before?: number | undefined
   readonly limit?: number | undefined
-  readonly unreadOnly?: boolean | undefined
+}
+
+/** What a link from an e-mail or a Slack message leads to: where to go, and whether it is handled. */
+export interface LinkTarget {
+  readonly title: string
+  readonly link: string | undefined
+  readonly resolution: Option.Option<Resolution>
+  /** The person's item about it, to mark read on the way. */
+  readonly itemId: Option.Option<number>
 }
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 100
 
-/** Users' in-app notifications. */
+/**
+ * People's inboxes. Each person has at most one open item per subject, which later notifications about
+ * it move on to the newest message; an item is open, snoozed until a time, or resolved (by its app, or
+ * by the person where its type lets them).
+ */
 export class Inbox extends Context.Service<
   Inbox,
   {
+    /** Adds a notification to its people's inboxes, or updates their open item about its subject. */
+    file(filing: Filing): Effect.Effect<number>
     list(userId: string, query: InboxQuery): Effect.Effect<InboxPage>
-    unread(userId: string): Effect.Effect<number>
+    counts(userId: string): Effect.Effect<InboxCounts>
     markRead(userId: string, ids: ReadonlyArray<number>): Effect.Effect<void>
     markAllRead(userId: string): Effect.Effect<void>
-    /** The inbox items one message created, by user (for live updates). */
-    itemsForMessage(
-      messageId: number,
-    ): Effect.Effect<ReadonlyArray<{ readonly userId: string; readonly item: InboxItem }>>
+    /** The person resolves items; refuses all of them if only an app may resolve one. */
+    resolve(user: Resolver, ids: ReadonlyArray<number>): Effect.Effect<void, Conflict>
+    /** Opens again what the person resolved or snoozed. */
+    reopen(userId: string, ids: ReadonlyArray<number>): Effect.Effect<void>
+    snooze(userId: string, ids: ReadonlyArray<number>, until: DateTime.Utc): Effect.Effect<void>
+    /** An app handled what a subject is about: its open items are resolved. Returns whose. */
+    resolveSubject(source: string, subject: string, by: Resolver | null): Effect.Effect<ReadonlyArray<string>>
+    /** Opens what was snoozed until now, unread again. Returns their ids. */
+    readonly wake: Effect.Effect<ReadonlyArray<number>>
+    /** Removes what was resolved, and information read and left, before `cutoff`. */
+    prune(cutoff: Date): Effect.Effect<number>
+    /** The items one message is in, by user (for live updates). */
+    itemsForMessage(messageId: number): Effect.Effect<ReadonlyArray<UserItem>>
+    itemsByIds(ids: ReadonlyArray<number>): Effect.Effect<ReadonlyArray<UserItem>>
+    /** Where a notification someone received leads, if it was theirs to receive. */
+    linkTarget(userId: string, messageId: number): Effect.Effect<Option.Option<LinkTarget>>
   }
 >()("@mosaik/notifications-service/Inbox") {
   static readonly layer = Layer.effect(
     Inbox,
     Effect.gen(function* () {
       const sql = yield* PgClient.PgClient
-      const columns = sql.literal(
-        "i.id, m.source || ':' || m.kind AS type, m.source, m.content, i.created_at, i.read_at",
-      )
+      const columns = sql.literal(`
+        i.id, i.user_id, m.source || ':' || m.kind AS type, i.source, i.subject, m.content, i.action, i.guarded,
+        CASE WHEN i.resolved_at IS NOT NULL THEN 'resolved'
+          WHEN i.snoozed_until > now() THEN 'snoozed' ELSE 'open' END AS state,
+        i.updates, i.position::float8 AS position, i.created_at, i.updated_at, i.read_at, i.snoozed_until,
+        i.resolved_at, i.resolved_via, i.resolved_by_id, i.resolved_by_name`)
+      const from = sql.literal("inbox i JOIN messages m ON m.id = i.message_id")
+      const open = sql.literal("i.resolved_at IS NULL AND (i.snoozed_until IS NULL OR i.snoozed_until <= now())")
+      const inState = (state: InboxState) =>
+        state === "resolved"
+          ? sql.literal("i.resolved_at IS NOT NULL")
+          : state === "snoozed"
+            ? sql.literal("i.resolved_at IS NULL AND i.snoozed_until > now()")
+            : open
 
       const findPage = SqlSchema.findAll({
         Request: Schema.Struct({
           userId: Schema.String,
+          state: InboxState,
           before: Schema.optional(Schema.Number),
           limit: Schema.Number,
-          unreadOnly: Schema.Boolean,
         }),
         Result: ItemRow,
-        execute: ({ userId, before, limit, unreadOnly }) => sql`
-          SELECT ${columns}
-          FROM inbox i JOIN messages m ON m.id = i.message_id
+        execute: ({ userId, state, before, limit }) => sql`
+          SELECT ${columns} FROM ${from}
           WHERE ${sql.and([
             sql`i.user_id = ${userId}`,
-            before === undefined ? sql.literal("true") : sql`i.id < ${before}`,
-            unreadOnly ? sql.literal("i.read_at IS NULL") : sql.literal("true"),
+            inState(state),
+            before === undefined ? sql.literal("true") : sql`i.position < ${before}`,
           ])}
-          ORDER BY i.id DESC
+          ORDER BY i.position DESC
           LIMIT ${limit + 1}
         `,
       })
-      const findForMessage = SqlSchema.findAll({
-        Request: Schema.Number,
-        Result: Schema.Struct({ userId: Schema.String, ...ItemRow.fields }),
-        execute: (messageId) => sql`
-          SELECT i.user_id, ${columns}
-          FROM inbox i JOIN messages m ON m.id = i.message_id
-          WHERE i.message_id = ${messageId}
-        `,
-      })
+      const findWhere = (where: ReturnType<typeof sql.literal> | ReturnType<typeof sql>) =>
+        SqlSchema.findAll({
+          Request: Schema.Void,
+          Result: ItemRow,
+          execute: () => sql`SELECT ${columns} FROM ${from} WHERE ${where}`,
+        })
 
-      const unread = (userId: string) =>
-        sql<{ count: number }>`
-          SELECT count(*)::int AS count FROM inbox WHERE user_id = ${userId} AND read_at IS NULL
+      const counts = (userId: string) =>
+        sql<{ actions: number; unread: number }>`
+          SELECT count(*) FILTER (WHERE i.action)::int AS actions,
+            count(*) FILTER (WHERE i.read_at IS NULL)::int AS unread
+          FROM inbox i WHERE i.user_id = ${userId} AND ${open}
         `.pipe(
-          Effect.map(([row]) => row?.count ?? 0),
+          Effect.map(([row]) => new InboxCounts({ actions: row?.actions ?? 0, unread: row?.unread ?? 0 })),
           Effect.orDie,
         )
 
+      const withUsers = (rows: ReadonlyArray<ItemRow>): ReadonlyArray<UserItem> =>
+        rows.map((row) => ({ userId: row.userId, item: toItem(row) }))
+      const none = (ids: ReadonlyArray<number>) => !Arr.isReadonlyArrayNonEmpty(ids)
+
       return Inbox.of({
+        file: Effect.fn("Inbox.file")(function* (filing: Filing) {
+          const userIds = [...new Set(filing.userIds)]
+          if (!Arr.isReadonlyArrayNonEmpty(userIds)) return 0
+          const rows = Arr.map(userIds, (userId) => ({
+            messageId: filing.messageId,
+            userId,
+            source: filing.source,
+            subject: filing.subject,
+            action: filing.action,
+            guarded: filing.guarded,
+          }))
+          // A person's open item about the subject takes the newest message: it comes back to the top,
+          // unread and awake, and stays an action (and guarded) if any of its notifications was.
+          yield* sql`
+            INSERT INTO inbox ${sql.insert(rows)}
+            ON CONFLICT (user_id, source, subject) WHERE subject IS NOT NULL AND resolved_at IS NULL
+            DO UPDATE SET message_id = excluded.message_id, updates = inbox.updates + 1, updated_at = now(),
+              position = nextval('inbox_position'), read_at = NULL, snoozed_until = NULL,
+              action = inbox.action OR excluded.action, guarded = inbox.guarded OR excluded.guarded
+          `.pipe(Effect.orDie)
+          return userIds.length
+        }),
+
         list: Effect.fn("Inbox.list")(function* (userId: string, query: InboxQuery) {
           const limit = Math.min(Math.max(query.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT)
-          const rows = yield* findPage({
-            userId,
-            before: query.before,
-            limit,
-            unreadOnly: query.unreadOnly ?? false,
-          }).pipe(Effect.orDie)
-          const items = rows.slice(0, limit).map((row) => new InboxItem(row))
-          const last = items.at(-1)
+          const rows = yield* findPage({ userId, state: query.state ?? "open", before: query.before, limit }).pipe(
+            Effect.orDie,
+          )
+          const page = rows.slice(0, limit)
+          const last = page.at(-1)
           return new InboxPage({
-            items,
-            unread: yield* unread(userId),
-            nextCursor: rows.length > limit && last ? last.id : null,
+            items: page.map(toItem),
+            counts: yield* counts(userId),
+            nextCursor: rows.length > limit && last ? last.position : null,
           })
         }),
 
-        unread,
+        counts,
 
         markRead: (userId, ids) =>
-          ids.length === 0
+          none(ids)
             ? Effect.void
             : sql`
                 UPDATE inbox SET read_at = now()
@@ -110,16 +237,183 @@ export class Inbox extends Context.Service<
               `.pipe(Effect.asVoid, Effect.orDie),
 
         markAllRead: (userId) =>
-          sql`UPDATE inbox SET read_at = now() WHERE user_id = ${userId} AND read_at IS NULL`.pipe(
-            Effect.asVoid,
-            Effect.orDie,
-          ),
+          sql`
+            UPDATE inbox i SET read_at = now() WHERE i.user_id = ${userId} AND i.read_at IS NULL AND ${open}
+          `.pipe(Effect.asVoid, Effect.orDie),
+
+        resolve: Effect.fn("Inbox.resolve")(function* (user: Resolver, ids: ReadonlyArray<number>) {
+          if (none(ids)) return
+          const guarded = yield* sql<{ id: number }>`
+            SELECT id FROM inbox
+            WHERE user_id = ${user.id} AND id IN ${sql.in(ids)} AND resolved_at IS NULL AND action AND guarded
+          `.pipe(Effect.orDie)
+          if (guarded.length > 0) {
+            return yield* new Conflict({
+              message:
+                "Only the app that sent it can resolve this, once what it is about is handled. You can snooze it.",
+            })
+          }
+          yield* sql`
+            UPDATE inbox SET resolved_at = now(), resolved_via = 'person', resolved_by_id = ${user.id},
+              resolved_by_name = ${user.name}, snoozed_until = NULL, read_at = COALESCE(read_at, now())
+            WHERE user_id = ${user.id} AND id IN ${sql.in(ids)} AND resolved_at IS NULL
+          `.pipe(Effect.orDie)
+        }),
+
+        reopen: (userId, ids) =>
+          none(ids)
+            ? Effect.void
+            : // Not if another item about the subject has opened since: that one is the open one.
+              sql`
+                UPDATE inbox i SET resolved_at = NULL, resolved_via = NULL, resolved_by_id = NULL,
+                  resolved_by_name = NULL, snoozed_until = NULL
+                WHERE i.user_id = ${userId} AND i.id IN ${sql.in(ids)}
+                  AND (i.snoozed_until IS NOT NULL OR i.resolved_via = 'person')
+                  AND NOT EXISTS (
+                    SELECT 1 FROM inbox o
+                    WHERE o.user_id = i.user_id AND o.source = i.source AND o.subject = i.subject
+                      AND o.resolved_at IS NULL AND o.id <> i.id
+                  )
+              `.pipe(Effect.asVoid, Effect.orDie),
+
+        snooze: (userId, ids, until) =>
+          none(ids)
+            ? Effect.void
+            : sql`
+                UPDATE inbox SET snoozed_until = ${new Date(until.epochMilliseconds)}
+                WHERE user_id = ${userId} AND id IN ${sql.in(ids)} AND resolved_at IS NULL
+              `.pipe(Effect.asVoid, Effect.orDie),
+
+        resolveSubject: Effect.fn("Inbox.resolveSubject")(function* (
+          source: string,
+          subject: string,
+          by: Resolver | null,
+        ) {
+          return yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                // Kept for those who got it only by e-mail or Slack, whose links show it.
+                yield* sql`
+                  INSERT INTO resolutions ${sql.insert({
+                    source,
+                    subject,
+                    resolvedById: by?.id ?? null,
+                    resolvedByName: by?.name ?? null,
+                  })}
+                  ON CONFLICT DO NOTHING
+                `
+                const rows = yield* sql<{ userId: string }>`
+                  UPDATE inbox SET resolved_at = now(), resolved_via = 'app', resolved_by_id = ${by?.id ?? null},
+                    resolved_by_name = ${by?.name ?? null}, snoozed_until = NULL
+                  WHERE source = ${source} AND subject = ${subject} AND resolved_at IS NULL
+                  RETURNING user_id
+                `
+                return rows.map((row) => row.userId)
+              }),
+            )
+            .pipe(Effect.orDie)
+        }),
+
+        wake: sql<{ id: number }>`
+          UPDATE inbox SET snoozed_until = NULL, read_at = NULL, position = nextval('inbox_position')
+          WHERE snoozed_until <= now() AND resolved_at IS NULL
+          RETURNING id
+        `.pipe(
+          Effect.map((rows) => rows.map((row) => row.id)),
+          Effect.orDie,
+          Effect.withSpan("Inbox.wake"),
+        ),
+
+        prune: (cutoff) =>
+          Effect.gen(function* () {
+            const [inbox] = yield* sql<{ removed: number }>`
+              WITH removed AS (
+                DELETE FROM inbox
+                WHERE resolved_at < ${cutoff}
+                  OR (NOT action AND resolved_at IS NULL AND read_at IS NOT NULL AND updated_at < ${cutoff})
+                RETURNING 1
+              )
+              SELECT count(*)::int AS removed FROM removed
+            `
+            yield* sql`DELETE FROM resolutions WHERE resolved_at < ${cutoff}`
+            return inbox?.removed ?? 0
+          }).pipe(Effect.orDie, Effect.withSpan("Inbox.prune")),
 
         itemsForMessage: (messageId) =>
-          findForMessage(messageId).pipe(
-            Effect.map((rows) => rows.map(({ userId, ...item }) => ({ userId, item: new InboxItem(item) }))),
-            Effect.orDie,
-          ),
+          findWhere(sql`i.message_id = ${messageId}`)().pipe(Effect.map(withUsers), Effect.orDie),
+
+        itemsByIds: (ids) =>
+          none(ids)
+            ? Effect.succeed([])
+            : findWhere(sql`i.id IN ${sql.in(ids)}`)().pipe(Effect.map(withUsers), Effect.orDie),
+
+        linkTarget: Effect.fn("Inbox.linkTarget")(function* (userId: string, messageId: number) {
+          const [message] = yield* sql<{
+            source: string
+            subject: string | null
+            title: string
+            link: string | null
+            createdAt: Date
+            received: boolean
+          }>`
+            SELECT m.source, m.subject, m.content ->> 'title' AS title, m.content ->> 'link' AS link, m.created_at,
+              EXISTS (SELECT 1 FROM deliveries d WHERE d.message_id = m.id AND d.recipient_user_id = ${userId})
+                OR EXISTS (SELECT 1 FROM inbox i WHERE i.message_id = m.id AND i.user_id = ${userId})
+                OR EXISTS (
+                  SELECT 1 FROM inbox i
+                  WHERE i.user_id = ${userId} AND i.source = m.source AND i.subject = m.subject
+                ) AS received
+            FROM messages m WHERE m.id = ${messageId} AND m.category = 'notification'
+          `.pipe(Effect.orDie)
+          if (message === undefined || !message.received) return Option.none()
+          const link = message.link ?? undefined
+          const title = message.title
+          if (message.subject === null) {
+            return Option.some({ title, link, resolution: Option.none(), itemId: Option.none() })
+          }
+          // The person's own item about the subject says the most; failing that, what the app resolved
+          // since this notification was sent.
+          const [item] = yield* findWhere(
+            sql`i.user_id = ${userId} AND i.source = ${message.source} AND i.subject = ${message.subject}
+              ORDER BY i.position DESC LIMIT 1`,
+          )().pipe(Effect.orDie)
+          if (item !== undefined) {
+            const resolved = toItem(item).resolution
+            return Option.some({
+              title,
+              link,
+              resolution: Option.fromNullishOr(resolved),
+              itemId: Option.some(item.id),
+            })
+          }
+          const [resolved] = yield* sql<{
+            resolvedAt: Date
+            resolvedById: string | null
+            resolvedByName: string | null
+          }>`
+            SELECT resolved_at, resolved_by_id, resolved_by_name FROM resolutions
+            WHERE source = ${message.source} AND subject = ${message.subject} AND resolved_at >= ${message.createdAt}
+            ORDER BY resolved_at DESC LIMIT 1
+          `.pipe(Effect.orDie)
+          return Option.some({
+            title,
+            link,
+            itemId: Option.none(),
+            resolution:
+              resolved === undefined
+                ? Option.none()
+                : Option.some(
+                    yield* Schema.decodeUnknownEffect(Resolution)({
+                      at: resolved.resolvedAt.toISOString(),
+                      by:
+                        resolved.resolvedById === null
+                          ? null
+                          : { id: resolved.resolvedById, name: resolved.resolvedByName ?? resolved.resolvedById },
+                      app: true,
+                    }).pipe(Effect.orDie),
+                  ),
+          })
+        }),
       })
     }),
   )

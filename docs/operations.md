@@ -180,7 +180,7 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
   list an app under another one.
 - **App pages** (`/directory/<id>`). An app's roles and what each allows, who can use it and its owners;
   *Manage* for the people who decide about it.
-- **Overview.** Pinned and recently used apps, unread notifications, and the pages the user visited last
+- **Overview.** Pinned and recently used apps, open notifications, and the pages the user visited last
   (kept in the browser).
 - **Usage.** The shell reports each time someone goes into an app. It drives the recent list and the palette
   ranking; the Portal's **Usage** page (`/portal/usage`) shows per app how many people used it in the last 30 days, ever, and
@@ -198,6 +198,8 @@ Built so that hundreds of apps stay manageable whether someone uses three or thi
   supported).
 - **Limits.** Each app may queue `MESSAGES_PER_MINUTE` deliveries per minute (default 120); failed deliveries
   are retried up to `DELIVERY_MAX_ATTEMPTS` times (default 8).
+- **Inboxes.** Resolved notifications, and information people read and left, are removed after
+  `INBOX_RETENTION_DAYS` (default 30). Open action items stay until they are resolved.
 
 In **Administration → Notifications** (`admin:notifications.view` / `admin:notifications.manage`), admins add
 channels (a Teams workflow webhook, a Slack incoming webhook, or a Slack channel the Mosaik app posts to),
