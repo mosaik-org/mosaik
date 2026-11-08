@@ -7,6 +7,7 @@ import { Changes } from "./Changes"
 import { Requests } from "./Requests"
 import { Setup } from "./Setup"
 import { Statuses } from "./Statuses"
+import { handlerSubject } from "./subjects"
 
 /** What happens because time passed rather than because someone did something. */
 export class Sweep extends Context.Service<
@@ -33,6 +34,8 @@ export class Sweep extends Context.Service<
           yield* notify
             .send({
               type: desk.notification("request.overdue"),
+              // With whoever handles it: once someone does, or it is solved, the desk resolves it.
+              subject: handlerSubject(request.id),
               // Whoever has it. With nobody on it, everyone who could pick it up.
               audience:
                 request.assigneeId === null

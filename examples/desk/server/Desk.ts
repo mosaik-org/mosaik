@@ -24,6 +24,7 @@ import {
   type RequestEdits,
   type RequestId,
   RequestRow,
+  type RequestStatus,
   RequestsPage,
   type RequestsQuery,
   requesterMay,
@@ -38,8 +39,12 @@ import { isAgent, nameless, People, personOf } from "./People"
 import { type NewActivity, type RequestFilter, type RequestOrder, Requests } from "./Requests"
 import { Setup } from "./Setup"
 import { Statuses } from "./Statuses"
+import { handlerSubject, requesterSubject } from "./subjects"
 
 /** Everything people do with requests: who may, what follows, and who hears of it. */
+/** Solved or closed: nothing left for whoever handles it. */
+const isDone = (status: RequestStatus) => DONE_STATUSES.includes(status)
+
 export class Desk extends Context.Service<
   Desk,
   {
@@ -165,6 +170,13 @@ export class Desk extends Context.Service<
         }
       }
 
+      /**
+       * The request no longer needs whoever was told about it: it is solved, gone or someone else's. Their
+       * items about it (being given it, its deadline) are resolved, wherever they are.
+       */
+      const handled = (id: RequestId, actorId: string) =>
+        notify.resolve(handlerSubject(id), { by: UserId.make(actorId) }).pipe(Effect.ignore)
+
       const notifyAssigned = (request: DeskRequest, actorId: string, actorName: string) =>
         request.assigneeId === null || request.assigneeId === actorId
           ? Effect.void
@@ -172,6 +184,7 @@ export class Desk extends Context.Service<
               .send({
                 type: desk.notification("request.assigned"),
                 audience: Audiences.users(UserId.make(request.assigneeId)),
+                subject: handlerSubject(request.id),
                 content: {
                   title: `${requestNumber(request.id)} is yours: ${request.title}`,
                   body: `${actorName} gave it to you.`,
@@ -302,7 +315,12 @@ export class Desk extends Context.Service<
               target: requestNumber(after.id),
               details: { fields: changedFields(before, after) },
             })
-            if (before.assigneeId !== after.assigneeId) yield* notifyAssigned(after, me.id, me.name)
+            if (isDone(after.status) && !isDone(before.status)) yield* handled(after.id, me.id)
+            else if (before.assigneeId !== after.assigneeId) {
+              // Whoever had it before is done with it; whoever has it now is told.
+              yield* handled(after.id, me.id)
+              yield* notifyAssigned(after, me.id, me.name)
+            }
           }
           yield* settle(results.map(({ after }) => after.id))
           return new EditResult({
@@ -326,6 +344,7 @@ export class Desk extends Context.Service<
             })
           }
           yield* requests.remove(id)
+          yield* handled(id, personOf(principal).id)
           yield* audit.record({
             action: "requests.delete",
             target: requestNumber(id),
@@ -390,6 +409,8 @@ export class Desk extends Context.Service<
               .send({
                 type: desk.notification("request.replied"),
                 audience: Audiences.users(UserId.make(toRequester ? after.requesterId : (after.assigneeId as string))),
+                // For the person asking, the conversation; for whoever has it, one more thing about their item.
+                subject: toRequester ? requesterSubject(id) : handlerSubject(id),
                 content: {
                   title: `${me.name} on ${requestNumber(id)}: ${after.title}`,
                   body: input.body,
@@ -400,6 +421,7 @@ export class Desk extends Context.Service<
               })
               .pipe(Effect.ignore)
           }
+          if (isDone(after.status)) yield* handled(id, me.id)
           yield* settle([id])
           return yield* toRow(principal, after)
         }),

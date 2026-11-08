@@ -246,6 +246,26 @@ layer(app as never)("The desk", (it) => {
       }),
     )
 
+    it.effect("resolves what it gave someone once the request is someone else's, or solved", () =>
+      Effect.gen(function* () {
+        yield* meetEveryone
+        const api = yield* AppTest.client(DeskApi)
+        const { id } = yield* api.as(ada, (client) => client.requests.create({ payload: ask("Hand it over") }))
+        yield* api.as(lin, (client) =>
+          client.requests.edit({ payload: { edits: [{ id, change: { assigneeId: "max" } }] } }),
+        )
+        const [assigned] = (yield* (yield* TestNotify).sent).filter((one) => one.content.title.includes("Hand it over"))
+        expect(assigned?.subject).toBe(`request:${id}`)
+
+        yield* api.as(max, (client) =>
+          client.requests.edit({ payload: { edits: [{ id, change: { status: "solved" } }] } }),
+        )
+        const resolved = (yield* (yield* TestNotify).resolved).filter((one) => one.subject === `request:${id}`)
+        // Given to Max (whoever was told before is done with it), then solved by him.
+        expect(resolved.map((one) => one.by)).toEqual(["lin", "max"])
+      }),
+    )
+
     it.effect("is audited, attributed to whoever did it", () =>
       Effect.gen(function* () {
         yield* meetEveryone

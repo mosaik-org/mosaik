@@ -20,9 +20,20 @@ export const desk = defineApp({
     },
   },
   notifications: {
-    "request.assigned": { description: "A request was assigned to you", defaultChannels: ["inApp"] },
+    // Work for whoever has the request, until it is solved or someone else has it: the desk resolves them.
+    "request.assigned": {
+      description: "A request was assigned to you",
+      defaultChannels: ["inApp"],
+      action: true,
+      resolvedBy: "app",
+    },
+    "request.overdue": {
+      description: "A request you handle missed its deadline",
+      defaultChannels: ["inApp"],
+      action: true,
+      resolvedBy: "app",
+    },
     "request.replied": { description: "Someone replied to a request of yours", defaultChannels: ["inApp"] },
-    "request.overdue": { description: "A request you handle missed its deadline", defaultChannels: ["inApp"] },
   },
   events: ["user.created", "user.deleted", "user.access_changed"],
   settings: {
