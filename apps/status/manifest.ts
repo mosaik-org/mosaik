@@ -16,9 +16,12 @@ export const status = defineApp({
     "on-call": { name: "On call", description: "Is notified when a service goes down", grants: ["alerts"] },
   },
   notifications: {
+    // Open while the service is down: its recovery resolves it, so nobody looks into it after the fact.
     "service.down": {
       description: "A platform service went down or recovered",
       defaultChannels: ["inApp", "email"],
+      action: true,
+      resolvedBy: "app",
     },
   },
   portal: {

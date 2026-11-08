@@ -79,12 +79,16 @@ export class Monitor extends Context.Service<
       const client = (yield* HttpClient.HttpClient).pipe(HttpClient.filterStatusOk)
       const notify = yield* Notify
 
-      /** Alerts holders of `status:alerts` (notification failures are logged by `Notify`). */
+      /**
+       * Alerts holders of `status:alerts` (notification failures are logged by `Notify`). One item per
+       * service: its recovery updates the item, then resolves it.
+       */
       const alert = (transition: Transition) =>
         notify
           .send({
             type: status.notification("service.down"),
             audience: Audiences.permission(status.perm("alerts")),
+            subject: `service:${transition.name}`,
             content:
               transition.change === "down"
                 ? {
@@ -100,7 +104,12 @@ export class Monitor extends Context.Service<
                     severity: "success",
                   },
           })
-          .pipe(Effect.ignore)
+          .pipe(
+            Effect.andThen(
+              transition.change === "recovered" ? notify.resolve(`service:${transition.name}`) : Effect.void,
+            ),
+            Effect.ignore,
+          )
 
       const ref = yield* SubscriptionRef.make(
         new StatusSnapshot({
