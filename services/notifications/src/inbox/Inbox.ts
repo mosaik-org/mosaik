@@ -1,6 +1,17 @@
 import { PgClient } from "@effect/sql-pg"
 import { Conflict, type UserId } from "@mosaik/core"
-import { Content, InboxCounts, InboxItem, InboxPage, InboxState, Resolution } from "@mosaik/notifications/contract"
+import {
+  Content,
+  InboxCounts,
+  InboxItem,
+  InboxItemDetail,
+  InboxKind,
+  InboxPage,
+  InboxState,
+  InboxUpdate,
+  Resolution,
+  SourceCount,
+} from "@mosaik/notifications/contract"
 import { Array as Arr, Context, type DateTime, Effect, Layer, Option, Schema } from "effect"
 import { SqlSchema } from "effect/sql"
 
@@ -81,6 +92,10 @@ export interface UserItem {
 
 export interface InboxQuery {
   readonly state?: InboxState | undefined
+  /** Of open items, one kind only; ignored for snoozed and resolved ones. */
+  readonly kind?: InboxKind | undefined
+  /** One app's items only. */
+  readonly source?: string | undefined
   readonly before?: number | undefined
   readonly limit?: number | undefined
 }
@@ -108,11 +123,15 @@ export class Inbox extends Context.Service<
     /** Adds a notification to its people's inboxes, or updates their open item about its subject. */
     file(filing: Filing): Effect.Effect<number>
     list(userId: string, query: InboxQuery): Effect.Effect<InboxPage>
+    /** One of the person's items, with every notification it holds. */
+    get(userId: string, id: number): Effect.Effect<Option.Option<InboxItemDetail>>
     counts(userId: string): Effect.Effect<InboxCounts>
     markRead(userId: string, ids: ReadonlyArray<number>): Effect.Effect<void>
     markAllRead(userId: string): Effect.Effect<void>
     /** The person resolves items; refuses all of them if only an app may resolve one. */
     resolve(user: Resolver, ids: ReadonlyArray<number>): Effect.Effect<void, Conflict>
+    /** The person clears their open information (one app's, with `source`). Returns what it cleared. */
+    resolveInformation(user: Resolver, source: string | undefined): Effect.Effect<ReadonlyArray<number>>
     /** Opens again what the person resolved or snoozed. */
     reopen(userId: string, ids: ReadonlyArray<number>): Effect.Effect<void>
     snooze(userId: string, ids: ReadonlyArray<number>, until: DateTime.Utc): Effect.Effect<void>
@@ -141,30 +160,65 @@ export class Inbox extends Context.Service<
         i.resolved_at, i.resolved_via, i.resolved_by_id, i.resolved_by_name`)
       const from = sql.literal("inbox i JOIN messages m ON m.id = i.message_id")
       const open = sql.literal("i.resolved_at IS NULL AND (i.snoozed_until IS NULL OR i.snoozed_until <= now())")
+      const always = sql.literal("true")
       const inState = (state: InboxState) =>
         state === "resolved"
           ? sql.literal("i.resolved_at IS NOT NULL")
           : state === "snoozed"
             ? sql.literal("i.resolved_at IS NULL AND i.snoozed_until > now()")
             : open
+      const ofKind = (state: InboxState, kind: InboxKind | undefined) =>
+        state !== "open" || kind === undefined ? always : sql.literal(kind === "action" ? "i.action" : "NOT i.action")
+      /** The person's items in a state (and kind): what a list shows before it is narrowed to an app. */
+      const listed = (userId: string, state: InboxState, kind: InboxKind | undefined) =>
+        sql.and([sql`i.user_id = ${userId}`, inState(state), ofKind(state, kind)])
 
+      const Listing = {
+        userId: Schema.String,
+        state: InboxState,
+        kind: Schema.optional(InboxKind),
+      }
       const findPage = SqlSchema.findAll({
         Request: Schema.Struct({
-          userId: Schema.String,
-          state: InboxState,
+          ...Listing,
+          source: Schema.optional(Schema.String),
           before: Schema.optional(Schema.Number),
           limit: Schema.Number,
         }),
         Result: ItemRow,
-        execute: ({ userId, state, before, limit }) => sql`
+        execute: ({ userId, state, kind, source, before, limit }) => sql`
           SELECT ${columns} FROM ${from}
           WHERE ${sql.and([
-            sql`i.user_id = ${userId}`,
-            inState(state),
-            before === undefined ? sql.literal("true") : sql`i.position < ${before}`,
+            listed(userId, state, kind),
+            source === undefined ? always : sql`i.source = ${source}`,
+            before === undefined ? always : sql`i.position < ${before}`,
           ])}
           ORDER BY i.position DESC
           LIMIT ${limit + 1}
+        `,
+      })
+      const countBySource = SqlSchema.findAll({
+        Request: Schema.Struct(Listing),
+        Result: SourceCount,
+        execute: ({ userId, state, kind }) => sql`
+          SELECT i.source, count(*)::int AS count FROM inbox i
+          WHERE ${listed(userId, state, kind)}
+          GROUP BY i.source ORDER BY count DESC, i.source
+        `,
+      })
+      const findHistory = SqlSchema.findAll({
+        Request: Schema.Number,
+        Result: Schema.Struct({
+          id: Schema.Number,
+          type: Schema.String,
+          content: Content,
+          at: Schema.DateTimeUtcFromDate,
+        }),
+        execute: (itemId) => sql`
+          SELECT m.id, m.source || ':' || m.kind AS type, m.content, m.created_at AS at
+          FROM inbox_messages im JOIN messages m ON m.id = im.message_id
+          WHERE im.item_id = ${itemId}
+          ORDER BY m.created_at DESC, m.id DESC
         `,
       })
       const findWhere = (where: ReturnType<typeof sql.literal> | ReturnType<typeof sql>) =>
@@ -175,12 +229,20 @@ export class Inbox extends Context.Service<
         })
 
       const counts = (userId: string) =>
-        sql<{ actions: number; unread: number }>`
+        sql<{ actions: number; information: number; unread: number }>`
           SELECT count(*) FILTER (WHERE i.action)::int AS actions,
+            count(*) FILTER (WHERE NOT i.action)::int AS information,
             count(*) FILTER (WHERE i.read_at IS NULL)::int AS unread
           FROM inbox i WHERE i.user_id = ${userId} AND ${open}
         `.pipe(
-          Effect.map(([row]) => new InboxCounts({ actions: row?.actions ?? 0, unread: row?.unread ?? 0 })),
+          Effect.map(
+            ([row]) =>
+              new InboxCounts({
+                actions: row?.actions ?? 0,
+                information: row?.information ?? 0,
+                unread: row?.unread ?? 0,
+              }),
+          ),
           Effect.orDie,
         )
 
@@ -201,29 +263,62 @@ export class Inbox extends Context.Service<
             guarded: filing.guarded,
           }))
           // A person's open item about the subject takes the newest message: it comes back to the top,
-          // unread and awake, and stays an action (and guarded) if any of its notifications was.
-          yield* sql`
-            INSERT INTO inbox ${sql.insert(rows)}
-            ON CONFLICT (user_id, source, subject) WHERE subject IS NOT NULL AND resolved_at IS NULL
-            DO UPDATE SET message_id = excluded.message_id, updates = inbox.updates + 1, updated_at = now(),
-              position = nextval('inbox_position'), read_at = NULL, snoozed_until = NULL,
-              action = inbox.action OR excluded.action, guarded = inbox.guarded OR excluded.guarded
-          `.pipe(Effect.orDie)
+          // unread and awake, and stays an action (and guarded) if any of its notifications was. Each item
+          // records the message too, as its history.
+          yield* sql
+            .withTransaction(
+              Effect.gen(function* () {
+                const filed = yield* sql<{ id: number }>`
+                  INSERT INTO inbox ${sql.insert(rows)}
+                  ON CONFLICT (user_id, source, subject) WHERE subject IS NOT NULL AND resolved_at IS NULL
+                  DO UPDATE SET message_id = excluded.message_id, updates = inbox.updates + 1, updated_at = now(),
+                    position = nextval('inbox_position'), read_at = NULL, snoozed_until = NULL,
+                    action = inbox.action OR excluded.action, guarded = inbox.guarded OR excluded.guarded
+                  RETURNING id
+                `
+                if (!Arr.isReadonlyArrayNonEmpty(filed)) return
+                yield* sql`
+                  INSERT INTO inbox_messages ${sql.insert(
+                    Arr.map(filed, ({ id }) => ({ itemId: id, messageId: filing.messageId })),
+                  )}
+                  ON CONFLICT DO NOTHING
+                `
+              }),
+            )
+            .pipe(Effect.orDie)
           return userIds.length
         }),
 
         list: Effect.fn("Inbox.list")(function* (userId: string, query: InboxQuery) {
           const limit = Math.min(Math.max(query.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT)
-          const rows = yield* findPage({ userId, state: query.state ?? "open", before: query.before, limit }).pipe(
-            Effect.orDie,
+          const state = query.state ?? "open"
+          const [rows, sources, now] = yield* Effect.all(
+            [
+              findPage({ userId, state, kind: query.kind, source: query.source, before: query.before, limit }).pipe(
+                Effect.orDie,
+              ),
+              countBySource({ userId, state, kind: query.kind }).pipe(Effect.orDie),
+              counts(userId),
+            ],
+            { concurrency: "unbounded" },
           )
           const page = rows.slice(0, limit)
           const last = page.at(-1)
           return new InboxPage({
             items: page.map(toItem),
-            counts: yield* counts(userId),
+            counts: now,
+            sources,
             nextCursor: rows.length > limit && last ? last.position : null,
           })
+        }),
+
+        get: Effect.fn("Inbox.get")(function* (userId: string, id: number) {
+          const [row] = yield* findWhere(sql`i.user_id = ${userId} AND i.id = ${id}`)().pipe(Effect.orDie)
+          if (row === undefined) return Option.none()
+          const history = yield* findHistory(id).pipe(Effect.orDie)
+          return Option.some(
+            new InboxItemDetail({ item: toItem(row), history: history.map((update) => new InboxUpdate(update)) }),
+          )
         }),
 
         counts,
@@ -259,6 +354,23 @@ export class Inbox extends Context.Service<
             WHERE user_id = ${user.id} AND id IN ${sql.in(ids)} AND resolved_at IS NULL
           `.pipe(Effect.orDie)
         }),
+
+        resolveInformation: (user, source) =>
+          sql<{ id: number }>`
+            UPDATE inbox i SET resolved_at = now(), resolved_via = 'person', resolved_by_id = ${user.id},
+              resolved_by_name = ${user.name}, read_at = COALESCE(i.read_at, now())
+            WHERE ${sql.and([
+              sql`i.user_id = ${user.id}`,
+              open,
+              sql.literal("NOT i.action"),
+              source === undefined ? always : sql`i.source = ${source}`,
+            ])}
+            RETURNING i.id
+          `.pipe(
+            Effect.map((rows) => rows.map((row) => row.id)),
+            Effect.orDie,
+            Effect.withSpan("Inbox.resolveInformation"),
+          ),
 
         reopen: (userId, ids) =>
           none(ids)

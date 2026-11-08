@@ -69,18 +69,54 @@ export class InboxItem extends Schema.Class<InboxItem>("@mosaik/notifications/In
   resolution: Schema.NullOr(Resolution),
 }) {}
 
-/** What the bell shows: open actions (a number), and whether anything open is unread (a dot). */
+/**
+ * Of open items, those that ask something of the person, or those only for them to know. Snoozed and
+ * resolved items are not split: what is put away or handled is looked at by when, not by kind.
+ */
+export const InboxKind = Schema.Literals(["action", "information"])
+export type InboxKind = typeof InboxKind.Type
+
+/**
+ * What the bell and the inbox's tabs show: open actions (a number on the bell), open information,
+ * and whether anything open is unread (a dot).
+ */
 export class InboxCounts extends Schema.Class<InboxCounts>("@mosaik/notifications/InboxCounts")({
   /** Open action items, not snoozed. */
   actions: Schema.Number,
+  /** Open information items, not snoozed. */
+  information: Schema.Number,
   /** Open items not yet read. */
   unread: Schema.Number,
+}) {}
+
+/** How many items one app has among those listed, whichever app the list is narrowed to. */
+export class SourceCount extends Schema.Class<SourceCount>("@mosaik/notifications/SourceCount")({
+  source: Schema.String,
+  count: Schema.Number,
 }) {}
 
 export class InboxPage extends Schema.Class<InboxPage>("@mosaik/notifications/InboxPage")({
   items: Schema.Array(InboxItem),
   counts: InboxCounts,
+  /** The apps with items in this state (and kind), the most first: what the list can be narrowed to. */
+  sources: Schema.Array(SourceCount),
   nextCursor: Schema.NullOr(Schema.Number),
+}) {}
+
+/** One notification an item holds: the first that made it, or a later one about its subject. */
+export class InboxUpdate extends Schema.Class<InboxUpdate>("@mosaik/notifications/InboxUpdate")({
+  /** The notification's id. */
+  id: Schema.Number,
+  /** Its notification type key, e.g. `desk:request.overdue`. */
+  type: Schema.String,
+  content: Content,
+  at: Schema.DateTimeUtc,
+}) {}
+
+/** An item with every notification it holds, the newest first: what happened to its subject. */
+export class InboxItemDetail extends Schema.Class<InboxItemDetail>("@mosaik/notifications/InboxItemDetail")({
+  item: InboxItem,
+  history: Schema.Array(InboxUpdate),
 }) {}
 
 /**
@@ -94,16 +130,37 @@ export class InboxEvent extends Schema.Class<InboxEvent>("@mosaik/notifications/
 
 const ItemIds = Schema.Struct({ ids: Schema.Array(Schema.Number).check(Schema.isMaxLength(500)) })
 
+/** Items a change applied to, so that it can be taken back. */
+export class ChangedItems extends Schema.Class<ChangedItems>("@mosaik/notifications/ChangedItems")({
+  ids: Schema.Array(Schema.Number),
+}) {}
+
 export class InboxGroup extends HttpApiGroup.make("inbox")
   .add(
-    /** The items in one state, the newest first (by their newest notification). */
+    /**
+     * The items in one state, the newest first (by their newest notification); open ones of one kind
+     * if `kind` says, and from one app if `source` does.
+     */
     HttpApiEndpoint.get("list", "/", {
       query: {
         state: Schema.optional(InboxState),
+        kind: Schema.optional(InboxKind),
+        source: Schema.optional(Schema.String),
         before: Schema.optional(Schema.NumberFromString),
         limit: Schema.optional(Schema.NumberFromString),
       },
       success: InboxPage,
+    }),
+    /** One of the person's items, with its history. */
+    HttpApiEndpoint.get("get", "/items/:id", {
+      params: { id: Schema.NumberFromString },
+      success: InboxItemDetail,
+      error: NotFound,
+    }),
+    /** Clears open information (from one app if `source` says): what was only to know, known. */
+    HttpApiEndpoint.post("resolveInformation", "/information/resolve", {
+      payload: Schema.Struct({ source: Schema.optional(Schema.String) }),
+      success: ChangedItems,
     }),
     HttpApiEndpoint.post("markRead", "/read", { payload: ItemIds, success: HttpApiSchema.NoContent }),
     HttpApiEndpoint.post("markAllRead", "/read-all", { success: HttpApiSchema.NoContent }),

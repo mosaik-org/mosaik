@@ -1,7 +1,7 @@
-import { BadRequest, CurrentPrincipal } from "@mosaik/core"
-import { InboxEvent, NotificationsApi } from "@mosaik/notifications/contract"
+import { BadRequest, CurrentPrincipal, NotFound } from "@mosaik/core"
+import { ChangedItems, InboxEvent, NotificationsApi } from "@mosaik/notifications/contract"
 import { Live } from "@mosaik/server"
-import { DateTime, Duration, Effect, Stream } from "effect"
+import { DateTime, Duration, Effect, Option, Stream } from "effect"
 import { HttpApiBuilder } from "effect/http-api"
 import { Fanout } from "../inbox/Fanout"
 import { Inbox } from "../inbox/Inbox"
@@ -40,7 +40,21 @@ export const InboxHandlers = HttpApiBuilder.group(
     return handlers.handleAll({
       list: Effect.fn(function* ({ query }) {
         const userId = yield* currentUserId
-        return yield* inbox.list(userId, { state: query.state, before: query.before, limit: query.limit })
+        return yield* inbox.list(userId, query)
+      }),
+
+      get: Effect.fn(function* ({ params }) {
+        const userId = yield* currentUserId
+        const detail = yield* inbox.get(userId, params.id)
+        if (Option.isNone(detail)) return yield* new NotFound({ resource: "inbox item", id: String(params.id) })
+        return detail.value
+      }),
+
+      resolveInformation: Effect.fn(function* ({ payload }) {
+        const user = yield* currentUser
+        const ids = yield* inbox.resolveInformation({ id: user.id, name: user.name }, payload.source)
+        if (ids.length > 0) yield* fanout.announceChanged([user.id])
+        return new ChangedItems({ ids })
       }),
 
       markRead: ({ payload }) => changing((userId) => inbox.markRead(userId, payload.ids)),
