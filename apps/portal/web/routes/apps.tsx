@@ -2,22 +2,6 @@ import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik
 import { PLATFORM_EVENT_DESCRIPTIONS } from "@mosaik/core"
 import { AppIcon, appColor } from "@mosaik/frame"
 import {
-  ActionMenu,
-  type ActionMenuItem,
-  Badge,
-  Button,
-  Card,
-  CheckboxField,
-  ConfirmDialog,
-  IconButton,
-  Modal,
-  PasswordField,
-  SelectField,
-  Tabs,
-  TextField,
-  Tooltip,
-} from "@mosaik/mosaik-ui"
-import {
   type ConfigSetting,
   configAsSetting,
   configFieldValue,
@@ -36,16 +20,35 @@ import {
 } from "@mosaik/portal/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
+import {
+  ActionMenu,
+  type ActionMenuItem,
+  Badge,
+  Button,
+  Card,
+  CheckboxField,
+  ConfirmDialog,
+  IconButton,
+  Modal,
+  PasswordField,
+  SelectField,
+  Tabs,
+  TextField,
+  Tooltip,
+} from "@mosaik/ui"
 import { QueryBoundary, SettingField } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
+import CircleCheck from "lucide-solid/icons/circle-check"
+import CircleDashed from "lucide-solid/icons/circle-dashed"
+import CircleAlert from "lucide-solid/icons/circle-exclamation-point"
+import CirclePause from "lucide-solid/icons/circle-pause"
+import Clock from "lucide-solid/icons/clock"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import Plus from "lucide-solid/icons/plus"
-import { createSignal, For, onCleanup, Show } from "solid-js"
+import { createSignal, For, type JSX, onCleanup, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { appsQuery, portalApi, portalKeys, registriesQuery } from "../queries"
-
-/** The color palette a badge shows a state in. */
-type Tone = "gray" | "accent" | "success" | "warning" | "danger"
 
 export const Route = createFileRoute("/_app/portal/apps")({
   staticData: {
@@ -56,18 +59,19 @@ export const Route = createFileRoute("/_app/portal/apps")({
   component: Apps,
 })
 
-const KIND: Record<AppKind, { label: string; tone: Tone }> = {
-  configured: { label: "Configured", tone: "gray" },
-  remote: { label: "Hosted elsewhere", tone: "accent" },
-  image: { label: "Docker image", tone: "accent" },
+const KIND: Record<AppKind, string> = {
+  configured: "Configured",
+  remote: "Hosted elsewhere",
+  image: "Docker image",
 }
 
-const STATUS: Record<InstallStatus, { label: string; tone: Tone }> = {
-  pending: { label: "Waiting to register", tone: "warning" },
-  deploying: { label: "Deploying…", tone: "accent" },
-  active: { label: "Running", tone: "success" },
-  failed: { label: "Failed", tone: "danger" },
-  disabled: { label: "Disabled", tone: "gray" },
+/** An app's state: grey with a shape that tells it apart, red only when it failed and needs an admin. */
+const STATUS: Record<InstallStatus, { label: string; icon: () => JSX.Element; danger?: true }> = {
+  pending: { label: "Waiting to register", icon: () => <Clock /> },
+  deploying: { label: "Deploying…", icon: () => <CircleDashed /> },
+  active: { label: "Running", icon: () => <CircleCheck /> },
+  failed: { label: "Failed", icon: () => <CircleAlert />, danger: true },
+  disabled: { label: "Disabled", icon: () => <CirclePause /> },
 }
 
 const useInvalidate = () => {
@@ -87,8 +91,8 @@ const styles = {
     gap: "1",
     p: "3",
     borderRadius: "l2",
-    bg: "danger.subtle.bg",
-    color: "danger.plain.fg",
+    bg: "danger.subtle",
+    color: "danger.fg",
     fontSize: "sm",
   }),
   list: css({ display: "flex", flexWrap: "wrap", gap: "1" }),
@@ -122,7 +126,7 @@ const ManifestSummary = (props: { inspection: Inspection }) => (
           <div class={styles.list}>
             <For each={manifest().permissions}>
               {(permission) => (
-                <Badge colorPalette={permission.dangerous ? "danger" : "neutral"}>{permission.key}</Badge>
+                <Badge colorPalette={permission.dangerous ? "danger" : undefined}>{permission.key}</Badge>
               )}
             </For>
           </div>
@@ -133,9 +137,15 @@ const ManifestSummary = (props: { inspection: Inspection }) => (
             <div class={styles.list}>
               <For each={manifest().roles}>
                 {(role) => (
-                  <Tooltip content={role.grants.join(", ")}>
-                    <Badge>{role.name}</Badge>
-                  </Tooltip>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild={(trigger) => <Badge {...trigger()}>{role.name}</Badge>} />
+                    {/* Out of the dialog's body, which clips what overflows it. */}
+                    <Portal>
+                      <Tooltip.Positioner>
+                        <Tooltip.Content>{role.grants.join(", ")}</Tooltip.Content>
+                      </Tooltip.Positioner>
+                    </Portal>
+                  </Tooltip.Root>
                 )}
               </For>
             </div>
@@ -198,7 +208,7 @@ const useInspect = () => {
 const KeyDialog = (props: { appKey: string | undefined; appId: string; onClose: () => void }) => (
   <Modal
     open={props.appKey !== undefined}
-    onOpenChange={(open) => !open && props.onClose()}
+    onOpenChange={(details) => !details.open && props.onClose()}
     title="The app's key"
     description="Shown only now. Configure the app with it, then restart it: it registers itself and goes live."
     footer={<Button onClick={props.onClose}>Done</Button>}
@@ -267,12 +277,12 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
     <>
       <Modal
         open={props.open}
-        onOpenChange={(open) => (open ? props.onOpenChange(true) : close())}
+        onOpenChange={(details) => (details.open ? props.onOpenChange(true) : close())}
         title="Install an app"
         size="lg"
         footer={
           <>
-            <Button variant="plain" onClick={close}>
+            <Button variant="ghost" onClick={close}>
               Cancel
             </Button>
             <Show
@@ -338,7 +348,7 @@ const InstallDialog = (props: { open: boolean; onOpenChange: (open: boolean) => 
                 <Show when={manifest().database}>
                   <SelectField
                     label="Database"
-                    items={[
+                    options={[
                       { value: "platform", label: "Provided by the platform" },
                       { value: "app", label: "The app's own (DATABASE_URL)" },
                     ]}
@@ -394,13 +404,13 @@ const UpgradeDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (ope
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Update ${props.app.name}`}
       description="The new image is pulled and started; if it does not become healthy, the current version is restored."
       size="lg"
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Show
@@ -495,12 +505,12 @@ const ConfigDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Configuration of ${props.app.name}`}
       description="Passed to the app as environment variables. Saving restarts it."
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button loading={save.isPending} onClick={() => save.mutate()}>
@@ -534,7 +544,12 @@ const LogsDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (open: 
     refetchInterval: 3000,
   }))
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange} title={`Logs of ${props.app.name}`} size="lg">
+    <Modal
+      open={props.open}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
+      title={`Logs of ${props.app.name}`}
+      size="lg"
+    >
       <QueryBoundary query={logs}>
         {(data) => <pre class={styles.logs}>{data().lines || "No output yet."}</pre>}
       </QueryBoundary>
@@ -563,12 +578,12 @@ const UninstallDialog = (props: { app: AdminApp; open: boolean; onOpenChange: (o
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Uninstall ${props.app.name}?`}
       description="Its pages, permissions and grants are removed. Users see it disappear on their next page load."
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button colorPalette="danger" loading={uninstall.isPending} onClick={() => uninstall.mutate()}>
@@ -669,8 +684,8 @@ const AppActions = (props: { app: AdminApp }) => {
     <>
       <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton variant="plain" aria-label={`Actions for ${props.app.name}`} size="2xs" {...triggerProps()}>
-            <Ellipsis size={16} />
+          <IconButton variant="ghost" aria-label={`Actions for ${props.app.name}`} size="xs" {...triggerProps()}>
+            <Ellipsis />
           </IconButton>
         )}
         items={items()}
@@ -689,17 +704,16 @@ const AppActions = (props: { app: AdminApp }) => {
       </Show>
       <ConfirmDialog
         open={dialog() === "rotate"}
-        onOpenChange={(open) => !open && setDialog(undefined)}
+        onOpenChange={(details) => !details.open && setDialog(undefined)}
         title={`Issue a new key for ${props.app.name}?`}
-        description={
+        message={
           props.app.kind === "remote"
             ? "The current key stops working at once: configure the app with the new one."
             : "The app is restarted with the new key."
         }
         confirmLabel="Issue new key"
         tone="danger"
-        loading={rotate.isPending}
-        onConfirm={() => rotate.mutate()}
+        onConfirm={() => rotate.mutateAsync()}
       />
       <KeyDialog appKey={key()} appId={props.app.id} onClose={() => setKey(undefined)} />
     </>
@@ -730,17 +744,18 @@ const EventsStatus = (props: { app: AdminApp }) => {
       {(events) => (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
           <Show when={events().pending > 0}>
-            <Badge variant="dot" colorPalette={events().lastError ? "danger" : "warning"}>
+            <Badge colorPalette={events().lastError ? "danger" : "warning"}>
+              <Clock />
               {events().pending} {events().pending === 1 ? "event" : "events"} waiting
             </Badge>
           </Show>
           <Show when={events().lastError}>
             {(error) => (
-              <span class={css({ fontSize: "xs", color: "danger.plain.fg", wordBreak: "break-word" })}>{error()}</span>
+              <span class={css({ fontSize: "xs", color: "danger.fg", wordBreak: "break-word" })}>{error()}</span>
             )}
           </Show>
           <Show when={props.app.status === "active" && silent(events().polledAt)}>
-            <span class={css({ fontSize: "xs", color: "warning.plain.fg" })}>
+            <span class={css({ fontSize: "xs", color: "warning.fg" })}>
               <Show when={events().polledAt} fallback="Has not asked for events yet">
                 {(at) => `Last asked for events ${formatRelativeTime(at())}`}
               </Show>
@@ -753,13 +768,12 @@ const EventsStatus = (props: { app: AdminApp }) => {
           </Show>
           <ConfirmDialog
             open={confirm()}
-            onOpenChange={setConfirm}
+            onOpenChange={(details) => setConfirm(details.open)}
             title={`Skip the event ${props.app.name} keeps failing on?`}
-            description="The app never receives this event; it goes on with the next ones."
+            message="The app never receives this event; it goes on with the next ones."
             confirmLabel="Skip event"
             tone="danger"
-            loading={skip.isPending}
-            onConfirm={() => skip.mutate()}
+            onConfirm={() => skip.mutateAsync()}
           />
         </div>
       )}
@@ -790,7 +804,7 @@ const columns = column.columns([
     header: "Runs",
     cell: (info) => (
       <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
-        <Badge colorPalette={KIND[info.getValue()].tone}>{KIND[info.getValue()].label}</Badge>
+        <Badge>{KIND[info.getValue()]}</Badge>
         <span class={styles.mono}>{info.row.original.image ?? info.row.original.url ?? ""}</span>
       </div>
     ),
@@ -804,16 +818,12 @@ const columns = column.columns([
       return (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start", maxW: "sm" })}>
           <div class={css({ display: "flex", gap: "1", alignItems: "center" })}>
-            <Badge variant="dot" colorPalette={STATUS[app.status].tone}>
+            <Badge colorPalette={STATUS[app.status].danger ? "danger" : undefined}>
+              {STATUS[app.status].icon()}
               {STATUS[app.status].label}
             </Badge>
             <Show when={app.status === "active" || app.status === "pending"}>
-              <Badge
-                variant="dot"
-                colorPalette={app.health === "healthy" ? "success" : app.health === "unhealthy" ? "danger" : "neutral"}
-              >
-                {app.health}
-              </Badge>
+              <Badge colorPalette={app.health === "unhealthy" ? "danger" : undefined}>{app.health}</Badge>
             </Show>
           </div>
           <Show when={app.statusMessage}>
@@ -885,7 +895,7 @@ const RegistriesCard = () => {
                       {registry.username} · added {formatDateTime(registry.createdAt)}
                     </span>
                     <div class={css({ flex: "1" })} />
-                    <Button size="xs" variant="plain" onClick={() => remove.mutate(registry.server)}>
+                    <Button size="xs" variant="ghost" onClick={() => remove.mutate(registry.server)}>
                       Remove
                     </Button>
                   </div>

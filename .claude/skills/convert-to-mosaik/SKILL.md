@@ -99,7 +99,7 @@ Most of the original's infrastructure has a Mosaik counterpart. Use it rather th
 | Charts | `@mosaik/web-sdk/charts` (themed, follows dark mode) |
 | Data tables with paging, sorting, filters | `DataTable` (`@mosaik/web-sdk/table`), server-side for large data, state in the URL (`useTableSearch`) |
 | Forms | `createForm` with the API payload's Schema, `useAction` for calls |
-| Component libraries (MUI, Ant, Bootstrap, Tailwind UI) | `@mosaik/mosaik-ui` components and the theme's tokens (`css`, `token.var`) |
+| Component libraries (MUI, Ant, Bootstrap, Tailwind UI) | `@mosaik/ui` components and the theme's tokens (`css`, `token.var`) |
 | Global stores (Redux, Vuex, Pinia) for server data | TanStack Query through `createApi(Api)`: the server is the store |
 | A navigation bar | the manifest's `portal.pages` (the shell's sidebar lists them) and `AppLayout`; full-width pages with `staticData: { layout: "wide" }` |
 | Search box across records | `defineSearchProvider` in `web/search.ts` (the command palette) |
@@ -137,7 +137,7 @@ Write the design down and confirm it with the user:
 Scaffold with `bun create:app`, then write the contract first, the backend's services and handlers next
 (rules in the handlers, data access in services, as in Sales), and the pages last. Follow the surrounding
 code's patterns: Effect services with layers, `Schema` for every boundary, doc comments that say why.
-Apps import only `@mosaik/sdk` and `@mosaik/mosaik-ui`.
+Apps import only `@mosaik/sdk`, `@mosaik/web-sdk` and `@mosaik/ui`.
 
 If the original has data people still need, write a one-off migration script that reads the old store and
 writes through the new app's own data layer, run it separately from the app, and check counts and totals

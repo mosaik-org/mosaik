@@ -13,13 +13,13 @@ const mark = cva({
   variants: {
     tone: {
       // Grey, as a list shows many: shape tells them apart, and colour is left for what is late.
-      new: { color: "fg.subtle" },
-      open: { color: "fg.subtle" },
-      waiting: { color: "fg.subtle" },
-      solved: { color: "green.plain.fg" },
-      closed: { color: "fg.subtle" },
+      new: { color: "fg.muted" },
+      open: { color: "fg.muted" },
+      waiting: { color: "fg.muted" },
+      solved: { color: "green.fg" },
+      closed: { color: "fg.muted" },
       // The same status, for the person it waits for: their move, so the accent.
-      yourTurn: { color: "accent.plain.fg" },
+      yourTurn: { color: "accent.fg" },
     },
   },
 })

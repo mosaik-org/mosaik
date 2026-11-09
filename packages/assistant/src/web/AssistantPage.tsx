@@ -1,6 +1,6 @@
 import { FRAME_TOP, FrameHeader } from "@mosaik/frame"
-import { Button } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button } from "@mosaik/ui"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import { type JSX, Show } from "solid-js"
 import { Conversation } from "./Conversation"
@@ -23,7 +23,7 @@ const styles = {
     minHeight: "0",
     overflow: "hidden",
     borderRightWidth: { md: "1px" },
-    bg: "canvas",
+    bg: "bg",
   }),
   main: css({ display: "flex", flexDirection: "column", minHeight: "0", minWidth: "0" }),
   // On phones the arrow alone, so the title keeps the room (the button's label says where it goes).
@@ -48,9 +48,8 @@ export const AssistantPage = (props: {
         {/* On phones the list is hidden while a conversation is open: the way back to it. */}
         <Show when={props.conversation !== null}>
           <Button
-            variant="plain"
+            variant="ghost"
             size="sm"
-            colorPalette="gray"
             class={css({ hideFrom: "md" })}
             aria-label="Back to the conversations"
             onClick={() => props.onSelect(null)}
@@ -60,13 +59,7 @@ export const AssistantPage = (props: {
         </Show>
         <Show when={props.onBack}>
           {(back) => (
-            <Button
-              variant="plain"
-              size="sm"
-              colorPalette="gray"
-              aria-label="Back to the page"
-              onClick={() => back()()}
-            >
+            <Button variant="ghost" size="sm" aria-label="Back to the page" onClick={() => back()()}>
               <ArrowLeft size={14} /> <span class={styles.backLabel}>Back to the page</span>
             </Button>
           )}

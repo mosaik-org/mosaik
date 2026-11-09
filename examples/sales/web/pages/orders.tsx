@@ -1,7 +1,7 @@
-import { Button, Input, SelectField } from "@mosaik/mosaik-ui"
 import { formatCurrency, formatDateTime } from "@mosaik/sdk/client"
 import { useSearchParams } from "@mosaik/sdk/router"
 import { createDebounced, useCan, useStatus, useTableSearch } from "@mosaik/sdk/solid"
+import { Button, Input, SelectField } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { useCommands } from "@mosaik/web-sdk/portal"
 import { createColumnHelper, DataTable } from "@mosaik/web-sdk/table"
@@ -119,7 +119,7 @@ export default function Orders() {
           class={css({ maxWidth: "xs" })}
         />
         <SelectField
-          items={STATUS_FILTERS}
+          options={STATUS_FILTERS}
           value={table.params().status ?? "all"}
           onValueChange={(value) => table.setFilters({ status: value === "all" ? undefined : (value as OrderStatus) })}
           class={css({ width: "40" })}
@@ -137,12 +137,15 @@ export default function Orders() {
         <div class={css({ flex: "1" })} />
         <QueryFreshness query={orders} source="orders database" />
         <Show when={canExport()}>
-          <a href={exportUrl(table.params())} download="orders.csv">
-            <Button variant="outline">
-              <Download size={16} />
-              Export CSV
-            </Button>
-          </a>
+          <Button
+            variant="outline"
+            asChild={(link) => (
+              <a href={exportUrl(table.params())} download="orders.csv" {...link()}>
+                <Download size={16} />
+                Export CSV
+              </a>
+            )}
+          />
         </Show>
       </div>
 

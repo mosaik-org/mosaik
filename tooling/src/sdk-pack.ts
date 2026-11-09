@@ -15,8 +15,8 @@
  * app would each keep their own state (the toaster, the session, the classes errors are matched by).
  * They ship TypeScript: Bun, Vite (`bun --bun`) and `tsc` read it as it is.
  *
- * The component library, `@mosaik/mosaik-ui`, is not inside: apps import it themselves, so it is its
- * own tarball next to them (built by the library), a peer of `@mosaik/web-sdk` at that exact version.
+ * The component library, `@mosaik/ui`, is not inside: apps import it themselves, so it is its own
+ * tarball next to them (built in its own repository), a peer of `@mosaik/web-sdk` at that exact version.
  */
 import { cp, mkdir, readdir, rm } from "node:fs/promises"
 import { dirname, join, relative } from "node:path"
@@ -39,7 +39,14 @@ export interface SdkIndex {
 }
 
 /** The component library: a package of its own, which apps install next to the SDK. */
-const COMPONENTS = "@mosaik/mosaik-ui"
+const COMPONENTS = "@mosaik/ui"
+
+/**
+ * What the library's build leaves (`bun run build` in its repository): the package the workspaces
+ * install, and its tarball. The repository is checked out beside this one, as their `file:`
+ * dependencies say.
+ */
+const LIBRARY_DIST = join(ROOT, "..", "mosaik-ui", "dist")
 
 /** Solid's packages: optional for `@mosaik/sdk`, whose `/solid` and `/router` alone use them. */
 const FRAMEWORK: ReadonlySet<string> = new Set(["solid-js", "@tanstack/solid-query", "@tanstack/solid-router"])
@@ -209,16 +216,16 @@ const pack = async (tarball: Tarball): Promise<string> => {
 export const packSdk = async (): Promise<SdkIndex> => {
   // Generated, so possibly older than the sources: the Panda runtimes `@mosaik/web-sdk` ships, and the
   // kit's stylesheet (`@mosaik/web-sdk/ui/styles.css`), are generated afresh.
-  // The component library is built (and packed) by its own build.
-  for (const [dir, command] of [
-    ["packages/mosaik-ui", ["bun", "run", "build"]],
-    ["packages/styled-system", ["bun", "run", "prepare"]],
-  ] as const) {
+  // The component library is built (and packed) in its own repository.
+  for (const [dir, command] of [["packages/styled-system", ["bun", "run", "prepare"]]] as const) {
     const run = Bun.spawnSync([...command], { cwd: join(ROOT, dir), stderr: "pipe" })
     if (run.exitCode !== 0) throw new Error(`Building ${dir} failed:\n${run.stderr.toString()}`)
   }
-  const library = await readPackage(dirOf(COMPONENTS))
-  const libraryTarball = `mosaik-mosaik-ui-${library.version}.tgz`
+  const library = await readPackage(join(LIBRARY_DIST, "package"))
+  const libraryTarball = `mosaik-ui-${library.version}.tgz`
+  if (!(await Bun.file(join(LIBRARY_DIST, libraryTarball)).exists())) {
+    throw new Error(`${libraryTarball} not found in ${LIBRARY_DIST}: run \`bun run build\` in mosaik-ui`)
+  }
   const core = await closure(SDK)
   const web = await closure(WEB_SDK, new Set(core.keys()))
   for (const manifest of [...core.values(), ...web.values()]) {
@@ -231,7 +238,7 @@ export const packSdk = async (): Promise<SdkIndex> => {
 
   await rm(SDK_DIR, { recursive: true, force: true })
   await mkdir(STAGE, { recursive: true })
-  await cp(join(dirOf(COMPONENTS), "dist", libraryTarball), join(SDK_DIR, libraryTarball))
+  await cp(join(LIBRARY_DIST, libraryTarball), join(SDK_DIR, libraryTarball))
 
   // What `@mosaik/web-sdk` imports of the packages `@mosaik/sdk` ships, which the latter exports for it.
   const coreTargets = specifiers(SDK, core)

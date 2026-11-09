@@ -2,7 +2,7 @@
  * `@mosaik/styled-system/fonts.css`: Mosaik's fonts, Geist and Geist Mono, served with its pages
  * rather than from a font service: variable, split by script (a page downloads the scripts it
  * shows), `font-display: swap`. The theme names them (`fonts.body`, `fonts.mono`).
- * `@mosaik/mosaik-ui` names no font, so apps on the library alone keep their own.
+ * `@mosaik/ui` names no font, so apps on the library alone keep their own.
  */
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist/wght-italic.css";

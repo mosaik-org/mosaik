@@ -1,5 +1,5 @@
-import { Checkbox } from "@mosaik/mosaik-ui"
 import type { ListNavigation } from "@mosaik/sdk/solid"
+import { Checkbox } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { UserAvatar } from "@mosaik/web-sdk/ui"
 import { Show } from "solid-js"
@@ -18,13 +18,13 @@ const styles = {
     cursor: "pointer",
     outline: "none",
     borderBottomWidth: "1px",
-    borderColor: "border.subtle",
-    _hover: { bg: "gray.subtle.bg" },
+    borderColor: "border.muted",
+    _hover: { bg: "gray.subtle" },
     // Where the person is.
-    '&[data-active]:not([aria-selected="true"])': { bg: "gray.subtle.bg.hover" },
+    '&[data-active]:not([aria-selected="true"])': { bg: "gray.subtle.hover" },
     // What they have marked: something they set, so the accent, whether or not they are on it.
-    '&[aria-selected="true"]': { bg: "accent.subtle.bg", _hover: { bg: "accent.subtle.bg.hover" } },
-    _focusVisible: { boxShadow: "inset 2px 0 0 {colors.accent.solid.bg}" },
+    '&[aria-selected="true"]': { bg: "accent.subtle", _hover: { bg: "accent.subtle.hover" } },
+    _focusVisible: { boxShadow: "inset 2px 0 0 {colors.accent.solid}" },
   }),
   cell: css({ display: "flex", gap: "2", minW: "0" }),
   line: css({ display: "flex", alignItems: "center", gap: "2", minW: "0" }),
@@ -33,7 +33,7 @@ const styles = {
     minW: "0",
     truncate: true,
     fontSize: "sm",
-    color: "fg.default",
+    color: "fg",
     // New to this person. Read ones stay as legible: having seen it does not make it less pressing.
     "&[data-unread]": { fontWeight: "semibold" },
   }),
@@ -56,7 +56,9 @@ const styles = {
     "@media (hover: none)": { opacity: "1" },
   }),
   lines: css({ display: "flex", flexDirection: "column", gap: "1", flex: "1", minW: "0" }),
-  yourTurn: css({ flexShrink: "0", fontSize: "xs", fontWeight: "medium", color: "accent.plain.fg" }),
+  yourTurn: css({ flexShrink: "0", fontSize: "xs", fontWeight: "medium", color: "accent.fg" }),
+  // A little under the smallest avatar, so the line it ends is no taller than the one above.
+  avatar: css({ boxSize: "6" }),
 }
 
 /** One request in a list: what it is about, what makes it pressing, and who has it. */
@@ -115,7 +117,7 @@ export const RequestListRow = (props: {
                     : `${requestNumber(row().id)} · ${row().requester.name} · ${row().queueName}`}
                 </span>
                 <Show when={row().assignee} fallback={<Unassigned />}>
-                  {(assignee) => <UserAvatar user={assignee()} size="2xs" />}
+                  {(assignee) => <UserAvatar user={assignee()} size="xs" class={styles.avatar} />}
                 </Show>
               </div>
             </div>

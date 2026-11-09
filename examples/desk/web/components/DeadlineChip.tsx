@@ -10,8 +10,8 @@ const chip = cva({
   variants: {
     state: {
       ok: { color: "fg.muted" },
-      soon: { color: "warning.plain.fg", fontWeight: "medium" },
-      missed: { color: "danger.plain.fg", fontWeight: "medium" },
+      soon: { color: "warning.fg", fontWeight: "medium" },
+      missed: { color: "danger.fg", fontWeight: "medium" },
     },
   },
 })

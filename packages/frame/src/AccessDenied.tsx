@@ -1,5 +1,5 @@
-import { Button, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, EmptyState } from "@mosaik/ui"
 import { Link } from "@tanstack/solid-router"
 import ShieldX from "lucide-solid/icons/shield-x"
 import { type JSX, Show } from "solid-js"
@@ -12,12 +12,14 @@ export const AccessDenied = (props: {
   /** Replaces the way back, e.g. a link to ask for access. */
   action?: JSX.Element
 }) => (
-  <div class={css({ py: "16" })}>
-    <EmptyState
-      icon={<ShieldX size={32} />}
-      title="You don't have access to this page"
-      description={
-        props.description ?? (
+  <EmptyState.Root py="16">
+    <EmptyState.Indicator>
+      <ShieldX />
+    </EmptyState.Indicator>
+    <EmptyState.Content>
+      <EmptyState.Title>You don't have access to this page</EmptyState.Title>
+      <EmptyState.Description>
+        {props.description ?? (
           <Show when={props.permission} fallback="Ask an administrator to grant you access.">
             {(permission) => (
               <>
@@ -25,20 +27,20 @@ export const AccessDenied = (props: {
               </>
             )}
           </Show>
-        )
-      }
-      action={
-        props.action ?? (
-          <Button
-            variant="outline"
-            asChild={(link) => (
-              <Link to="/" {...link()}>
-                Back to Overview
-              </Link>
-            )}
-          />
-        )
-      }
-    />
-  </div>
+        )}
+      </EmptyState.Description>
+    </EmptyState.Content>
+    <EmptyState.Actions>
+      {props.action ?? (
+        <Button
+          variant="outline"
+          asChild={(link) => (
+            <Link to="/" {...link()}>
+              Back to Overview
+            </Link>
+          )}
+        />
+      )}
+    </EmptyState.Actions>
+  </EmptyState.Root>
 )

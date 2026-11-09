@@ -34,7 +34,7 @@ export default appPandaConfig({ prefix: "crm", include: ["./page.ts"] })`,
     )
     writeFileSync(
       join(root, "page.ts"),
-      `import { css } from "@mosaik/web-sdk/css"\nexport const card = css({ px: "4", bg: "accent.subtle.bg", _dark: { color: "fg.muted" } })\n`,
+      `import { css } from "@mosaik/web-sdk/css"\nexport const card = css({ px: "4", bg: "accent.subtle", _dark: { color: "fg.muted" } })\n`,
     )
     const result = await postcss([...appPostcssPlugins(root)]).process(
       "@layer reset, base, tokens, recipes, utilities;",
@@ -44,7 +44,7 @@ export default appPandaConfig({ prefix: "crm", include: ["./page.ts"] })`,
     )
     // The app's classes, prefixed with its id, reading the theme's variables.
     expect(result.css).toContain(".crm-px_4")
-    expect(result.css).toContain("var(--mk-colors-accent-subtle-bg)")
+    expect(result.css).toContain("var(--mk-colors-accent-subtle)")
     expect(result.css).toContain(".dark .dark\\:crm-c_fg\\.muted")
     // No variable of the theme is defined, and no reset or recipe is repeated.
     expect(result.css).not.toMatch(/--mk-[\w-]+\s*:/)

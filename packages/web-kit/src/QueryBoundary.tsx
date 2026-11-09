@@ -1,7 +1,8 @@
 import { errorMessage } from "@mosaik/client"
-import { ErrorState, Spinner } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Spinner } from "@mosaik/ui"
 import { type Accessor, type JSX, Match, Switch } from "solid-js"
+import { ErrorState } from "./ErrorState"
 
 /** The parts of a (regular or infinite) TanStack query result the boundary needs. */
 export interface QueryState<T> {

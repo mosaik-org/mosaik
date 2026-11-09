@@ -1,8 +1,9 @@
-import { Button, Tooltip } from "@mosaik/mosaik-ui"
 import { formatDateTime } from "@mosaik/sdk/client"
+import { Button, Tooltip } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { UserAvatar } from "@mosaik/web-sdk/ui"
 import { type JSX, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { PRIORITY_LABELS, REQUESTER_STATUS_LABELS, type RequestRow, STATUS_LABELS } from "../../api"
 import { DeadlineChip } from "../components/DeadlineChip"
 import { PriorityIcon } from "../components/PriorityIcon"
@@ -38,6 +39,8 @@ const styles = {
     minH: "7",
   }),
   button: css({ justifyContent: "flex-start", width: "full", minW: "0" }),
+  // Sized to the line of text it sits on, a little under the smallest avatar.
+  avatar: css({ boxSize: "6" }),
   text: css({ truncate: true }),
   separator: css({ my: "2", borderTopWidth: "1px", borderColor: "border", hideBelow: "lg" }),
 }
@@ -51,13 +54,20 @@ const Field = (props: { label: string; children: JSX.Element }) => (
 
 /** A value that opens its picker, with the key that does the same in its tooltip, so people pick it up. */
 const Pick = (props: { label: string; keyName: string; onClick: () => void; children: JSX.Element }) => (
-  <Tooltip content={`${props.label} (${props.keyName})`}>
-    {(trigger) => (
-      <Button {...trigger()} class={styles.button} size="sm" variant="plain" onClick={props.onClick}>
-        {props.children}
-      </Button>
-    )}
-  </Tooltip>
+  <Tooltip.Root>
+    <Tooltip.Trigger
+      asChild={(trigger) => (
+        <Button {...trigger()} class={styles.button} size="sm" variant="ghost" onClick={props.onClick}>
+          {props.children}
+        </Button>
+      )}
+    />
+    <Portal>
+      <Tooltip.Positioner>
+        <Tooltip.Content>{`${props.label} (${props.keyName})`}</Tooltip.Content>
+      </Tooltip.Positioner>
+    </Portal>
+  </Tooltip.Root>
 )
 
 /** Everything about a request, each to change where it shows for people who may. */
@@ -89,7 +99,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
                 >
                   {(assignee) => (
                     <>
-                      <UserAvatar user={assignee()} size="2xs" />
+                      <UserAvatar user={assignee()} size="xs" class={styles.avatar} />
                       <span class={styles.text}>{assignee().name}</span>
                     </>
                   )}
@@ -124,7 +134,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
             >
               {(assignee) => (
                 <>
-                  <UserAvatar user={assignee()} size="2xs" />
+                  <UserAvatar user={assignee()} size="xs" class={styles.avatar} />
                   <span class={styles.text}>{assignee().name}</span>
                 </>
               )}
@@ -143,7 +153,7 @@ export const Attributes = (props: { row: RequestRow; asAgent: boolean; pickers: 
       <Show when={props.asAgent}>
         <Field label="Asked by">
           <div class={styles.value}>
-            <UserAvatar user={props.row.requester} size="2xs" />
+            <UserAvatar user={props.row.requester} size="xs" class={styles.avatar} />
             <span class={styles.text}>{props.row.requester.name}</span>
           </div>
         </Field>

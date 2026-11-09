@@ -1,5 +1,5 @@
 import { useAction } from "@mosaik/client/solid"
-import { ActionMenu, Button, ConfirmDialog, IconButton, Modal, TextField } from "@mosaik/mosaik-ui"
+import { ActionMenu, Button, ConfirmDialog, Dialog, IconButton, Modal, TextField } from "@mosaik/ui"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import Pencil from "lucide-solid/icons/pencil"
 import Trash from "lucide-solid/icons/trash"
@@ -35,10 +35,11 @@ export const ConversationMenu = (props: {
   return (
     <>
       <ActionMenu
+        positioning={{ placement: "bottom-end" }}
         trigger={(trigger) => (
           <IconButton
-            variant="plain"
-            size="2xs"
+            variant="ghost"
+            size="xs"
             class={props.class}
             aria-label={`Actions for ${props.conversation.title || "this conversation"}`}
             {...trigger()}
@@ -67,13 +68,17 @@ export const ConversationMenu = (props: {
       />
       <Modal
         open={renaming()}
-        onOpenChange={setRenaming}
+        onOpenChange={(details) => setRenaming(details.open)}
         title="Rename the conversation"
         footer={
           <>
-            <Button variant="plain" onClick={() => setRenaming(false)}>
-              Cancel
-            </Button>
+            <Dialog.CloseTrigger
+              asChild={(close) => (
+                <Button variant="outline" {...close()}>
+                  Cancel
+                </Button>
+              )}
+            />
             <Button loading={rename.pending()} disabled={title().trim() === ""} onClick={() => void save()}>
               Save
             </Button>
@@ -91,15 +96,13 @@ export const ConversationMenu = (props: {
       </Modal>
       <ConfirmDialog
         open={deleting()}
-        onOpenChange={setDeleting}
+        onOpenChange={(details) => setDeleting(details.open)}
         title="Delete the conversation?"
-        description="It is deleted for good, with everything in it. What the assistant changed in apps stays."
+        message="It is deleted for good, with everything in it. What the assistant changed in apps stays."
         confirmLabel="Delete"
         tone="danger"
-        loading={remove.pending()}
-        onConfirm={async () => {
-          if (await remove.run({ params: { id: props.conversation.id } })) setDeleting(false)
-        }}
+        // Closes once the call is done: if it failed, its toast says why.
+        onConfirm={() => remove.run({ params: { id: props.conversation.id } })}
       />
     </>
   )

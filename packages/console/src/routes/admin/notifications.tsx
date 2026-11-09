@@ -2,6 +2,15 @@ import { admin } from "@mosaik/auth/contract"
 import { useCan } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import {
+  CreateTarget,
+  type RoutingRule,
+  type Target,
+  type TargetKind,
+  UpdateTarget,
+} from "@mosaik/notifications/contract"
+import { css } from "@mosaik/styled-system/css"
+import { createColumnHelper, DataTable } from "@mosaik/table"
+import {
   ActionMenu,
   Badge,
   Button,
@@ -12,16 +21,7 @@ import {
   Modal,
   SelectField,
   TextField,
-} from "@mosaik/mosaik-ui"
-import {
-  CreateTarget,
-  type RoutingRule,
-  type Target,
-  type TargetKind,
-  UpdateTarget,
-} from "@mosaik/notifications/contract"
-import { css } from "@mosaik/styled-system/css"
-import { createColumnHelper, DataTable } from "@mosaik/table"
+} from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -140,12 +140,12 @@ const TargetDialog = (props: { open: boolean; onOpenChange: (open: boolean) => v
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={editing() ? `Edit ${props.target?.name}` : "Add a Teams or Slack channel"}
       description="Messages and notifications can be sent or routed to it."
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="target-form" loading={save.isPending}>
@@ -163,7 +163,15 @@ const TargetDialog = (props: { open: boolean; onOpenChange: (open: boolean) => v
         }}
       >
         <Show when={!editing()}>
-          <SelectField label="Type" items={KINDS} value={kind()} onValueChange={setKind} />
+          <SelectField
+            label="Type"
+            options={KINDS}
+            value={kind()}
+            onValueChange={(value) => {
+              const chosen = KINDS.find((candidate) => candidate.value === value)
+              if (chosen !== undefined) setKind(chosen.value)
+            }}
+          />
         </Show>
         <p class={css({ fontSize: "xs", color: "fg.muted", mt: "-2" })}>
           {KINDS.find((k) => k.value === kind())?.help}
@@ -228,7 +236,6 @@ const TargetActions = (props: { target: Target }) => {
     onSuccess: () => {
       toast.success("Channel removed", props.target.name)
       void invalidate()
-      setDeleting(false)
     },
     onError: onError("Could not remove the channel"),
   }))
@@ -237,8 +244,8 @@ const TargetActions = (props: { target: Target }) => {
     <>
       <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton variant="plain" aria-label={`Actions for ${props.target.name}`} size="2xs" {...triggerProps()}>
-            <Ellipsis size={16} />
+          <IconButton variant="ghost" aria-label={`Actions for ${props.target.name}`} size="xs" {...triggerProps()}>
+            <Ellipsis />
           </IconButton>
         )}
         items={[
@@ -252,13 +259,12 @@ const TargetActions = (props: { target: Target }) => {
       </Show>
       <ConfirmDialog
         open={deleting()}
-        onOpenChange={setDeleting}
+        onOpenChange={(details) => setDeleting(details.open)}
         title={`Remove ${props.target.name}?`}
-        description="Its routing rules are removed too, and pending deliveries to it fail."
+        message="Its routing rules are removed too, and pending deliveries to it fail."
         confirmLabel="Remove"
         tone="danger"
-        loading={remove.isPending}
-        onConfirm={() => remove.mutate()}
+        onConfirm={() => remove.mutateAsync()}
       />
     </>
   )
@@ -284,11 +290,7 @@ const TargetsCard = () => {
     }),
     targetColumn.accessor("kind", {
       header: "Type",
-      cell: (info) => (
-        <Badge colorPalette={info.getValue() === "teams-webhook" ? "accent" : "neutral"}>
-          {kindLabel(info.getValue())}
-        </Badge>
-      ),
+      cell: (info) => <Badge>{kindLabel(info.getValue())}</Badge>,
     }),
     targetColumn.accessor("address", {
       header: "Posts to",
@@ -368,12 +370,12 @@ const RouteDialog = (props: {
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Route ${props.rule.key}`}
       description={props.rule.description ?? "Every message of this kind is also posted to the checked channels."}
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button loading={save.isPending} onClick={() => save.mutate()}>
@@ -424,18 +426,14 @@ const RoutingCard = () => {
     }),
     ruleColumn.accessor("category", {
       header: "Kind",
-      cell: (info) => (
-        <Badge colorPalette={info.getValue() === "notification" ? "accent" : "neutral"}>
-          {info.getValue() === "notification" ? "Notification" : "Message"}
-        </Badge>
-      ),
+      cell: (info) => <Badge>{info.getValue() === "notification" ? "Notification" : "Message"}</Badge>,
     }),
     ruleColumn.accessor("targets", {
       header: "Also posted to",
       enableSorting: false,
       cell: (info) => (
         <div class={css({ display: "flex", gap: "1", flexWrap: "wrap" })}>
-          <For each={info.getValue()} fallback={<span class={css({ color: "fg.subtle" })}>—</span>}>
+          <For each={info.getValue()} fallback={<span class={css({ color: "fg.muted" })}>—</span>}>
             {(id) => <Badge>{targetName(id)}</Badge>}
           </For>
         </div>
@@ -448,12 +446,12 @@ const RoutingCard = () => {
       cell: (info) => (
         <Show when={can(admin.perm("notifications.manage"))}>
           <IconButton
-            variant="plain"
+            variant="ghost"
             aria-label={`Route ${info.row.original.key}`}
             size="xs"
             onClick={() => setEditing(info.row.original)}
           >
-            <Pencil size={14} />
+            <Pencil />
           </IconButton>
         </Show>
       ),

@@ -1,6 +1,12 @@
 import { provideToaster } from "@mosaik/client"
-import { Toaster, toaster } from "@mosaik/mosaik-ui"
+import { createToaster, Toaster } from "@mosaik/ui"
 import { onCleanup } from "solid-js"
+
+/**
+ * Mosaik's own toaster rather than the library's: apps reach it only through `toast`, and a page
+ * left open shows at most five, paused while nobody is looking, so none goes by unread.
+ */
+const toaster = createToaster({ placement: "bottom-end", overlap: true, gap: 12, max: 5, pauseOnPageIdle: true })
 
 /**
  * Renders the toasts of `toast` (`@mosaik/client`) and provides it to the page. The shell renders
@@ -8,5 +14,5 @@ import { onCleanup } from "solid-js"
  */
 export const Toasts = () => {
   onCleanup(provideToaster({ show: (next) => toaster.create(next) }))
-  return <Toaster />
+  return <Toaster toaster={toaster} />
 }

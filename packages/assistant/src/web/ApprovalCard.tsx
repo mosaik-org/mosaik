@@ -1,5 +1,5 @@
-import { Badge, Button, Card } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { Badge, Button, Card } from "@mosaik/ui"
 import Check from "lucide-solid/icons/check"
 import ShieldAlert from "lucide-solid/icons/shield-exclamation-point"
 import TriangleAlert from "lucide-solid/icons/triangle-exclamation-point"
@@ -11,10 +11,7 @@ import { inputFields } from "./format"
 const styles = {
   // A card in the warning's colours, its left edge thick: it waits for the person.
   card: css({ borderLeftWidth: "4px", borderColor: "warning.7", bg: "warning.2" }),
-  // Closer than a page's card: it sits in a conversation.
-  header: css({ p: "4", pb: "3", gap: "2" }),
-  body: css({ px: "4", pb: "3" }),
-  footer: css({ px: "4", pt: "0", pb: "4", gap: "2" }),
+  header: css({ gap: "2" }),
   destructive: css({ borderColor: "danger.7", bg: "danger.2" }),
   label: css({
     display: "flex",
@@ -38,7 +35,7 @@ const styles = {
     px: "3",
     py: "2",
     borderRadius: "l2",
-    bg: "gray.surface.bg",
+    bg: "bg.panel",
     fontSize: "sm",
     maxHeight: "48",
     overflowY: "auto",
@@ -58,7 +55,9 @@ export const ApprovalCard = (props: {
 }): JSX.Element => {
   const appName = useAppName()
   return (
+    // Small, closer than a page's card: it sits in a conversation.
     <Card.Root
+      size="sm"
       role="region"
       class={cx(styles.card, props.call.destructive && styles.destructive)}
       aria-label={`Approval: ${props.call.title}`}
@@ -80,7 +79,7 @@ export const ApprovalCard = (props: {
         </div>
       </Card.Header>
       <Show when={inputFields(props.call.input).length > 0}>
-        <Card.Body class={styles.body}>
+        <Card.Body>
           <dl class={styles.inputs}>
             <For each={inputFields(props.call.input)}>
               {([name, value]) => (
@@ -93,13 +92,13 @@ export const ApprovalCard = (props: {
           </dl>
         </Card.Body>
       </Show>
-      <Card.Footer class={styles.footer}>
+      <Card.Footer>
         <Button size="sm" variant="outline" disabled={props.busy} onClick={() => props.onDecide(false)}>
           Deny
         </Button>
         <Button
           size="sm"
-          colorPalette={props.call.destructive ? "danger" : "accent"}
+          colorPalette={props.call.destructive ? "danger" : undefined}
           loading={props.busy}
           onClick={() => props.onDecide(true)}
         >

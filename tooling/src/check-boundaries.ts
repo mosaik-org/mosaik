@@ -7,7 +7,7 @@
  * 4. App servers never import browser code.
  * 5. Shared packages never depend on apps (built-in or examples).
  * 6. Examples see only the SDK (`@mosaik/sdk`, `@mosaik/web-sdk` and their entry points), the component
- *    library (`@mosaik/mosaik-ui`) and their own files, like a team's app in its own repository; rules
+ *    library (`@mosaik/ui`) and their own files, like a team's app in its own repository; rules
  *    2–4 hold for the SDK's entry points too.
  * 7. Core (its services and the shared packages) never depends on the Portal. The SDK spans both
  *    layers for apps, through two modules only (`@mosaik/web-sdk/portal` and the build plugin): so an
@@ -15,9 +15,7 @@
  * 8. The Portal (its service, its package, the shell, built-in apps) uses Core only through its
  *    contracts and the SDK, never the code of Core's services.
  * 9. The testing kit (`@mosaik/sdk/testing`) is for tests (`*.test.ts`), never the code that ships.
- * 10. `@mosaik/mosaik-ui` stands alone: it imports nothing of Mosaik and nothing outside its
- *    directory, so it can move to a repository of its own.
- * 11. `@mosaik/sdk`, what every app builds on, imports none of Mosaik's UI (components, styles, the
+ * 10. `@mosaik/sdk`, what every app builds on, imports none of Mosaik's UI (components, styles, the
  *    frame, `@mosaik/web-sdk`), so a team can bring its own, and `examples/links` shows it: it uses
  *    only `@mosaik/sdk`, with a page of its own.
  */
@@ -69,7 +67,7 @@ const BROWSER_ONLY = [
   /^@mosaik\/auth\/web$/,
   /^@mosaik\/portal\/web$/,
   // The component library, except its Panda preset (build time).
-  /^@mosaik\/mosaik-ui(?!\/preset$)(\/|$)/,
+  /^@mosaik\/ui(?!\/theme$)(\/|$)/,
   /^@mosaik\/sdk\/(client|solid|router)$/,
   /^@mosaik\/web-sdk\/(portal|ui|table|charts|css|jsx|patterns|tokens)$/,
   /^@tanstack\/solid-/,
@@ -117,7 +115,6 @@ const isBrowserCode = (path: string) =>
   /^(apps|examples)\/[^/]+\/web\//.test(path) ||
   /^packages\/(table|charts|web-kit|frame|client|console)\//.test(path) ||
   path.startsWith("packages/portal/src/web/") ||
-  path.startsWith("packages/mosaik-ui/src/") ||
   path.startsWith("packages/auth/src/web/") ||
   path.startsWith("packages/assistant/src/web/") ||
   path.startsWith("shell/src/") ||
@@ -133,8 +130,6 @@ const isContract = (path: string) =>
   path.startsWith("packages/notifications/src/contract/") ||
   path.startsWith("packages/platform/src/contract/")
 
-const MOSAIK_UI = "packages/mosaik-ui/"
-
 /** Behind the entry points of the SDK that a team with its own UI uses, which must stay free of ours. */
 const isUiFree = (path: string) =>
   /^packages\/(sdk|core|db|auth|client|platform|notifications|connectors|server|testing|app-kit)\/src\//.test(path)
@@ -143,7 +138,7 @@ const isUiFree = (path: string) =>
 const OWN_UI_EXAMPLE = "examples/links/"
 
 const UI = [
-  /^@mosaik\/(mosaik-ui|styled-system|web-kit|frame|table|charts|portal|web-sdk|web-build)(\/|$)/,
+  /^@mosaik\/(ui|styled-system|web-kit|frame|table|charts|portal|web-sdk|web-build)(\/|$)/,
   /^@ark-ui\//,
   /^lucide-solid/,
   /^echarts/,
@@ -192,7 +187,7 @@ const rules: ReadonlyArray<Rule> = [
     name: "examples use only the SDK and the component library",
     files: (path) => path.startsWith("examples/"),
     forbidden: (specifier, file) => {
-      if (specifier.startsWith("@mosaik/")) return !SDK_ENTRY_POINTS.has(specifier) && specifier !== "@mosaik/mosaik-ui"
+      if (specifier.startsWith("@mosaik/")) return !SDK_ENTRY_POINTS.has(specifier) && specifier !== "@mosaik/ui"
       const resolved = target(specifier, file)
       return resolved !== null && exampleOf(`${resolved}/`) !== exampleOf(file)
     },
@@ -204,15 +199,6 @@ const rules: ReadonlyArray<Rule> = [
     forbidden: (specifier) => /^@mosaik\/(sdk\/)?testing$/.test(specifier),
   },
   // Core and the Portal, in both directions: what keeps Core usable without the Portal.
-  {
-    name: "@mosaik/mosaik-ui must stand alone",
-    files: (path) => path.startsWith(MOSAIK_UI),
-    forbidden: (specifier, file) => {
-      if (specifier.startsWith("@mosaik/")) return !/^@mosaik\/mosaik-ui(\/|$)/.test(specifier)
-      const resolved = target(specifier, file)
-      return resolved !== null && !`${resolved}/`.startsWith(MOSAIK_UI)
-    },
-  },
   {
     name: "@mosaik/sdk must import none of Mosaik's UI",
     files: isUiFree,
@@ -250,8 +236,6 @@ for (const pattern of [
   "shell/src/**/*.{ts,tsx}",
   "console/src/**/*.{ts,tsx}",
   "packages/*/src/**/*.{ts,tsx}",
-  "packages/mosaik-ui/{catalog,test,scripts,verify}/**/*.{ts,tsx,js}",
-  "packages/mosaik-ui/*.config.ts",
   "apps/*/**/*.{ts,tsx}",
   "examples/*/**/*.{ts,tsx}",
 ]) {

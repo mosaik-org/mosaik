@@ -2,8 +2,8 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import { aboutQuery, RoleDetails } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
-import { Button, Modal, SelectField, TextareaField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Modal, SelectField, TextareaField } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createSignal, Show } from "solid-js"
@@ -47,7 +47,7 @@ export const RequestAccessDialog = (props: { app: AnyApp; open: boolean; onOpenC
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Request access to ${props.app.name}`}
       description={
         owners().length > 0
@@ -73,8 +73,8 @@ export const RequestAccessDialog = (props: { app: AnyApp; open: boolean; onOpenC
             <Show when={roles().length > 1}>
               <SelectField
                 label="Role"
-                items={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
-                value={role()}
+                options={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
+                value={role() ?? ""}
                 onValueChange={setChosen}
               />
               <Show when={roles().find((candidate) => candidate.id === role())}>

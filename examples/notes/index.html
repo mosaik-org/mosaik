@@ -7,7 +7,7 @@
     <script>
       // The theme before first paint (ThemeProvider keeps it in sync afterwards).
       try {
-        const theme = localStorage.getItem("mosaik-ui-theme") ?? "system"
+        const theme = localStorage.getItem("mosaik-theme") ?? "system"
         const dark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
         document.documentElement.classList.toggle("dark", dark)
       } catch {}

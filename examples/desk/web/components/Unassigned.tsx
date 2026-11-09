@@ -1,7 +1,7 @@
 import { css } from "@mosaik/web-sdk/css"
 import CircleDashed from "lucide-solid/icons/circle-dashed"
 
-const styles = { nobody: css({ display: "inline-grid", placeItems: "center", flexShrink: "0", color: "fg.subtle" }) }
+const styles = { nobody: css({ display: "inline-grid", placeItems: "center", flexShrink: "0", color: "fg.muted" }) }
 
 /** Where an avatar would be when nobody has a request: an empty place, rather than nothing to notice. */
 export const Unassigned = () => (

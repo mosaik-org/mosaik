@@ -1,7 +1,7 @@
 import { SESSION_QUERY_KEY } from "@mosaik/auth/web"
 import { createQueryClient } from "@mosaik/client/solid"
-import { EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { EmptyState } from "@mosaik/ui"
 import { createRouter } from "@tanstack/solid-router"
 import SearchX from "lucide-solid/icons/search-x"
 import { routeTree } from "./routeTree.gen"
@@ -22,7 +22,15 @@ export const router = createRouter({
   scrollRestoration: true,
   defaultNotFoundComponent: () => (
     <div class={css({ py: "16" })}>
-      <EmptyState icon={<SearchX size={32} />} title="Not found" description="There is no such page." />
+      <EmptyState.Root>
+        <EmptyState.Indicator>
+          <SearchX />
+        </EmptyState.Indicator>
+        <EmptyState.Content>
+          <EmptyState.Title>Not found</EmptyState.Title>
+          <EmptyState.Description>There is no such page.</EmptyState.Description>
+        </EmptyState.Content>
+      </EmptyState.Root>
     </div>
   ),
 })

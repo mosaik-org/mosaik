@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/sdk": "workspace:*",
+    "@mosaik/ui": "file:../../../mosaik-ui/dist/package",
     "@mosaik/web-sdk": "workspace:*",
     "@tanstack/solid-query": "^5.104.3",
     "effect": "^4.1.2",

@@ -1,6 +1,6 @@
 import { signIn, signOut, usePrincipal } from "@mosaik/auth/web"
 import { AppIcon, type Command, useCommands } from "@mosaik/frame"
-import { useTheme } from "@mosaik/mosaik-ui"
+import { useTheme } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useLocation, useNavigate, useRouter } from "@tanstack/solid-router"
 import LayoutGrid from "lucide-solid/icons/layout-grid"

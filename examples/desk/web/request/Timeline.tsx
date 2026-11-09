@@ -21,11 +21,11 @@ const styles = {
   post: css({ display: "flex", gap: "3", minW: "0" }),
   content: css({ flex: "1", minW: "0", display: "flex", flexDirection: "column", gap: "1" }),
   who: css({ display: "flex", alignItems: "baseline", gap: "2", fontSize: "sm" }),
-  name: css({ fontWeight: "medium", color: "fg.default" }),
+  name: css({ fontWeight: "medium", color: "fg" }),
   when: css({ fontSize: "xs", color: "fg.muted" }),
-  text: css({ fontSize: "sm", color: "fg.default", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }),
+  text: css({ fontSize: "sm", color: "fg", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }),
   // Told apart by a mark and a surface, never by alarm: an internal note is ordinary.
-  note: css({ bg: "gray.subtle.bg", borderRadius: "l2", p: "3" }),
+  note: css({ bg: "gray.subtle", borderRadius: "l2", p: "3" }),
   noteLabel: css({
     display: "inline-flex",
     alignItems: "center",
@@ -59,7 +59,7 @@ const changeWords = (line: Activity): string => {
 
 const Post = (props: { line: Activity }) => (
   <div class={styles.post}>
-    <Show when={props.line.author}>{(author) => <UserAvatar user={author()} size="xs" />}</Show>
+    <Show when={props.line.author}>{(author) => <UserAvatar user={author()} size="sm" />}</Show>
     <div class={styles.content} classList={{ [styles.note]: props.line.kind === "note" }}>
       <div class={styles.who}>
         <span class={styles.name}>{props.line.author?.name ?? "Service Desk"}</span>
@@ -94,7 +94,7 @@ export const Timeline = (props: { row: RequestRow; forRequester: boolean }) => {
   return (
     <div ref={root} class={styles.root}>
       <div class={styles.post}>
-        <UserAvatar user={props.row.requester} size="xs" />
+        <UserAvatar user={props.row.requester} size="sm" />
         <div class={styles.content}>
           <div class={styles.who}>
             <span class={styles.name}>{props.row.requester.name}</span>

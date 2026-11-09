@@ -1,5 +1,5 @@
-import { NumberField, Table } from "@mosaik/mosaik-ui"
 import { useAction } from "@mosaik/sdk/solid"
+import { NumberField, Table } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
@@ -11,7 +11,7 @@ import { deadlinesQuery, deskApi } from "../queries"
 const styles = {
   stack: css({ display: "flex", flexDirection: "column", gap: "4" }),
   lead: css({ fontSize: "sm", color: "fg.muted" }),
-  priority: css({ display: "flex", alignItems: "center", gap: "2", fontWeight: "medium", color: "fg.default" }),
+  priority: css({ display: "flex", alignItems: "center", gap: "2", fontWeight: "medium", color: "fg" }),
   hours: css({ width: "28" }),
 }
 

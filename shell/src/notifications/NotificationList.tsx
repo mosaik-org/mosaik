@@ -18,9 +18,9 @@ const styles = {
     fontWeight: "semibold",
     color: "fg.muted",
     textTransform: "uppercase",
-    letterSpacing: "wider",
+    letterSpacing: "wide",
   }),
-  row: css({ position: "relative", _hover: { bg: "gray.subtle.bg" }, ...rowActionsReveal }),
+  row: css({ position: "relative", _hover: { bg: "gray.subtle" }, ...rowActionsReveal }),
   item: css({
     display: "flex",
     w: "full",
@@ -28,7 +28,7 @@ const styles = {
     py: "2",
     textAlign: "start",
     cursor: "pointer",
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "-2px" },
   }),
 }
 

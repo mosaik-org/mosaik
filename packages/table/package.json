@@ -10,8 +10,8 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
-    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
+    "@mosaik/ui": "file:../../../mosaik-ui/dist/package",
     "@tanstack/solid-table": "^9.3.1",
     "lucide-solid": "^1.70.0",
     "solid-js": "^1.9.17"

@@ -10,8 +10,8 @@ const line = cva({
   variants: {
     state: {
       ok: { color: "fg.muted" },
-      soon: { color: "warning.plain.fg" },
-      missed: { color: "danger.plain.fg" },
+      soon: { color: "warning.fg" },
+      missed: { color: "danger.fg" },
     },
   },
 })

@@ -1,6 +1,6 @@
-import { Button, FileUploadField, IconButton, Modal, Progress } from "@mosaik/mosaik-ui"
 import { errorMessage, formatBytes, formatRelativeTime, toast, uploadFile } from "@mosaik/sdk/client"
 import { useAction, useCan } from "@mosaik/sdk/solid"
+import { Button, FileField, IconButton, Modal, Progress } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
@@ -26,7 +26,7 @@ const styles = {
     flex: "1",
     minW: "0",
     truncate: true,
-    color: "accent.plain.fg",
+    color: "accent.fg",
     _hover: { textDecoration: "underline" },
   }),
   meta: css({ fontSize: "xs", color: "fg.muted", flexShrink: "0" }),
@@ -48,6 +48,14 @@ export const AttachmentsDialog = (props: { order: Order; open: boolean; onOpenCh
     enabled: props.open,
   }))
   const [files, setFiles] = createSignal<ReadonlyArray<File>>([])
+  // Checked here rather than with the field's `maxFileSize`, which leaves a larger file out without
+  // saying why: this says it in the field's error.
+  const [tooLarge, setTooLarge] = createSignal<string>()
+  const choose = (chosen: ReadonlyArray<File>) => {
+    const large = chosen.find((file) => file.size > MAX_ATTACHMENT_BYTES)
+    setTooLarge(large && `${large.name} is larger than ${formatBytes(MAX_ATTACHMENT_BYTES)}.`)
+    setFiles(large ? [] : chosen)
+  }
   const [progress, setProgress] = createSignal<number>()
   const detach = useAction(salesApi.orders.detach, {
     success: (_, request) => `${request.params.name} was removed`,
@@ -73,7 +81,11 @@ export const AttachmentsDialog = (props: { order: Order; open: boolean; onOpenCh
   }
 
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange} title={`Attachments of ${props.order.number}`}>
+    <Modal
+      open={props.open}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
+      title={`Attachments of ${props.order.number}`}
+    >
       <div class={styles.stack}>
         <QueryBoundary query={attachments}>
           {(list) => (
@@ -89,15 +101,19 @@ export const AttachmentsDialog = (props: { order: Order; open: boolean; onOpenCh
                         {`${formatBytes(attachment.size)} · ${formatRelativeTime(attachment.uploadedAt)}`}
                       </span>
                       <Show when={viewable(attachment.contentType)}>
-                        <a href={href(attachment.name, true)} target="_blank" rel="noopener">
-                          <Button variant="plain" size="xs">
-                            View
-                          </Button>
-                        </a>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          asChild={(link) => (
+                            <a href={href(attachment.name, true)} target="_blank" rel="noopener" {...link()}>
+                              View
+                            </a>
+                          )}
+                        />
                       </Show>
                       <Show when={can(sales.perm("orders.edit"))}>
                         <IconButton
-                          variant="plain"
+                          variant="ghost"
                           size="xs"
                           aria-label={`Remove ${attachment.name}`}
                           disabled={detach.pending()}
@@ -114,13 +130,13 @@ export const AttachmentsDialog = (props: { order: Order; open: boolean; onOpenCh
           )}
         </QueryBoundary>
         <Show when={can(sales.perm("orders.edit"))}>
-          <FileUploadField
+          <FileField
             label="Attach a file"
             helperText={`A PDF or an image, up to ${formatBytes(MAX_ATTACHMENT_BYTES)}.`}
+            errorText={tooLarge()}
             accept={[...ATTACHMENT_TYPES]}
-            maxFileSize={MAX_ATTACHMENT_BYTES}
-            files={files()}
-            onFilesChange={setFiles}
+            value={files()}
+            onValueChange={choose}
             disabled={progress() !== undefined}
           />
           <Show when={progress()}>

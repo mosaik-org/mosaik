@@ -40,7 +40,7 @@ const styles = {
     bottom: "0",
     p: "3",
     pointerEvents: "none",
-    bg: "linear-gradient(to bottom, transparent 35%, token(colors.canvas) 62%)",
+    bg: "linear-gradient(to bottom, transparent 35%, token(colors.bg) 62%)",
     "& > *": { pointerEvents: "auto" },
   }),
   footerReadable: css({ maxWidth: "3xl", mx: "auto", width: "full", px: { base: "4", md: "6" }, pb: "4" }),
@@ -52,14 +52,14 @@ const styles = {
       width: "1.5",
       height: "1.5",
       borderRadius: "full",
-      bg: "fg.subtle",
+      bg: "fg.muted",
       animation: "fade-in 0.6s ease-in-out infinite alternate",
     },
     "& > span:nth-child(2)": { animationDelay: "0.2s" },
     "& > span:nth-child(3)": { animationDelay: "0.4s" },
   }),
   hint: css({ fontSize: "xs", color: "fg.muted" }),
-  error: css({ display: "flex", gap: "2", alignItems: "flex-start", color: "danger.plain.fg", fontSize: "sm" }),
+  error: css({ display: "flex", gap: "2", alignItems: "flex-start", color: "danger.fg", fontSize: "sm" }),
 }
 
 /** That the assistant is at work, and on what when it calls a tool. */

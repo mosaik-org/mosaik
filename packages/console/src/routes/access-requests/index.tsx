@@ -1,8 +1,8 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { searchValidator } from "@mosaik/client/solid"
 import { PageTitle } from "@mosaik/frame"
-import { EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { EmptyState } from "@mosaik/ui"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
 import Inbox from "lucide-solid/icons/inbox"
@@ -30,11 +30,17 @@ function Requests() {
       <Show
         when={managesAnyApp(principal())}
         fallback={
-          <EmptyState
-            icon={<Inbox size={32} />}
-            title="You don't decide about any app"
-            description="Each app's owners answer its requests, or the administrators when it has none."
-          />
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <Inbox />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>You don't decide about any app</EmptyState.Title>
+              <EmptyState.Description>
+                Each app's owners answer its requests, or the administrators when it has none.
+              </EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
         }
       >
         <AccessRequests

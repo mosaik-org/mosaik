@@ -1,22 +1,27 @@
-import { Badge, Card, Input, SelectField, Stat } from "@mosaik/mosaik-ui"
 import { formatRelativeTime } from "@mosaik/sdk/client"
 import { useSearchParams } from "@mosaik/sdk/router"
 import { createDebounced } from "@mosaik/sdk/solid"
+import { Badge, Card, createListCollection, Input, Select, Stat } from "@mosaik/ui"
 import { barChartOption, Chart } from "@mosaik/web-sdk/charts"
 import { css } from "@mosaik/web-sdk/css"
 import { createColumnHelper, DataTable } from "@mosaik/web-sdk/table"
 import { QueryBoundary, QueryFreshness } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
+import Circle from "lucide-solid/icons/circle"
+import CircleCheck from "lucide-solid/icons/circle-check"
+import CircleDot from "lucide-solid/icons/circle-dot"
 import ExternalLink from "lucide-solid/icons/external-link"
-import { createEffect, createMemo, createSignal, on, Show } from "solid-js"
+import { createEffect, createMemo, createSignal, For, Index, on, Show } from "solid-js"
+import { Dynamic } from "solid-js/web"
 import { IssuesSearch, type JiraIssue, StatusCategory } from "../../api"
 import { issuesQuery, projectsQuery } from "../queries"
 
+/** Each category's label, and its shape beside a status: grey, as none of them asks for attention. */
 const CATEGORY = {
-  todo: { label: "To do", tone: "neutral" },
-  "in-progress": { label: "In progress", tone: "accent" },
-  done: { label: "Done", tone: "success" },
-} as const satisfies Record<StatusCategory, { label: string; tone: string }>
+  todo: { label: "To do", icon: Circle },
+  "in-progress": { label: "In progress", icon: CircleDot },
+  done: { label: "Done", icon: CircleCheck },
+} as const satisfies Record<StatusCategory, { label: string; icon: typeof Circle }>
 
 const CATEGORY_FILTERS = [
   { value: "open", label: "Open issues" },
@@ -38,7 +43,7 @@ const columns = column.columns([
           alignItems: "center",
           gap: "1",
           fontFamily: "mono",
-          color: "accent.plain.fg",
+          color: "accent.fg",
         })}
       >
         {info.getValue()}
@@ -50,7 +55,8 @@ const columns = column.columns([
   column.accessor("status", {
     header: "Status",
     cell: (info) => (
-      <Badge variant="dot" colorPalette={CATEGORY[info.row.original.statusCategory].tone}>
+      <Badge size="sm">
+        <Dynamic component={CATEGORY[info.row.original.statusCategory].icon} aria-hidden="true" />
         {info.getValue()}
       </Badge>
     ),
@@ -85,6 +91,52 @@ const styles = {
   }),
   charts: css({ display: "grid", gap: "4", gridTemplateColumns: { base: "1fr", lg: "1fr 1fr" } }),
   note: css({ fontSize: "xs", color: "fg.muted" }),
+  hidden: css({ srOnly: true }),
+}
+
+/**
+ * A select of the toolbar. Its label is for assistive technology only: the chosen option ("All
+ * projects") already shows what it filters.
+ */
+const Filter = (props: {
+  label: string
+  options: ReadonlyArray<{ value: string; label: string }>
+  value: string
+  onValueChange: (value: string) => void
+  class?: string
+}) => {
+  const collection = createMemo(() => createListCollection({ items: [...props.options] }))
+  return (
+    <Select.Root
+      class={props.class}
+      collection={collection()}
+      value={[props.value]}
+      onValueChange={(details) => {
+        const [value] = details.value
+        if (value !== undefined) props.onValueChange(value)
+      }}
+    >
+      <Select.Label class={styles.hidden}>{props.label}</Select.Label>
+      <Select.Control>
+        <Select.Trigger>
+          <Select.ValueText />
+          <Select.Indicator />
+        </Select.Trigger>
+      </Select.Control>
+      <Select.Positioner>
+        <Select.Content>
+          <For each={collection().items}>
+            {(option) => (
+              <Select.Item item={option}>
+                <Select.ItemText>{option.label}</Select.ItemText>
+                <Select.ItemIndicator />
+              </Select.Item>
+            )}
+          </For>
+        </Select.Content>
+      </Select.Positioner>
+    </Select.Root>
+  )
 }
 
 /** Open Jira issues, filtered by project, status and text (all kept in the URL). */
@@ -131,16 +183,16 @@ export default function IssuesPage() {
           onInput={(event) => setText(event.currentTarget.value)}
           class={css({ maxWidth: "xs" })}
         />
-        <SelectField
-          aria-label="Project"
-          items={projectItems()}
+        <Filter
+          label="Project"
+          options={projectItems()}
           value={search().project ?? "all"}
-          onValueChange={(value) => update({ project: value === "all" ? undefined : (value ?? undefined) })}
+          onValueChange={(value) => update({ project: value === "all" ? undefined : value })}
           class={css({ width: "56" })}
         />
-        <SelectField
-          aria-label="Status"
-          items={CATEGORY_FILTERS}
+        <Filter
+          label="Status"
+          options={CATEGORY_FILTERS}
           value={search().category ?? "open"}
           onValueChange={(value) => update({ category: value === "open" ? undefined : (value as StatusCategory) })}
           class={css({ width: "40" })}
@@ -153,14 +205,30 @@ export default function IssuesPage() {
         {(data) => (
           <>
             <div class={styles.stats}>
-              <Stat
-                label="Issues"
-                value={String(issues().length)}
-                hint={data().data.truncated ? "First 200 shown" : undefined}
-              />
-              <Stat label="To do" value={String(byCategory("todo"))} />
-              <Stat label="In progress" value={String(byCategory("in-progress"))} />
-              <Stat label="Unassigned" value={String(issues().filter((issue) => issue.assignee === null).length)} />
+              <Index
+                each={[
+                  {
+                    label: "Issues",
+                    value: issues().length,
+                    help: data().data.truncated ? "First 200 shown" : undefined,
+                  },
+                  { label: "To do", value: byCategory("todo") },
+                  { label: "In progress", value: byCategory("in-progress") },
+                  { label: "Unassigned", value: issues().filter((issue) => issue.assignee === null).length },
+                ]}
+              >
+                {(stat) => (
+                  <Card.Root>
+                    <Card.Body>
+                      <Stat.Root>
+                        <Stat.Label>{stat().label}</Stat.Label>
+                        <Stat.Value>{stat().value}</Stat.Value>
+                        <Show when={stat().help}>{(help) => <Stat.Help>{help()}</Stat.Help>}</Show>
+                      </Stat.Root>
+                    </Card.Body>
+                  </Card.Root>
+                )}
+              </Index>
             </div>
 
             <div class={styles.charts}>

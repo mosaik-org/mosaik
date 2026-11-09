@@ -1,6 +1,6 @@
-import { Badge, Card } from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Card } from "@mosaik/ui"
 import { UserAvatar } from "@mosaik/web-kit"
 import { For, Show } from "solid-js"
 import { RoleDetails } from "./RoleDetails"

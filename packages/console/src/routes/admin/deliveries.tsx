@@ -2,20 +2,21 @@ import { admin } from "@mosaik/auth/contract"
 import { useCan } from "@mosaik/auth/web"
 import { errorMessage, formatDateTime, toast } from "@mosaik/client"
 import { searchValidator } from "@mosaik/client/solid"
-import { Badge, Button, SelectField } from "@mosaik/mosaik-ui"
 import { type DeliveryRecord, DeliveryStatus } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
+import { Badge, Button, createListCollection, Select } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
-import { Show } from "solid-js"
+import Check from "lucide-solid/icons/check"
+import CircleAlert from "lucide-solid/icons/circle-exclamation-point"
+import Clock from "lucide-solid/icons/clock"
+import Send from "lucide-solid/icons/send"
+import { For, type JSX, Show } from "solid-js"
 import { adminKeys, deliveriesQuery } from "../../admin/queries"
 import { notificationsApi } from "../../api"
-
-/** The color palette a badge shows a state in. */
-type Tone = "gray" | "accent" | "success" | "warning" | "danger"
 
 const DeliveriesSearch = Schema.Struct({ status: Schema.optional(DeliveryStatus) })
 
@@ -29,21 +30,27 @@ export const Route = createFileRoute("/_app/admin/deliveries")({
   component: Deliveries,
 })
 
-const STATUS: Record<DeliveryStatus, { tone: Tone; label: string }> = {
-  pending: { tone: "warning", label: "Pending" },
-  sending: { tone: "accent", label: "Sending" },
-  sent: { tone: "success", label: "Sent" },
-  failed: { tone: "danger", label: "Failed" },
+/**
+ * How a state shows: grey with a shape that tells it apart, except a failed delivery, the one an
+ * administrator acts on (retries, or fixes the channel).
+ */
+const STATUS: Record<DeliveryStatus, { label: string; icon: () => JSX.Element; danger?: true }> = {
+  pending: { label: "Pending", icon: () => <Clock /> },
+  sending: { label: "Sending", icon: () => <Send /> },
+  sent: { label: "Sent", icon: () => <Check /> },
+  failed: { label: "Failed", icon: () => <CircleAlert />, danger: true },
 }
 
 const CHANNELS: Record<string, string> = { email: "E-mail", "slack-user": "Slack DM", target: "Channel" }
 
-const FILTERS = [
-  { value: "all", label: "All deliveries" },
-  { value: "failed", label: "Failed" },
-  { value: "pending", label: "Pending (retrying)" },
-  { value: "sent", label: "Sent" },
-] as const
+const FILTERS = createListCollection({
+  items: [
+    { value: "all", label: "All deliveries" },
+    { value: "failed", label: "Failed" },
+    { value: "pending", label: "Pending (retrying)" },
+    { value: "sent", label: "Sent" },
+  ] as const,
+})
 
 const RetryButton = (props: { delivery: DeliveryRecord }) => {
   const queryClient = useQueryClient()
@@ -108,7 +115,8 @@ function Deliveries() {
       enableSorting: false,
       cell: (info) => (
         <div class={css({ display: "flex", flexDirection: "column", gap: "1", alignItems: "flex-start" })}>
-          <Badge variant="dot" colorPalette={STATUS[info.getValue()].tone}>
+          <Badge colorPalette={STATUS[info.getValue()].danger ? "danger" : undefined}>
+            {STATUS[info.getValue()].icon()}
             {STATUS[info.getValue()].label}
           </Badge>
           <Show when={info.row.original.attempts > 1}>
@@ -140,16 +148,36 @@ function Deliveries() {
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
-      <SelectField
-        aria-label="Status"
-        items={FILTERS}
-        value={search().status ?? "all"}
-        onValueChange={(value) =>
-          void navigate({ search: { status: value === "all" ? undefined : (value ?? undefined) } })
-        }
+      <Select.Root
+        collection={FILTERS}
+        value={[search().status ?? "all"]}
+        onValueChange={(details) => {
+          const status = details.items[0]?.value
+          void navigate({ search: { status: status === "all" ? undefined : status } })
+        }}
         size="sm"
         class={css({ width: "56" })}
-      />
+      >
+        <Select.Label class={css({ srOnly: true })}>Status</Select.Label>
+        <Select.Control>
+          <Select.Trigger>
+            <Select.ValueText />
+            <Select.Indicator />
+          </Select.Trigger>
+        </Select.Control>
+        <Select.Positioner>
+          <Select.Content>
+            <For each={FILTERS.items}>
+              {(filter) => (
+                <Select.Item item={filter}>
+                  <Select.ItemText>{filter.label}</Select.ItemText>
+                  <Select.ItemIndicator />
+                </Select.Item>
+              )}
+            </For>
+          </Select.Content>
+        </Select.Positioner>
+      </Select.Root>
       <QueryBoundary query={deliveries}>
         {() => (
           <>

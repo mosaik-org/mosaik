@@ -1,5 +1,5 @@
-import { Kbd, Modal, SwitchField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Kbd, Modal, SwitchField } from "@mosaik/ui"
 import { type Accessor, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js"
 import { createKeyMatcher, isCharacterBinding, keysBelongElsewhere, parseKeys, showKeys, strokeOf } from "./keys"
 import type { Command } from "./types"
@@ -88,7 +88,7 @@ const styles = {
   group: css({ display: "flex", flexDirection: "column", gap: "1" }),
   groupLabel: css({ fontSize: "xs", fontWeight: "medium", color: "fg.muted", mb: "1" }),
   row: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4", minH: "7" }),
-  title: css({ fontSize: "sm", color: "fg.default", minW: "0", truncate: true }),
+  title: css({ fontSize: "sm", color: "fg", minW: "0", truncate: true }),
   keys: css({ display: "flex", alignItems: "center", gap: "1", flexShrink: "0" }),
   or: css({ fontSize: "xs", color: "fg.muted", mx: "0.5" }),
 }
@@ -131,7 +131,12 @@ export const ShortcutsPanel = (props: {
   })
 
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange} title="Keyboard shortcuts" size="sm">
+    <Modal
+      open={props.open}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
+      title="Keyboard shortcuts"
+      size="sm"
+    >
       <div class={styles.stack}>
         <For each={groups()}>
           {([group, commands]) => (

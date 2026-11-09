@@ -10,10 +10,11 @@
     "typecheck": "tsc -p ."
   },
   "dependencies": {
+    "@ark-ui/solid": "^5.40.0",
     "@mosaik/client": "workspace:*",
     "@mosaik/core": "workspace:*",
-    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
+    "@mosaik/ui": "file:../../../mosaik-ui/dist/package",
     "effect": "^4.1.2",
     "lucide-solid": "^1.70.0",
     "solid-js": "^1.9.17"

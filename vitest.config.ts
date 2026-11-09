@@ -20,7 +20,6 @@ export default defineConfig({
             "packages/client/**",
             "packages/auth/src/web/**",
             "packages/charts/**",
-            "packages/mosaik-ui/**",
             "**/node_modules/**",
           ],
         },
@@ -42,9 +41,6 @@ export default defineConfig({
           ],
         },
       },
-      // The component library, with its own configs so they move with it: in a DOM, and on the server.
-      "packages/mosaik-ui/vitest.config.ts",
-      "packages/mosaik-ui/vitest.server.config.ts",
       // Logic of the shell that does not need a browser.
       { test: { name: "shell", environment: "node", include: ["shell/src/**/*.test.ts"] } },
     ],

@@ -1,12 +1,13 @@
 import { AppIcon, appColor } from "@mosaik/frame"
-import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import type { InboxItem } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
+import { IconButton, Tooltip } from "@mosaik/ui"
 import AlarmClock from "lucide-solid/icons/alarm-clock"
 import Bell from "lucide-solid/icons/bell"
 import Check from "lucide-solid/icons/check"
 import RotateCcw from "lucide-solid/icons/rotate-ccw"
 import { type JSX, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { sourceApp, sourceName } from "../apps"
 import type { InboxActions } from "./actions"
 import { isUnread, paragraphs, resolveLabel, statusOf, timeOf } from "./model"
@@ -18,8 +19,8 @@ const sourceIcon = cva({
   base: { display: "flex", flexShrink: "0", color: "fg.muted" },
   variants: {
     severity: {
-      warning: { color: "warning.plain.fg" },
-      critical: { color: "danger.plain.fg" },
+      warning: { color: "warning.fg" },
+      critical: { color: "danger.fg" },
     },
   },
 })
@@ -44,7 +45,7 @@ const styles = {
     "&[data-lines='2']": { lineClamp: "2" },
   }),
   status: css({ fontSize: "xs", color: "fg.muted" }),
-  unread: css({ flexShrink: "0", boxSize: "2", borderRadius: "full", bg: "accent.solid.bg" }),
+  unread: css({ flexShrink: "0", boxSize: "2", borderRadius: "full", bg: "accent.solid" }),
   // Over the row's time and dot, shown where the row is hovered, focused or active (`[data-actions]`).
   actions: css({
     position: "absolute",
@@ -131,22 +132,24 @@ export const RowContent = (props: { item: InboxItem; now: number; lines?: 1 | 2 
 export const RowActions = (props: { item: InboxItem; actions: InboxActions }) => {
   const title = () => props.item.content.title
   const action = (label: string, icon: JSX.Element, onClick: () => void) => (
-    <Tooltip content={label}>
-      {(trigger) => (
-        <IconButton
-          {...trigger()}
-          size="xs"
-          variant="plain"
-          aria-label={`${label}: ${title()}`}
-          onClick={(event) => {
-            event.stopPropagation()
-            onClick()
-          }}
-        >
-          {icon}
-        </IconButton>
-      )}
-    </Tooltip>
+    <Tooltip.Root>
+      <Tooltip.Trigger
+        onClick={(event) => {
+          event.stopPropagation()
+          onClick()
+        }}
+        asChild={(trigger) => (
+          <IconButton {...trigger()} size="xs" variant="ghost" aria-label={`${label}: ${title()}`}>
+            {icon}
+          </IconButton>
+        )}
+      />
+      <Portal>
+        <Tooltip.Positioner>
+          <Tooltip.Content>{label}</Tooltip.Content>
+        </Tooltip.Positioner>
+      </Portal>
+    </Tooltip.Root>
   )
   return (
     <div class={styles.actions} data-actions>
@@ -159,7 +162,7 @@ export const RowActions = (props: { item: InboxItem; actions: InboxActions }) =>
             <IconButton
               {...trigger()}
               size="xs"
-              variant="plain"
+              variant="ghost"
               aria-label={`Snooze: ${title()}`}
               onClick={(event: MouseEvent) => event.stopPropagation()}
             >

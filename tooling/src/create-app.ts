@@ -92,7 +92,7 @@ const vendor = async (sdk: SdkIndex) => {
   return {
     "@mosaik/sdk": `file:./${VENDOR}/${sdk.tarball}`,
     "@mosaik/web-sdk": `file:./${VENDOR}/${sdk.web.tarball}`,
-    "@mosaik/mosaik-ui": `file:./${VENDOR}/${sdk.components.tarball}`,
+    "@mosaik/ui": `file:./${VENDOR}/${sdk.components.tarball}`,
   }
 }
 

@@ -1,9 +1,10 @@
-import { IconButton, SelectField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { createListCollection, IconButton, Select } from "@mosaik/ui"
 import type { RowData, SolidTable } from "@tanstack/solid-table"
 import ChevronLeft from "lucide-solid/icons/chevron-left"
 import ChevronRight from "lucide-solid/icons/chevron-right"
-import { createMemo } from "solid-js"
+import { createMemo, For } from "solid-js"
+import { Portal } from "solid-js/web"
 import type { DataTableFeatures } from "./features"
 
 const styles = {
@@ -22,13 +23,14 @@ const styles = {
   }),
   summary: css({ fontVariantNumeric: "tabular-nums" }),
   controls: css({ display: "flex", alignItems: "center", gap: "2" }),
-  // The field's label beside its select, not above it.
+  // The label beside its select, not above it, in the bar's quieter text.
   pageSize: css({
     flexDirection: "row",
     alignItems: "center",
     gap: "2",
     whiteSpace: "nowrap",
-    "& [data-part=root]": { w: "20" },
+    "& [data-part=label]": { fontWeight: "normal", color: "inherit" },
+    "& [data-part=control]": { width: "20" },
   }),
   nav: css({ display: "flex", alignItems: "center", gap: "1" }),
 }
@@ -54,7 +56,7 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
     return `Showing ${numberFormat.format(start)}–${numberFormat.format(end)} of ${numberFormat.format(total)}`
   })
 
-  const pageSizeItems = createMemo(() => props.pageSizes.map((size) => ({ value: String(size), label: String(size) })))
+  const pageSizes = createMemo(() => createListCollection({ items: props.pageSizes.map(String) }))
 
   return (
     <div class={styles.root}>
@@ -62,18 +64,41 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
         {summary()}
       </span>
       <div class={styles.controls}>
-        <SelectField
-          label="Rows per page"
+        {/* Its parts rather than a SelectField: the list goes in a portal, out of the table's frame,
+            which clips what overflows it. */}
+        <Select.Root
           class={styles.pageSize}
           size="sm"
-          items={pageSizeItems()}
-          value={String(pagination().pageSize)}
-          onValueChange={(value) => props.table.setPageSize(Number(value))}
-        />
+          collection={pageSizes()}
+          value={[String(pagination().pageSize)]}
+          onValueChange={(details) => props.table.setPageSize(Number(details.value[0]))}
+        >
+          <Select.Label>Rows per page</Select.Label>
+          <Select.Control>
+            <Select.Trigger>
+              <Select.ValueText />
+              <Select.Indicator />
+            </Select.Trigger>
+          </Select.Control>
+          <Portal>
+            <Select.Positioner>
+              <Select.Content>
+                <For each={pageSizes().items}>
+                  {(size) => (
+                    <Select.Item item={size}>
+                      <Select.ItemText>{size}</Select.ItemText>
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  )}
+                </For>
+              </Select.Content>
+            </Select.Positioner>
+          </Portal>
+        </Select.Root>
         <div class={styles.nav}>
           <IconButton
             aria-label="Previous page"
-            size="xs"
+            size="sm"
             variant="outline"
             disabled={!props.table.getCanPreviousPage()}
             onClick={() => props.table.previousPage()}
@@ -82,7 +107,7 @@ export function DataTablePagination<TData extends RowData>(props: DataTablePagin
           </IconButton>
           <IconButton
             aria-label="Next page"
-            size="xs"
+            size="sm"
             variant="outline"
             disabled={!props.table.getCanNextPage()}
             onClick={() => props.table.nextPage()}

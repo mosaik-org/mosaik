@@ -1,6 +1,6 @@
-import { Button, Modal, SelectField, TextareaField, TextField } from "@mosaik/mosaik-ui"
 import { errorMessage, toast } from "@mosaik/sdk/client"
 import { createForm, useCan } from "@mosaik/sdk/solid"
+import { Button, Modal, SelectField, TextareaField, TextField } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
@@ -11,7 +11,7 @@ import { deskApi, queuesQuery } from "./queries"
 
 const styles = {
   form: css({ display: "flex", flexDirection: "column", gap: "4" }),
-  error: css({ fontSize: "sm", color: "danger.plain.fg" }),
+  error: css({ fontSize: "sm", color: "danger.fg" }),
 }
 
 /** Asking for something: what about, and who should look at it. */
@@ -21,8 +21,7 @@ export const NewRequestDialog = (props: { open: boolean; onOpenChange: (open: bo
   const can = useCan()
   const queues = useQuery(queuesQuery)
   const isAgent = () => can(desk.perm("requests.work"))
-  const queueItems = () =>
-    (queues.data ?? []).map((queue) => ({ value: String(queue.id), label: queue.name, description: queue.description }))
+  const queueOptions = () => (queues.data ?? []).map((queue) => ({ value: String(queue.id), label: queue.name }))
 
   const form = createForm({
     schema: NewRequest,
@@ -56,12 +55,12 @@ export const NewRequestDialog = (props: { open: boolean; onOpenChange: (open: bo
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title="New request"
       description="Tell us what you need. You'll see the answer under My requests."
       footer={
         <>
-          <Button variant="outline" colorPalette="gray" onClick={() => props.onOpenChange(false)}>
+          <Button variant="outline" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="desk-new-request" loading={form.submitting()}>
@@ -75,7 +74,7 @@ export const NewRequestDialog = (props: { open: boolean; onOpenChange: (open: bo
         <SelectField
           label="Who should look at it?"
           required
-          items={queueItems()}
+          options={queueOptions()}
           name="queueId"
           value={String(form.values.queueId)}
           onValueChange={(value) => form.set("queueId", Number(value))}
@@ -84,11 +83,9 @@ export const NewRequestDialog = (props: { open: boolean; onOpenChange: (open: bo
         <Show when={isAgent()}>
           <SelectField
             label="Priority"
-            items={PRIORITIES.map((priority) => ({ value: priority, label: PRIORITY_LABELS[priority] }))}
+            options={PRIORITIES.map((priority) => ({ value: priority, label: PRIORITY_LABELS[priority] }))}
             value={form.values.priority}
-            onValueChange={(value) => {
-              if (value !== null) form.set("priority", value)
-            }}
+            onValueChange={(value) => form.set("priority", value as Priority)}
           />
         </Show>
         <TextareaField label="Details" required rows={5} autoresize {...form.field("body")} />

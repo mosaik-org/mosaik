@@ -1,12 +1,12 @@
-import { EmptyState, type EmptyStateProps, Input, InputGroup, SelectField, Spinner, Tabs } from "@mosaik/mosaik-ui"
 import { useSearchParams } from "@mosaik/sdk/router"
 import { createDebounced, createListNavigation, useNow } from "@mosaik/sdk/solid"
+import { createListCollection, EmptyState, Input, InputGroup, Select, Spinner, Tabs } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { FRAME_TOP, useCommands } from "@mosaik/web-sdk/portal"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import { DateTime } from "effect"
 import Search from "lucide-solid/icons/search"
-import { createEffect, createMemo, createSignal, For, on, Show, Suspense } from "solid-js"
+import { createEffect, createMemo, createSignal, For, type JSX, on, Show, Suspense } from "solid-js"
 import {
   type DeadlineState,
   deadlineOf,
@@ -57,7 +57,7 @@ const styles = {
     fontSize: "xs",
     fontWeight: "medium",
     color: "fg.muted",
-    bg: "canvas",
+    bg: "bg",
   }),
   count: css({ ml: "1.5", fontWeight: "normal" }),
   more: css({
@@ -67,7 +67,7 @@ const styles = {
     fontSize: "sm",
     color: "fg.muted",
     cursor: "pointer",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   }),
   loading: css({ display: "flex", justifyContent: "center", py: "10", color: "fg.muted" }),
   pane: css({
@@ -97,15 +97,18 @@ export interface WorkspaceProps {
   readonly withState?: boolean
   /** For the person who asked: where their requests stand, rather than what is due. */
   readonly forRequester?: boolean
-  readonly empty: EmptyStateProps
+  /** What the list shows when nothing is in it: an `EmptyState`. */
+  readonly empty: JSX.Element
 }
 
 const LIST_ID = "desk-requests"
 
-const STATES = [
-  { value: "active", label: "Active" },
-  { value: "done", label: "Done" },
-]
+const STATES = createListCollection({
+  items: [
+    { value: "active", label: "Active" },
+    { value: "done", label: "Done" },
+  ],
+})
 
 /**
  * A list of requests and the open one beside it. Moving through the list opens what the person lands on:
@@ -266,15 +269,33 @@ export const Workspace = (props: WorkspaceProps) => {
             </InputGroup>
           </div>
           <Show when={props.withState}>
-            <SelectField
+            <Select.Root
               class={styles.state}
-              aria-label="Show"
-              items={STATES}
-              value={state() ?? "active"}
-              onValueChange={(value) =>
-                setSearch((previous) => ({ ...previous, state: value as RequestsState, open: undefined }))
+              collection={STATES}
+              value={[state() ?? "active"]}
+              onValueChange={(details) =>
+                setSearch((previous) => ({ ...previous, state: details.value[0] as RequestsState, open: undefined }))
               }
-            />
+            >
+              <Select.Control>
+                <Select.Trigger aria-label="Show">
+                  <Select.ValueText />
+                  <Select.Indicator />
+                </Select.Trigger>
+              </Select.Control>
+              <Select.Positioner>
+                <Select.Content>
+                  <For each={STATES.items}>
+                    {(item) => (
+                      <Select.Item item={item}>
+                        <Select.ItemText>{item.label}</Select.ItemText>
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    )}
+                  </For>
+                </Select.Content>
+              </Select.Positioner>
+            </Select.Root>
           </Show>
         </div>
 
@@ -322,7 +343,7 @@ export const Workspace = (props: WorkspaceProps) => {
               </div>
             }
           >
-            <Show when={rows().length > 0} fallback={<EmptyState {...props.empty} />}>
+            <Show when={rows().length > 0} fallback={props.empty}>
               <For each={entries()}>
                 {(entry) =>
                   entry.startsWith("section:") ? (
@@ -374,7 +395,12 @@ export const Workspace = (props: WorkspaceProps) => {
             fallback={
               <div class={styles.nothingOpen}>
                 <Show when={rows().length > 0}>
-                  <EmptyState title="Choose a request" description="Its story and what to do next show here." />
+                  <EmptyState.Root>
+                    <EmptyState.Content>
+                      <EmptyState.Title>Choose a request</EmptyState.Title>
+                      <EmptyState.Description>Its story and what to do next show here.</EmptyState.Description>
+                    </EmptyState.Content>
+                  </EmptyState.Root>
                 </Show>
               </div>
             }

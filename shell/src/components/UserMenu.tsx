@@ -2,9 +2,9 @@ import { AGENT_CONNECTIONS_PATH, admin, signInUrl } from "@mosaik/auth/contract"
 import { signOut, usePrincipal } from "@mosaik/auth/web"
 import { toast } from "@mosaik/client"
 import { managesAnyApp } from "@mosaik/console"
-import { Badge, Button, Menu, ThemeChoice, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { UserAvatar } from "@mosaik/web-kit"
+import { Badge, Button, Menu } from "@mosaik/ui"
+import { ThemeChoice, ThemeToggle, UserAvatar } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -23,14 +23,14 @@ const styles = {
     cursor: "pointer",
     outlineOffset: "2px",
     // A ring around the avatar itself (its root, not its letters or image).
-    _hover: { "& [data-scope=avatar][data-part=root]": { boxShadow: "0 0 0 2px token(colors.gray.subtle.bg.hover)" } },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+    _hover: { "& [data-scope=avatar][data-part=root]": { boxShadow: "0 0 0 2px token(colors.gray.subtle.hover)" } },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing" },
   }),
   content: css({ minW: "64" }),
   // Who is signed in: the person first, then how to reach them and what they may do.
   person: css({ display: "flex", alignItems: "center", gap: "3", px: "2", pt: "2", pb: "2.5" }),
   who: css({ display: "flex", flexDirection: "column", minW: "0", flex: "1" }),
-  name: css({ fontSize: "sm", fontWeight: "semibold", color: "fg.default", truncate: true }),
+  name: css({ fontSize: "sm", fontWeight: "semibold", color: "fg", truncate: true }),
   email: css({ fontSize: "xs", color: "fg.muted", truncate: true }),
   icon: css({ color: "fg.muted" }),
   version: css({ px: "2", pt: "1", pb: "1.5", fontSize: "xs", color: "fg.muted" }),
@@ -98,7 +98,7 @@ export const UserMenu = () => {
                   </div>
                   <Show when={role()}>
                     {(label) => (
-                      <Badge size="sm" variant="surface" colorPalette="gray">
+                      <Badge size="sm" variant="outline">
                         {label()}
                       </Badge>
                     )}
@@ -107,21 +107,21 @@ export const UserMenu = () => {
                 <Menu.Separator />
                 <Menu.ItemGroup>
                   <Menu.Item value="notifications" onSelect={() => void navigate({ to: "/notifications/settings" })}>
-                    <Bell size={16} class={styles.icon} />
-                    Notification settings
+                    <Bell class={styles.icon} />
+                    <Menu.ItemText>Notification settings</Menu.ItemText>
                   </Menu.Item>
                   {/* Core's own page, outside the shell. */}
                   <Menu.Item value="agents" onSelect={() => location.assign(AGENT_CONNECTIONS_PATH)}>
-                    <Bot size={16} class={styles.icon} />
-                    AI clients
+                    <Bot class={styles.icon} />
+                    <Menu.ItemText>AI clients</Menu.ItemText>
                   </Menu.Item>
                 </Menu.ItemGroup>
                 <Menu.Separator />
                 <ThemeChoice />
                 <Menu.Separator />
                 <Menu.Item value="logout" onSelect={() => void logout()}>
-                  <LogOut size={16} class={styles.icon} />
-                  Sign out
+                  <LogOut class={styles.icon} />
+                  <Menu.ItemText>Sign out</Menu.ItemText>
                 </Menu.Item>
                 <div class={styles.version}>Mosaik {version}</div>
               </Menu.Content>

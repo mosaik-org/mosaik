@@ -1,5 +1,5 @@
-import { Button, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, EmptyState } from "@mosaik/ui"
 import { Link, useLocation } from "@tanstack/solid-router"
 import FileQuestion from "lucide-solid/icons/file-question-mark"
 import { appForPath, appHref } from "../apps"
@@ -12,11 +12,15 @@ export function NotFound() {
   const app = appForPath(useLocation()().pathname)
   return (
     <div class={css({ py: "16" })}>
-      <EmptyState
-        icon={<FileQuestion size={32} />}
-        title="Page not found"
-        description="The page you are looking for does not exist."
-        action={
+      <EmptyState.Root>
+        <EmptyState.Indicator>
+          <FileQuestion />
+        </EmptyState.Indicator>
+        <EmptyState.Content>
+          <EmptyState.Title>Page not found</EmptyState.Title>
+          <EmptyState.Description>The page you are looking for does not exist.</EmptyState.Description>
+        </EmptyState.Content>
+        <EmptyState.Actions>
           <Button
             variant="outline"
             asChild={(link) => (
@@ -25,8 +29,8 @@ export function NotFound() {
               </Link>
             )}
           />
-        }
-      />
+        </EmptyState.Actions>
+      </EmptyState.Root>
     </div>
   )
 }

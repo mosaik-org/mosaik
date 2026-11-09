@@ -1,5 +1,5 @@
-import { Badge, Command, createListCollection, Kbd } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Command, createListCollection, Kbd, SearchIcon, Spinner } from "@mosaik/ui"
 import { createEffect, createMemo, createSignal, For, type JSX, on, Show } from "solid-js"
 import { Portal } from "solid-js/web"
 
@@ -38,7 +38,28 @@ export interface CommandPaletteProps {
   readonly emptyText?: string
 }
 
-const scope = css({ flexShrink: "0", maxW: "40", truncate: true })
+const styles = {
+  scope: css({ flexShrink: "0", maxW: "40", truncate: true }),
+  // A column of its own, so the text of items with and without an icon lines up.
+  icon: css({ display: "grid", placeItems: "center", flexShrink: "0", width: "5", color: "fg.muted" }),
+  text: css({ display: "flex", flexDirection: "column", flex: "1", minWidth: "0", py: "1.5" }),
+  subtitle: css({ textStyle: "xs", color: "fg.muted", truncate: true }),
+  hint: css({ flexShrink: "0", textStyle: "xs", color: "fg.muted" }),
+  // What the keys do, under the list: the library's palette has no footer of its own.
+  footer: css({
+    display: "flex",
+    flexWrap: "wrap",
+    flexShrink: "0",
+    gap: "4",
+    px: "4",
+    py: "2",
+    borderTopWidth: "1px",
+    borderColor: "border.muted",
+    bg: "bg.subtle",
+    textStyle: "xs",
+    color: "fg.muted",
+  }),
+}
 
 /**
  * The palette people open with Ctrl+K: Mosaik's on top of the library's `Command`, narrowing the
@@ -78,91 +99,92 @@ export function CommandPalette(props: CommandPaletteProps) {
   }
 
   return (
-    <Command.Dialog open={props.open} onOpenChange={(details) => props.onOpenChange(details.open)}>
-      <Portal>
-        <Command.DialogBackdrop />
-        <Command.DialogContent>
-          <Command.Root
-            collection={collection()}
-            inputValue={props.query}
-            onInputValueChange={(details) => props.onQueryChange(details.inputValue)}
-            highlightedValue={highlighted()}
-            onHighlightChange={(details) => setHighlighted(details.highlightedValue)}
-            onSelect={(details) => {
-              const item = items().find((candidate) => candidate.id === details.itemValue)
-              if (item !== undefined) props.onSelect(item)
-            }}
-          >
-            <Command.Control>
-              <Command.Indicator loading={props.loading} />
-              <Show when={props.scope}>
-                {(name) => (
-                  <Badge size="lg" class={scope}>
-                    {name()}
-                  </Badge>
-                )}
-              </Show>
-              <Command.Input
-                placeholder={props.placeholder ?? "Search pages and actions…"}
-                autocomplete="off"
-                spellcheck={false}
-                onKeyDown={onKeyDown}
-              />
-            </Command.Control>
-            <Command.List ref={list}>
-              <Command.Empty>{props.emptyText ?? "No results"}</Command.Empty>
-              <For each={props.groups}>
-                {(group) => (
-                  <Show when={group.items.length > 0}>
-                    <Command.ItemGroup>
-                      <Command.ItemGroupLabel>{group.label}</Command.ItemGroupLabel>
-                      <For each={group.items}>
-                        {(item) => (
-                          <Command.Item item={item}>
-                            <Command.ItemIcon>{item.icon}</Command.ItemIcon>
-                            <Command.ItemContent>
-                              <Command.ItemText>{item.title}</Command.ItemText>
-                              <Show when={item.subtitle}>
-                                <Command.ItemDescription>{item.subtitle}</Command.ItemDescription>
-                              </Show>
-                            </Command.ItemContent>
-                            <Show when={item.hint}>
-                              <Command.ItemCommand>{item.hint}</Command.ItemCommand>
+    <Portal>
+      <Command.Dialog open={props.open} onOpenChange={(details) => props.onOpenChange(details.open)}>
+        <Command.Root
+          collection={collection()}
+          highlightedValue={highlighted()}
+          onHighlightChange={(details) => setHighlighted(details.highlightedValue)}
+          onSelect={(details) => {
+            const item = items().find((candidate) => candidate.id === details.value)
+            if (item !== undefined) props.onSelect(item)
+          }}
+        >
+          <Command.Label>Search</Command.Label>
+          <Command.Input
+            // The scope sits between the icon and what is typed, as the start of the query.
+            icon={
+              <>
+                <Show when={props.loading} fallback={<SearchIcon />}>
+                  <Spinner size="sm" label="Searching" />
+                </Show>
+                <Show when={props.scope}>
+                  {(name) => (
+                    <Badge size="lg" class={styles.scope}>
+                      {name()}
+                    </Badge>
+                  )}
+                </Show>
+              </>
+            }
+            placeholder={props.placeholder ?? "Search pages and actions…"}
+            value={props.query}
+            onInput={(event) => props.onQueryChange(event.currentTarget.value)}
+            onKeyDown={onKeyDown}
+          />
+          <Command.Content ref={list}>
+            <For each={props.groups}>
+              {(group) => (
+                <Show when={group.items.length > 0}>
+                  <Command.ItemGroup>
+                    <Command.ItemGroupLabel>{group.label}</Command.ItemGroupLabel>
+                    <For each={group.items}>
+                      {(item) => (
+                        <Command.Item item={item}>
+                          <span class={styles.icon}>{item.icon}</span>
+                          <span class={styles.text}>
+                            <Command.ItemText>{item.title}</Command.ItemText>
+                            <Show when={item.subtitle}>
+                              <span class={styles.subtitle}>{item.subtitle}</span>
                             </Show>
-                          </Command.Item>
-                        )}
-                      </For>
-                    </Command.ItemGroup>
-                  </Show>
-                )}
-              </For>
-            </Command.List>
-            <Command.Footer>
-              <span>
-                <Kbd>↑</Kbd> <Kbd>↓</Kbd> navigate
-              </span>
-              <span>
-                <Kbd>↵</Kbd> open
-              </span>
-              <span>
-                <Kbd>esc</Kbd> close
-              </span>
-              <Show when={active()?.tabHint}>
-                {(hint) => (
-                  <span>
-                    <Kbd>tab</Kbd> {hint()}
-                  </span>
-                )}
-              </Show>
-              <Show when={props.scope !== undefined && props.query === ""}>
+                          </span>
+                          <Show when={item.hint}>
+                            <span class={styles.hint}>{item.hint}</span>
+                          </Show>
+                        </Command.Item>
+                      )}
+                    </For>
+                  </Command.ItemGroup>
+                </Show>
+              )}
+            </For>
+          </Command.Content>
+          <Command.Empty>{props.emptyText ?? "No results"}</Command.Empty>
+          <div class={styles.footer}>
+            <span>
+              <Kbd size="sm">↑</Kbd> <Kbd size="sm">↓</Kbd> navigate
+            </span>
+            <span>
+              <Kbd size="sm">↵</Kbd> open
+            </span>
+            <span>
+              <Kbd size="sm">esc</Kbd> close
+            </span>
+            <Show when={active()?.tabHint}>
+              {(hint) => (
                 <span>
-                  <Kbd>⌫</Kbd> all apps
+                  <Kbd size="sm">tab</Kbd> {hint()}
                 </span>
-              </Show>
-            </Command.Footer>
-          </Command.Root>
-        </Command.DialogContent>
-      </Portal>
-    </Command.Dialog>
+              )}
+            </Show>
+            <Show when={props.scope !== undefined && props.query === ""}>
+              <span>
+                <Kbd size="sm">⌫</Kbd> all apps
+              </span>
+            </Show>
+          </div>
+        </Command.Root>
+      </Command.Dialog>
+    </Portal>
   )
 }

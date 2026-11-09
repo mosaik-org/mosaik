@@ -1,14 +1,17 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, formatDateTime, formatRelativeTime, toast } from "@mosaik/client"
-import { Badge, Button, EmptyState, Modal, SelectField, Tabs, TextareaField, Tooltip } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
+import { Badge, Button, EmptyState, Modal, SelectField, Tabs, TextareaField, Tooltip } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
+import Check from "lucide-solid/icons/check"
 import Inbox from "lucide-solid/icons/inbox"
+import X from "lucide-solid/icons/x"
 import { createSignal, For, Match, Show, Switch } from "solid-js"
+import { Portal } from "solid-js/web"
 import { platformApi } from "../api"
 import { aboutQuery, accessKeys, reviewsQuery } from "./queries"
 import { RoleDetails } from "./RoleDetails"
@@ -19,7 +22,7 @@ const styles = {
   muted: css({ fontSize: "xs", color: "fg.muted" }),
   message: css({ fontSize: "sm", color: "fg.muted", whiteSpace: "pre-wrap", maxW: "md" }),
   actions: css({ display: "flex", gap: "2", justifyContent: "flex-end" }),
-  link: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
+  link: css({ color: "accent.fg", _hover: { textDecoration: "underline" } }),
 }
 
 /** After an answer: the lists, and the app's members (the approved user has a role now). */
@@ -61,7 +64,7 @@ const ApproveDialog = (props: { request: AccessRequest; onClose: () => void }) =
   return (
     <Modal
       open
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => !details.open && props.onClose()}
       title={`Give ${props.request.userName} access to ${props.request.appName}`}
       description="They get the role on top of the ones they have, and are notified."
       footer={
@@ -87,8 +90,8 @@ const ApproveDialog = (props: { request: AccessRequest; onClose: () => void }) =
           <div class={styles.stack}>
             <SelectField
               label="Role"
-              items={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
-              value={role()}
+              options={roles().map((candidate) => ({ value: candidate.id, label: candidate.name }))}
+              value={role() ?? ""}
               onValueChange={setChosen}
             />
             <Show when={roles().find((candidate) => candidate.id === role())}>
@@ -121,7 +124,7 @@ const DeclineDialog = (props: { request: AccessRequest; onClose: () => void }) =
   return (
     <Modal
       open
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => !details.open && props.onClose()}
       title={`Decline ${props.request.userName}'s request`}
       description={`For ${props.request.appName}. They are notified, with your reason if you give one.`}
       footer={
@@ -140,16 +143,19 @@ const DeclineDialog = (props: { request: AccessRequest; onClose: () => void }) =
   )
 }
 
+/** How a request was answered: in grey, as an answer is done with; the shape tells the two apart. */
 const Decision = (props: { request: AccessRequest }) => (
   <div class={styles.person}>
     <Switch>
       <Match when={props.request.status === "approved"}>
-        <Badge variant="dot" colorPalette="success">
+        <Badge>
+          <Check />
           {props.request.grantedRole?.name ?? "Approved"}
         </Badge>
       </Match>
       <Match when={props.request.status === "declined"}>
-        <Badge variant="dot" colorPalette="danger">
+        <Badge>
+          <X />
           Declined
         </Badge>
       </Match>
@@ -188,9 +194,15 @@ export const AccessRequests = (props: {
       column.accessor("createdAt", {
         header: "Asked",
         cell: (info) => (
-          <Tooltip content={formatDateTime(info.getValue())}>
-            <span>{formatRelativeTime(info.getValue())}</span>
-          </Tooltip>
+          <Tooltip.Root>
+            <Tooltip.Trigger asChild={(trigger) => <span {...trigger()}>{formatRelativeTime(info.getValue())}</span>} />
+            {/* Out of the table, which clips what overflows it. */}
+            <Portal>
+              <Tooltip.Positioner>
+                <Tooltip.Content>{formatDateTime(info.getValue())}</Tooltip.Content>
+              </Tooltip.Positioner>
+            </Portal>
+          </Tooltip.Root>
         ),
       }),
       column.accessor("userName", {
@@ -269,11 +281,17 @@ export const AccessRequests = (props: {
           <Show
             when={rows().length > 0}
             fallback={
-              <EmptyState
-                icon={<Inbox size={32} />}
-                title={props.answered ? "No answered requests" : "No requests waiting"}
-                description="People ask for access from All apps, to apps they cannot open."
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <Inbox />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>{props.answered ? "No answered requests" : "No requests waiting"}</EmptyState.Title>
+                  <EmptyState.Description>
+                    People ask for access from All apps, to apps they cannot open.
+                  </EmptyState.Description>
+                </EmptyState.Content>
+              </EmptyState.Root>
             }
           >
             <DataTable columns={columns()} data={rows()} getRowId={(request) => String(request.id)} />

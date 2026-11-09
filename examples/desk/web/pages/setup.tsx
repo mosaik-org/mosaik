@@ -1,6 +1,6 @@
-import { Tabs } from "@mosaik/mosaik-ui"
 import { useSearchParams } from "@mosaik/sdk/router"
 import { useCan } from "@mosaik/sdk/solid"
+import { Tabs } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { Navigate } from "@tanstack/solid-router"
 import { Schema } from "effect"

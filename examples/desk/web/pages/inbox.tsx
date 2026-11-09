@@ -1,4 +1,5 @@
 import { useCan } from "@mosaik/sdk/solid"
+import { EmptyState } from "@mosaik/ui"
 import { Navigate } from "@tanstack/solid-router"
 import CheckCheck from "lucide-solid/icons/check-check"
 import { Show } from "solid-js"
@@ -14,11 +15,17 @@ export default function Inbox() {
         view="inbox"
         label="Inbox"
         grouped
-        empty={{
-          icon: <CheckCheck />,
-          title: "Nothing needs you right now",
-          description: "New requests, and those given to you, show up here.",
-        }}
+        empty={
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <CheckCheck />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>Nothing needs you right now</EmptyState.Title>
+              <EmptyState.Description>New requests, and those given to you, show up here.</EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        }
       />
     </Show>
   )

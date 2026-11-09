@@ -2,8 +2,9 @@ import { AGENT_CONNECTIONS_PATH, signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, signOut, useLiveAccess, usePrincipal } from "@mosaik/auth/web"
 import { canUseConsole, consoleNav } from "@mosaik/console"
 import { CommandProvider, createFrameHeaderStack, FrameHeaderProvider, PageMain } from "@mosaik/frame"
-import { Button, EmptyState, ThemeToggle } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, EmptyState } from "@mosaik/ui"
+import { ThemeToggle } from "@mosaik/web-kit"
 import { useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute, Link, Outlet, redirect } from "@tanstack/solid-router"
 import Lock from "lucide-solid/icons/lock"
@@ -30,7 +31,7 @@ const styles = {
     py: "3",
     borderBottomWidth: "1px",
     borderColor: "border",
-    bg: "canvas.sunken",
+    bg: "bg.subtle",
   }),
   brand: css({ display: "flex", alignItems: "center", gap: "2", fontWeight: "semibold" }),
   mark: css({
@@ -39,15 +40,15 @@ const styles = {
     width: "7",
     height: "7",
     borderRadius: "md",
-    bg: "accent.solid.bg",
-    color: "accent.solid.fg",
+    bg: "accent.solid",
+    color: "accent.contrast",
     fontSize: "sm",
   }),
   nav: css({ display: "flex", gap: "4", flex: "1", fontSize: "sm" }),
   link: css({
     color: "fg.muted",
-    _hover: { color: "fg.default" },
-    "&[data-status=active]": { color: "fg.default", fontWeight: "medium" },
+    _hover: { color: "fg" },
+    "&[data-status=active]": { color: "fg", fontWeight: "medium" },
   }),
   user: css({ display: "flex", alignItems: "center", gap: "3", fontSize: "sm" }),
   // The page's: its title, navigation, actions (`FrameHeader`), as in the shell's top bar.
@@ -60,7 +61,7 @@ const styles = {
     px: { base: "4", md: "6" },
     borderBottomWidth: "1px",
     borderColor: "border",
-    bg: "canvas.sunken",
+    bg: "bg.subtle",
     overflow: "hidden",
   }),
 }
@@ -82,7 +83,7 @@ function ConsoleLayout() {
   // The console's pages register commands (Ctrl+K), as they do in the shell.
   return (
     <CommandProvider>
-      <div class={css({ minHeight: "100dvh", bg: "canvas" })}>
+      <div class={css({ minHeight: "100dvh", bg: "bg" })}>
         <header class={styles.header}>
           <span class={styles.brand}>
             <span class={styles.mark}>M</span> Console
@@ -99,7 +100,7 @@ function ConsoleLayout() {
           <div class={styles.user}>
             <span>{principal().user?.name}</span>
             {/* Core's own page, outside the console. */}
-            <a href={AGENT_CONNECTIONS_PATH} class={css({ color: "fg.muted", _hover: { color: "fg.default" } })}>
+            <a href={AGENT_CONNECTIONS_PATH} class={css({ color: "fg.muted", _hover: { color: "fg" } })}>
               AI clients
             </a>
             <ThemeToggle />
@@ -115,11 +116,17 @@ function ConsoleLayout() {
           <Show
             when={canUseConsole(principal())}
             fallback={
-              <EmptyState
-                icon={<Lock size={32} />}
-                title="The console is for administrators and app owners"
-                description="Ask an administrator if you need to manage users or an app."
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <Lock />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>The console is for administrators and app owners</EmptyState.Title>
+                  <EmptyState.Description>
+                    Ask an administrator if you need to manage users or an app.
+                  </EmptyState.Description>
+                </EmptyState.Content>
+              </EmptyState.Root>
             }
           >
             <FrameHeaderProvider stack={frameHeader}>

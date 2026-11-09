@@ -1,7 +1,7 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { PageTitle } from "@mosaik/frame"
-import { Card, EmptyState } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Card, EmptyState } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
@@ -26,11 +26,11 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "1",
-    _hover: { borderColor: "gray.surface.border.hover" },
+    _hover: { borderColor: "gray.border.emphasized" },
   }),
   name: css({ fontWeight: "semibold", display: "flex", justifyContent: "space-between", gap: "2" }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  waiting: css({ fontSize: "sm", fontWeight: "medium", color: "fg.default" }),
+  waiting: css({ fontSize: "sm", fontWeight: "medium", color: "fg" }),
 }
 
 function ManagedApps() {
@@ -48,11 +48,17 @@ function ManagedApps() {
           <Show
             when={list().length > 0}
             fallback={
-              <EmptyState
-                icon={<LayoutGrid size={32} />}
-                title="You don't decide about any app"
-                description="Each app's owners decide who can use it; administrators decide about all of them."
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <LayoutGrid />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>You don't decide about any app</EmptyState.Title>
+                  <EmptyState.Description>
+                    Each app's owners decide who can use it; administrators decide about all of them.
+                  </EmptyState.Description>
+                </EmptyState.Content>
+              </EmptyState.Root>
             }
           >
             <div class={styles.grid}>

@@ -1,5 +1,5 @@
 import { colorOf } from "@mosaik/core"
-import { Avatar } from "@mosaik/mosaik-ui"
+import { Avatar } from "@mosaik/ui"
 import type { JSX } from "solid-js"
 import { splitProps } from "solid-js"
 

@@ -1,5 +1,5 @@
-import { ActionMenu, Button, ConfirmDialog, EmptyState, IconButton, Modal, Table, TextField } from "@mosaik/mosaik-ui"
 import { createForm, useAction } from "@mosaik/sdk/solid"
+import { ActionMenu, Button, ConfirmDialog, EmptyState, IconButton, Modal, Table, TextField } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
@@ -17,8 +17,9 @@ const styles = {
   head: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4" }),
   lead: css({ fontSize: "sm", color: "fg.muted" }),
   form: css({ display: "flex", flexDirection: "column", gap: "4" }),
-  name: css({ fontWeight: "medium", color: "fg.default" }),
+  name: css({ fontWeight: "medium", color: "fg" }),
   clip: css({ maxW: "md", truncate: true }),
+  actions: css({ width: "12", textAlign: "end" }),
 }
 
 const QueueDialog = (props: { queue: Queue | undefined; open: boolean; onClose: () => void }) => {
@@ -36,12 +37,14 @@ const QueueDialog = (props: { queue: Queue | undefined; open: boolean; onClose: 
   return (
     <Modal
       open={props.open}
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => {
+        if (!details.open) props.onClose()
+      }}
       title={props.queue === undefined ? "New queue" : `Edit ${props.queue.name}`}
       description="People choose a queue when they ask for something."
       footer={
         <>
-          <Button variant="outline" colorPalette="gray" onClick={props.onClose}>
+          <Button variant="outline" onClick={props.onClose}>
             Cancel
           </Button>
           <Button type="submit" form="desk-queue" loading={form.submitting()}>
@@ -88,12 +91,18 @@ export const Queues = () => {
           <Show
             when={list().length > 0}
             fallback={
-              <EmptyState
-                icon={<Inbox />}
-                title="No queues yet"
-                description="People need at least one to send a request."
-                action={<Button onClick={() => setEditing(null)}>New queue</Button>}
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <Inbox />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>No queues yet</EmptyState.Title>
+                  <EmptyState.Description>People need at least one to send a request.</EmptyState.Description>
+                </EmptyState.Content>
+                <EmptyState.Actions>
+                  <Button onClick={() => setEditing(null)}>New queue</Button>
+                </EmptyState.Actions>
+              </EmptyState.Root>
             }
           >
             <Table.Root>
@@ -101,7 +110,7 @@ export const Queues = () => {
                 <Table.Row>
                   <Table.Header>Name</Table.Header>
                   <Table.Header>What it is for</Table.Header>
-                  <Table.Header w="12" />
+                  <Table.Header class={styles.actions} />
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -110,13 +119,13 @@ export const Queues = () => {
                     <Table.Row>
                       <Table.Cell class={styles.name}>{queue.name}</Table.Cell>
                       <Table.Cell>{queue.description}</Table.Cell>
-                      <Table.Cell textAlign="end">
+                      <Table.Cell class={styles.actions}>
                         <ActionMenu
                           trigger={(trigger) => (
                             <IconButton
                               {...trigger()}
                               size="xs"
-                              variant="plain"
+                              variant="ghost"
                               aria-label={`Actions for ${queue.name}`}
                             >
                               <Ellipsis />
@@ -147,14 +156,15 @@ export const Queues = () => {
       </Show>
       <ConfirmDialog
         open={removing() !== undefined}
-        onOpenChange={(open) => !open && setRemoving(undefined)}
+        onOpenChange={(details) => {
+          if (!details.open) setRemoving(undefined)
+        }}
         title={`Remove ${removing()?.name}?`}
-        description="Only a queue with no requests in it can be removed."
+        message="Only a queue with no requests in it can be removed."
         confirmLabel="Remove"
         tone="danger"
         onConfirm={() => {
           const queue = removing()
-          setRemoving(undefined)
           if (queue !== undefined) void remove.run({ params: { id: queue.id } })
         }}
       />

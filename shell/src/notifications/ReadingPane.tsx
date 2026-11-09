@@ -1,6 +1,6 @@
-import { Button, IconButton, Spinner } from "@mosaik/mosaik-ui"
 import type { InboxItem, InboxUpdate } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button, IconButton, Spinner } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import AlarmClock from "lucide-solid/icons/alarm-clock"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
@@ -42,7 +42,7 @@ const styles = {
     py: "6",
   }),
   meta: css({ display: "flex", alignItems: "center", gap: "2", fontSize: "sm", color: "fg.muted" }),
-  title: css({ textStyle: "xl", fontWeight: "semibold", letterSpacing: "-0.01em", color: "fg.default" }),
+  title: css({ textStyle: "xl", fontWeight: "semibold", color: "fg" }),
   status: css({
     fontSize: "sm",
     color: "fg.muted",
@@ -80,7 +80,7 @@ const styles = {
     fontWeight: "semibold",
     color: "fg.muted",
     textTransform: "uppercase",
-    letterSpacing: "wider",
+    letterSpacing: "wide",
   }),
   entries: css({ display: "flex", flexDirection: "column", gap: "3" }),
   entry: css({
@@ -174,7 +174,7 @@ export const ReadingPane = (props: {
           return (
             <>
               <div class={styles.toolbar} role="toolbar" aria-label="Item">
-                <Button class={styles.back} variant="plain" size="xs" onClick={() => props.onBack()}>
+                <Button class={styles.back} variant="ghost" size="xs" onClick={() => props.onBack()}>
                   <ArrowLeft size={16} />
                   Inbox
                 </Button>
@@ -205,7 +205,7 @@ export const ReadingPane = (props: {
                 <TypeSettingsMenu
                   type={shown().type}
                   trigger={(trigger) => (
-                    <IconButton {...trigger()} size="xs" variant="plain" aria-label="Notifications like this">
+                    <IconButton {...trigger()} size="xs" variant="ghost" aria-label="Notifications like this">
                       <BellRing size={16} />
                     </IconButton>
                   )}

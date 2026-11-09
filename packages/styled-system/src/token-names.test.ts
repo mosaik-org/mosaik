@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest"
 
 /**
  * The theme's token names are a contract with installed apps: an app's classes read the page's
- * variables (`--mk-colors-accent-solid-bg`), built from the names the app knew when it was built.
+ * variables (`--mk-colors-accent-solid`), built from the names the app knew when it was built.
  * A name that disappears unstyles every app using it until it is rebuilt, so removing or renaming
  * one is a platform major release. `token-names.txt` records them, for review to see the change.
  */

@@ -1,5 +1,5 @@
-import { ActionMenu, Button, DatePickerField, Modal, SelectField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { ActionMenu, Button, DatePickerField, Modal, SelectField } from "@mosaik/ui"
 import { createSignal, type JSX } from "solid-js"
 import { SNOOZE_HOURS, type SnoozeTime, snoozeAt, snoozeChoices } from "./snooze"
 
@@ -20,18 +20,19 @@ const PickTime = (props: {
     date.setDate(date.getDate() + 1)
     return isoDay(date)
   }
-  const [day, setDay] = createSignal<string | null>(tomorrow())
+  // `""` while no day is chosen.
+  const [day, setDay] = createSignal(tomorrow())
   const [hour, setHour] = createSignal(String(SNOOZE_HOURS[0]))
   const picked = () => {
     const chosen = day()
-    return chosen === null ? undefined : snoozeAt(chosen, Number(hour()))
+    return chosen === "" ? undefined : snoozeAt(chosen, Number(hour()))
   }
   const valid = () => (picked()?.until.getTime() ?? 0) > Date.now()
 
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       size="sm"
       title="Snooze until"
       description="It comes back to your inbox, unread, at that time."
@@ -58,9 +59,9 @@ const PickTime = (props: {
         <DatePickerField label="Day" value={day()} onValueChange={setDay} min={isoDay(new Date())} />
         <SelectField
           label="Time"
-          items={SNOOZE_HOURS.map((value) => ({ value: String(value), label: hourLabel(value) }))}
+          options={SNOOZE_HOURS.map((value) => ({ value: String(value), label: hourLabel(value) }))}
           value={hour()}
-          onValueChange={(value) => value !== null && setHour(value)}
+          onValueChange={(value) => value !== "" && setHour(value)}
         />
       </div>
     </Modal>

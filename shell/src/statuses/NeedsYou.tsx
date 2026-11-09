@@ -1,8 +1,8 @@
 import { usePageStatuses } from "@mosaik/client/solid"
 import { statusSentence } from "@mosaik/core"
 import { AppIcon, appColor, StatusMark, summarize } from "@mosaik/frame"
-import { Card } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Card } from "@mosaik/ui"
 import { Link } from "@tanstack/solid-router"
 import CircleDot from "lucide-solid/icons/circle-dot"
 import { For, type JSX } from "solid-js"
@@ -19,9 +19,9 @@ const styles = {
     py: "2",
     borderRadius: "l2",
     fontSize: "sm",
-    color: "fg.default",
-    _hover: { bg: "gray.subtle.bg" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    color: "fg",
+    _hover: { bg: "gray.subtle" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "-2px" },
   }),
   icon: css({ display: "flex", color: "fg.muted", flexShrink: "0" }),
   text: css({ flex: "1", minW: "0", display: "flex", flexDirection: "column" }),
@@ -32,7 +32,7 @@ const styles = {
 export const NeedsYou = (): JSX.Element => {
   const statuses = usePageStatuses()
   return (
-    <Card.Root>
+    <Card.Root p="0">
       <nav class={styles.list} aria-label="Needs you">
         <For each={statuses()}>
           {(status) => {

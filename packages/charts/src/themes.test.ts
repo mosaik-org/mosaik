@@ -20,7 +20,7 @@ describe("chartTheme", () => {
   it("takes every color from the page's theme, none of its own", () => {
     // A literal would not follow dark mode or a theme set at runtime.
     expect(strings(theme).filter((value) => /#[0-9a-f]{3,8}\b|\b(rgba?|hsla?|oklch)\(/i.test(value))).toEqual([])
-    expect(theme.textStyle).toEqual({ color: "<colors.fg.default>", fontFamily: "<fonts.body>" })
+    expect(theme.textStyle).toEqual({ color: "<colors.fg>", fontFamily: "<fonts.body>" })
     // The tooltip is HTML in the page: CSS variables work there as they are.
     expect(theme.tooltip.extraCssText).toContain("var(--mk-shadows-lg)")
   })

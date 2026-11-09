@@ -1,5 +1,5 @@
-import { Heading, IconButton } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Heading, IconButton } from "@mosaik/ui"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import Maximize2 from "lucide-solid/icons/maximize-2"
 import Plus from "lucide-solid/icons/plus"
@@ -18,7 +18,7 @@ const styles = {
     flexDirection: "column",
     height: "full",
     minHeight: "0",
-    bg: "canvas",
+    bg: "bg",
     // Its header overlays its top, as the shell's does a full page's (`FRAME_TOP`): what is below
     // scrolls under it, frosted.
     "--mk-frame-top": "sizes.14",
@@ -34,7 +34,7 @@ const styles = {
     height: "14",
     px: "3",
     borderBottomWidth: "1px",
-    bg: "canvas/85",
+    bg: "bg/85",
     backdropFilter: "blur(8px)",
   }),
   heading: css({ display: "flex", alignItems: "center", gap: "1", flex: "1", minW: "0" }),
@@ -74,7 +74,7 @@ export const AssistantPanel = (props: {
         >
           <div class={styles.heading}>
             <IconButton
-              variant="plain"
+              variant="ghost"
               size="sm"
               aria-label="Back to the conversations"
               onClick={() => setListing(true)}
@@ -83,19 +83,19 @@ export const AssistantPanel = (props: {
             </IconButton>
             <ConversationHeading conversation={panelConversation()} onDeleted={() => open(null)} />
           </div>
-          <IconButton variant="plain" size="sm" aria-label="New conversation" onClick={() => open(null)}>
+          <IconButton variant="ghost" size="sm" aria-label="New conversation" onClick={() => open(null)}>
             <Plus size={16} />
           </IconButton>
         </Show>
         <IconButton
-          variant="plain"
+          variant="ghost"
           size="sm"
           aria-label="Open in full view"
           onClick={() => props.onExpand(panelConversation())}
         >
           <Maximize2 size={16} />
         </IconButton>
-        <IconButton variant="plain" size="sm" aria-label="Close the assistant" onClick={() => props.onClose()}>
+        <IconButton variant="ghost" size="sm" aria-label="Close the assistant" onClick={() => props.onClose()}>
           <X size={16} />
         </IconButton>
       </header>

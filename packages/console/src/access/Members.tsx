@@ -3,6 +3,9 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import { createDebounced } from "@mosaik/client/solid"
 import type { PrincipalUser } from "@mosaik/core"
+import type { AppAbout } from "@mosaik/platform/contract"
+import { css } from "@mosaik/styled-system/css"
+import { createColumnHelper, DataTable } from "@mosaik/table"
 import {
   Badge,
   Button,
@@ -13,10 +16,7 @@ import {
   Modal,
   Spinner,
   Tooltip,
-} from "@mosaik/mosaik-ui"
-import type { AppAbout } from "@mosaik/platform/contract"
-import { css } from "@mosaik/styled-system/css"
-import { createColumnHelper, DataTable } from "@mosaik/table"
+} from "@mosaik/ui"
 import { QueryBoundary, UserAvatar } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import UserPlus from "lucide-solid/icons/user-plus"
@@ -34,8 +34,8 @@ const styles = {
   name: css({ fontWeight: "medium" }),
   muted: css({ fontSize: "xs", color: "fg.muted" }),
   badges: css({ display: "flex", gap: "1", flexWrap: "wrap" }),
-  // A person is two lines: their option grows with them.
-  option: css({ h: "auto", py: "1.5" }),
+  // A person is two lines: their option grows with them, with room above and below.
+  option: css({ py: "1.5" }),
   roles: css({ display: "flex", flexDirection: "column", gap: "3" }),
 }
 
@@ -93,7 +93,7 @@ const RolesDialog = (props: {
   return (
     <Modal
       open
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => !details.open && props.onClose()}
       title={`${props.user.name} in ${props.about.app.name}`}
       description="Each role opens the app. Their roles elsewhere stay as they are."
       footer={
@@ -149,7 +149,7 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
   return (
     <Modal
       open
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => !details.open && props.onClose()}
       title={`Add someone to ${props.about.app.name}`}
       description="Search by name or e-mail, then choose their roles."
     >
@@ -165,11 +165,9 @@ const AddPersonDialog = (props: { about: AppAbout; onPick: (user: PrincipalUser)
       >
         <Combobox.Control>
           <Combobox.Input placeholder="Name or e-mail" aria-label="Name or e-mail" autofocus />
-          <Combobox.IndicatorGroup>
-            <Show when={people.isFetching}>
-              <Spinner size="xs" />
-            </Show>
-          </Combobox.IndicatorGroup>
+          <Show when={people.isFetching}>
+            <Spinner size="xs" label="Searching" />
+          </Show>
         </Combobox.Control>
         <Portal>
           <Combobox.Positioner>
@@ -222,18 +220,24 @@ export const Members = (props: { about: AppAbout }) => {
       enableSorting: false,
       cell: (info) => (
         <div class={styles.badges}>
-          <For each={info.getValue()}>
-            {(role) => (
-              <Badge colorPalette={role === props.about.app.roles.find((r) => r.isOwner)?.id ? "accent" : "neutral"}>
-                {roleName(role)}
-              </Badge>
-            )}
-          </For>
+          <For each={info.getValue()}>{(role) => <Badge>{roleName(role)}</Badge>}</For>
           <For each={info.row.original.via}>
             {(role) => (
-              <Tooltip content="A role that names this app">
-                <span class={styles.muted}>through {role.name}</span>
-              </Tooltip>
+              <Tooltip.Root>
+                <Tooltip.Trigger
+                  asChild={(trigger) => (
+                    <span class={styles.muted} {...trigger()}>
+                      through {role.name}
+                    </span>
+                  )}
+                />
+                {/* Out of the table, which clips what overflows it. */}
+                <Portal>
+                  <Tooltip.Positioner>
+                    <Tooltip.Content>A role that names this app</Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Portal>
+              </Tooltip.Root>
             )}
           </For>
         </div>
@@ -274,11 +278,17 @@ export const Members = (props: { about: AppAbout }) => {
           <Show
             when={list().length > 0}
             fallback={
-              <EmptyState
-                icon={<Users size={32} />}
-                title="Nobody has a role yet"
-                description={`Add the people who use ${props.about.app.name}, or answer their requests.`}
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <Users />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>Nobody has a role yet</EmptyState.Title>
+                  <EmptyState.Description>
+                    Add the people who use {props.about.app.name}, or answer their requests.
+                  </EmptyState.Description>
+                </EmptyState.Content>
+              </EmptyState.Root>
             }
           >
             <DataTable columns={columns} data={list()} getRowId={(member) => member.user.id} />

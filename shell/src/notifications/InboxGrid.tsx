@@ -1,7 +1,7 @@
 import type { ListNavigation } from "@mosaik/client/solid"
-import { Checkbox } from "@mosaik/mosaik-ui"
 import type { InboxItem } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Checkbox } from "@mosaik/ui"
 import { createMemo, For, type JSX, Match, Show, Switch } from "solid-js"
 import type { InboxActions } from "./actions"
 import { RowActions, RowContent, rowActionsReveal } from "./InboxRow"
@@ -18,7 +18,7 @@ const styles = {
     fontSize: "xs",
     fontWeight: "medium",
     color: "fg.muted",
-    bg: "canvas",
+    bg: "bg",
   }),
   row: css({
     position: "relative",
@@ -29,17 +29,16 @@ const styles = {
     py: "2",
     cursor: "pointer",
     outline: "none",
-    _hover: { bg: "gray.subtle.bg" },
+    _hover: { bg: "gray.subtle" },
     // Where the person is, and so what the pane shows.
-    '&[data-active]:not([aria-selected="true"])': { bg: "gray.subtle.bg.hover" },
+    '&[data-active]:not([aria-selected="true"])': { bg: "gray.subtle.hover" },
     // What they have marked: something they set, so the accent, whether or not they are on it.
-    '&[aria-selected="true"]': { bg: "accent.subtle.bg", _hover: { bg: "accent.subtle.bg.hover" } },
-    _focusVisible: { boxShadow: "inset 2px 0 0 {colors.accent.solid.bg}" },
+    '&[aria-selected="true"]': { bg: "accent.subtle", _hover: { bg: "accent.subtle.hover" } },
+    _focusVisible: { boxShadow: "inset 2px 0 0 {colors.accent.solid}" },
     // Arrived while the list was open: it slides in where it lands, unless the person asks for less motion.
     "&[data-arrived]": {
-      animationName: "slide-from-top, fade-in",
-      animationDuration: "normal",
-      animationTimingFunction: "enter",
+      animation: "slide-in-top token(durations.normal) token(easings.out)",
+      _motionReduce: { animationName: "fade-in" },
     },
     ...rowActionsReveal,
   }),
@@ -113,9 +112,7 @@ export const InboxGrid = (props: {
                           onCheckedChange={() => props.navigation.toggle(entry)}
                         >
                           <Checkbox.HiddenInput aria-label={`Select: ${item().content.title}`} tabIndex={-1} />
-                          <Checkbox.Control>
-                            <Checkbox.Indicator />
-                          </Checkbox.Control>
+                          <Checkbox.Control />
                         </Checkbox.Root>
                       </span>
                       <RowContent item={item()} now={now} />

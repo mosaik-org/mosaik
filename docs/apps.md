@@ -59,7 +59,7 @@ A typical workflow:
 2. Define endpoints in `api/` and annotate the ones that need a specific permission.
 3. Implement handlers in `server/`, using `Audit` for actions that change data and `Notify` / `Messages`
    to tell people about them.
-4. Build pages with `createApi(Api)` (`@mosaik/sdk/solid`), the components of `@mosaik/mosaik-ui`, `@mosaik/web-sdk/table` and `/charts`.
+4. Build pages with `createApi(Api)` (`@mosaik/sdk/solid`), the components of `@mosaik/ui`, `@mosaik/web-sdk/table` and `/charts`.
 
 ## The SDK
 
@@ -70,7 +70,7 @@ The SDK is two packages, versioned like the platform and released together:
   `solid-js` and `@tanstack/solid-query` (and `@tanstack/solid-router` for `/router`); one that does not
   installs no framework at all.
 - **`@mosaik/web-sdk`**, Mosaik's UI: its components, tables, charts and styles, the builds of pages on them,
-  and the shell's frame for a mounted app. With `@mosaik/mosaik-ui`, the components themselves.
+  and the shell's frame for a mounted app. With `@mosaik/ui`, the components themselves.
 
 Their entry points follow where code runs and which layer of Mosaik it needs:
 
@@ -84,7 +84,7 @@ Their entry points follow where code runs and which layer of Mosaik it needs:
 | `@mosaik/sdk/router` | pages on TanStack Router | `useSearchParams` |
 | `@mosaik/web-sdk/portal` | pages mounted in the shell | `defineWebApp`, `AppLayout`, `NavTabs`, `FrameHeader`, `FRAME_TOP`, `useCommands`, `defineSearchProvider`, `AppIcon`, `appColor` |
 | `@mosaik/web-sdk/ui`, `/table`, `/charts`, `/css` | pages | Mosaik's own components (`UserAvatar`, `QueryBoundary`, `QueryFreshness`, `<Toasts />`, `DataTable`, charts), the app's styling runtime; `/ui/styles.css` is the kit's stylesheet for a standalone page |
-| `@mosaik/mosaik-ui` | pages | the components: [its README](../packages/mosaik-ui/README.md). A package of its own, which apps install next to the SDK, at the version `@mosaik/web-sdk` names |
+| `@mosaik/ui` | pages | the components: its README and catalog (`bun run catalog` in its repository). A package of its own, which apps install next to the SDK, at the version `@mosaik/web-sdk` names |
 | `@mosaik/sdk/build/dev`, `/build/manifest` | `scripts/` | `runAppDev`, `writeAppManifest` |
 | `@mosaik/web-sdk/build/vite`, `/build/panda` | `vite.config.ts`, `panda.config.ts` | `mosaikApp`, `appPandaConfig` |
 
@@ -210,26 +210,31 @@ An app with `database: true` gets its own Postgres role and database, `mosaik_<i
 
 ## Pages
 
-**Components.** Pages import them from [`@mosaik/mosaik-ui`](../packages/mosaik-ui/README.md) (Ark
-UI and Panda CSS, accessible, with dark mode); its README has the whole set:
+**Components.** Pages import them from `@mosaik/ui` (Ark UI and Panda CSS, accessible, with dark
+mode), the component library in its own repository; its README lists the whole set, and its catalog
+(`bun run catalog` there) shows every example with its code and each component's reference:
 
-- **Parts**, named after Ark's: `<Dialog.Root>`, `<Tabs.List>`, `<Menu.Item>`. Each takes all of Ark's props.
+- **Parts**, named after Ark's: `<Dialog.Root>`, `<Tabs.List>`, `<Menu.Item>`, `<EmptyState.Title>`. Each takes all
+  of Ark's props, and style props.
 - **Fields** for forms, taking plain values (`TextField`, `SelectField`, `DatePickerField`, ...). Each puts a label,
   the control, help and the error together.
-- **Ready-made components:**
-  - dialogs: `Modal`, `ConfirmDialog`, `ActionMenu`;
-  - states: `EmptyState`, `ErrorState`;
-  - page parts: `Stat`;
-  - the theme: `ThemeProvider`, `ThemeToggle` (for a standalone page; in the shell, the shell's).
-- **The look of the catalog:** `bun run catalog` in `packages/mosaik-ui` shows every example
-  at http://localhost:6006.
+- **Ready-made components:** `Modal`, `ConfirmDialog` and `ActionMenu` (a list of `items`).
+- Controls are gray unless given a `colorPalette`: only the default button, focus, selection and checked
+  controls take the accent.
+
+Mosaik's own, from `@mosaik/web-sdk/ui`: `QueryBoundary`, `ErrorState`, `UserAvatar`, `Toasts`, and the
+theme switch, `ThemeProvider`, `ThemeToggle`, `ThemeChoice` (for a standalone page; in the shell, the
+shell's).
 
 Styles name the theme's tokens:
-- surfaces and text: `canvas` (the workspace), `canvas.sunken` (what frames it, like a sidebar), `fg.default`, `fg.muted`, `fg.subtle`, `border`;
-- grays: the `gray` palette, e.g. `gray.surface.bg`, `gray.subtle.bg`;
-- roles: `accent`, `danger`, `success`, `warning` (e.g. `accent.solid.bg`, `danger.plain.fg`, `success.subtle.bg`);
+- surfaces and text: `bg` (the workspace), `bg.subtle` (what frames it, like a sidebar), `bg.muted`
+  (a component's background), `bg.panel` (cards, popovers), `fg`, `fg.muted`, `fg.subtle` (placeholders
+  and disabled text only), `border`, `border.muted`;
+- grays: the `gray` palette, e.g. `gray.subtle`, `gray.border`;
+- roles: `accent`, `danger`, `success`, `warning`, `info`, each with `solid`, `contrast` (text on
+  `solid`), `subtle`, `border` and `fg` (e.g. `accent.solid`, `danger.fg`, `success.subtle`);
 - fonts: `body` (Geist) and `mono` (Geist Mono). The shell loads them; a standalone page gets them with
-  `@mosaik/web-sdk/ui/styles.css`. `@mosaik/mosaik-ui` alone names no font: a page on it keeps its own.
+  `@mosaik/web-sdk/ui/styles.css`. `@mosaik/ui` alone names no font: a page on it keeps its own.
 
 `colorPalette` picks a role for a component, as in `<Badge colorPalette="success">`.
 
@@ -578,7 +583,7 @@ return yield* storage.respond(`orders/${id}/${name}`, { inline: true })    // in
 - **Serving** with `storage.respond`: files are downloads, never shown as the app's page, so an uploaded
   HTML or SVG file cannot run scripts as the app. Images and PDFs may be shown in place (`inline`).
 - **In a page**, `uploadFile(url, file, { onProgress })` (`@mosaik/sdk/client`) sends a file to the
-  app's endpoint with progress, and `<FileUploadField>` (`@mosaik/mosaik-ui`) lets people choose it,
+  app's endpoint with progress, and `<FileField>` (`@mosaik/ui`) lets people choose it,
   refusing other types and sizes at once. Downloads are plain links to the app's API.
 - **Size.** A request to the app is limited to 128 MB unless it sets `maxRequestBodySize` in `runApp`.
 - Sales attaches PDFs and images to orders: `examples/sales` (`Attachments.tsx`, `server/http.ts`).
@@ -744,7 +749,7 @@ events. `examples/notes` is one, on Mosaik's components, and `examples/links` is
 - **SDK.** Until they are published, apps install the SDK and the components from tarballs:
   - `bun sdk:pack` builds `dist/sdk/mosaik-sdk-<version>.tgz` and `mosaik-web-sdk-<version>.tgz`
     (TypeScript sources, which Bun and Vite read as they are), next to the components'
-    (`mosaik-mosaik-ui-<version>.tgz`, built by the library). `@mosaik/web-sdk` builds on the code of
+    (`mosaik-ui-<version>.tgz`, built in the library's repository). `@mosaik/web-sdk` builds on the code of
     `@mosaik/sdk` rather than carrying its own, so an app has one copy of each: install both at the same
     version;
   - `bun create:app <id> --dir <path> --sdk-only` refreshes an app's copies in `vendor/mosaik/`.
@@ -754,7 +759,7 @@ events. `examples/notes` is one, on Mosaik's components, and `examples/links` is
 - **Compatibility.** Apps declare the platform major version they were built for; others are refused. A
   platform major release means rebuilding every app. Bump `version` in the manifest for every release.
 - **Shared modules.** Solid, the router, Query, Effect, the SDK's page entry points (`@mosaik/sdk`,
-  `/client`, `/solid`, `/router`; `@mosaik/web-sdk/portal`, `/ui`, `/table`, `/charts`) and `@mosaik/mosaik-ui` come from the shell
+  `/client`, `/solid`, `/router`; `@mosaik/web-sdk/portal`, `/ui`, `/table`, `/charts`) and `@mosaik/ui` come from the shell
   through an import map, so mounted apps leave them out of their bundles. A standalone page bundles what
   it uses.
 - **Styles.** Each app generates its own Panda runtime, its classes prefixed with its id (`crm-…`) so they

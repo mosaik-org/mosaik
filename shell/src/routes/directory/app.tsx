@@ -3,13 +3,14 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { AppOwners, AppRoles, aboutQuery } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { AppIcon, appColor, PageTitle } from "@mosaik/frame"
-import { Badge, Button, IconButton } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Button, IconButton } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
+import Clock from "lucide-solid/icons/clock"
 import Lock from "lucide-solid/icons/lock"
 import Pin from "lucide-solid/icons/pin"
 import { createMemo, createSignal, Match, Show, Switch } from "solid-js"
@@ -32,7 +33,7 @@ const styles = {
     gap: "1",
     fontSize: "sm",
     color: "fg.muted",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   }),
   actions: css({ display: "flex", alignItems: "center", gap: "2" }),
   layout: css({
@@ -42,7 +43,7 @@ const styles = {
     alignItems: "start",
   }),
   muted: css({ fontSize: "sm", color: "fg.muted" }),
-  pinned: css({ color: "fg.default", fill: "currentColor" }),
+  pinned: css({ color: "fg", fill: "currentColor" }),
 }
 
 /** Open it, ask for it, or log in for it; and pin it. */
@@ -97,7 +98,8 @@ const Actions = (props: { app: AnyApp }) => {
           />
         </Match>
         <Match when={latest()?.status === "pending"}>
-          <Badge variant="dot" colorPalette="accent">
+          <Badge>
+            <Clock />
             Access requested
           </Badge>
         </Match>

@@ -1,10 +1,11 @@
-import { Button, Spinner, TextField, Tooltip } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Input, InputGroup, Spinner, Tooltip } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Clock from "lucide-solid/icons/clock"
 import Plus from "lucide-solid/icons/plus"
 import Search from "lucide-solid/icons/search"
 import { createMemo, createSignal, For, type JSX, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { assistant } from "./api"
 import { ConversationMenu } from "./ConversationMenu"
 import { groupByDate, matchingConversations, titleOrDefault } from "./view"
@@ -51,12 +52,12 @@ const styles = {
     fontSize: "sm",
     color: "fg.muted",
     cursor: "pointer",
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
-    "&:not([aria-current=true]):hover": { bg: "gray.subtle.bg", color: "fg.default" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid", outlineOffset: "-2px" },
+    "&:not([aria-current=true]):hover": { bg: "gray.subtle", color: "fg" },
     // Waiting for the person: as dark as the open one, with its clock (the one colour here).
-    "&[data-waiting=true]": { color: "fg.default" },
+    "&[data-waiting=true]": { color: "fg" },
     // The open conversation, waiting or not.
-    "&[aria-current=true]": { bg: "gray.subtle.bg.hover", color: "fg.default", fontWeight: "medium" },
+    "&[aria-current=true]": { bg: "gray.subtle.hover", color: "fg", fontWeight: "medium" },
   }),
   actions: css({
     position: "absolute",
@@ -68,7 +69,7 @@ const styles = {
   }),
   title: css({ flex: "1", minW: "0", truncate: true }),
   // It waits for the person: what they came for.
-  waiting: css({ display: "flex", flexShrink: "0", color: "accent.plain.fg" }),
+  waiting: css({ display: "flex", flexShrink: "0", color: "accent.fg" }),
   empty: css({ px: "3", fontSize: "sm", color: "fg.muted" }),
 }
 
@@ -88,18 +89,18 @@ export const ConversationList = (props: {
   return (
     <nav class={styles.root} aria-label="Conversations">
       <div class={styles.controls}>
-        <Button variant="outline" size="md" onClick={() => props.onSelect(null)}>
-          <Plus size={14} /> New conversation
+        <Button variant="outline" size="sm" onClick={() => props.onSelect(null)}>
+          <Plus /> New conversation
         </Button>
-        <TextField
-          aria-label="Search conversations"
-          type="search"
-          size="md"
-          placeholder="Search conversations"
-          startElement={<Search size={14} />}
-          value={query()}
-          onValueChange={setQuery}
-        />
+        <InputGroup size="sm" startElement={<Search />}>
+          <Input
+            aria-label="Search conversations"
+            type="search"
+            placeholder="Search conversations"
+            value={query()}
+            onInput={(event) => setQuery(event.currentTarget.value)}
+          />
+        </InputGroup>
       </div>
       <div class={styles.scroller}>
         <Show when={!conversations.isPending} fallback={<Spinner size="sm" />}>
@@ -122,12 +123,21 @@ export const ConversationList = (props: {
                       >
                         {/* As the conversation itself says it: "Waiting for your approval", with a clock. */}
                         <Show when={conversation.waitingChanges > 0}>
-                          <Tooltip content="Waiting for your approval">
-                            <span class={styles.waiting}>
-                              <Clock size={14} aria-hidden="true" />
-                              <span class={css({ srOnly: true })}>Waiting for your approval:</span>
-                            </span>
-                          </Tooltip>
+                          <Tooltip.Root>
+                            <Tooltip.Trigger
+                              asChild={(trigger) => (
+                                <span class={styles.waiting} {...trigger()}>
+                                  <Clock size={14} aria-hidden="true" />
+                                  <span class={css({ srOnly: true })}>Waiting for your approval:</span>
+                                </span>
+                              )}
+                            />
+                            <Portal>
+                              <Tooltip.Positioner>
+                                <Tooltip.Content>Waiting for your approval</Tooltip.Content>
+                              </Tooltip.Positioner>
+                            </Portal>
+                          </Tooltip.Root>
                         </Show>
                         <span class={styles.title}>{titleOrDefault(conversation.title)}</span>
                       </button>

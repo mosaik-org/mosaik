@@ -2,8 +2,8 @@ import { admin, type CatalogApp, CreateRole, type Role } from "@mosaik/auth/cont
 import { useCan } from "@mosaik/auth/web"
 import { errorMessage, toast } from "@mosaik/client"
 import { BuiltInRoles } from "@mosaik/core"
-import { Badge, Button, Card, ConfirmDialog, Input, Modal, TextField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Button, Card, ConfirmDialog, Input, Modal, TextField } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -37,8 +37,8 @@ const styles = {
     borderRadius: "md",
     textAlign: "left",
     cursor: "pointer",
-    _hover: { bg: "gray.subtle.bg" },
-    "&[aria-current=true]": { bg: "gray.subtle.bg.hover", color: "fg.default" },
+    _hover: { bg: "gray.subtle" },
+    "&[aria-current=true]": { bg: "gray.subtle.hover", color: "fg" },
   }),
   meta: css({ fontSize: "xs", color: "fg.muted" }),
   heading: css({ px: "3", pt: "3", pb: "1", fontSize: "xs", fontWeight: "semibold", color: "fg.muted" }),
@@ -103,11 +103,11 @@ const CreateRoleDialog = (props: {
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title="New role"
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="create-role" loading={create.isPending}>
@@ -260,7 +260,7 @@ function Roles() {
               </Show>
               <Show when={canManage()}>
                 <div class={css({ p: "2", borderTopWidth: "1px", mt: "2" })}>
-                  <Button variant="plain" size="xs" onClick={() => setCreating(true)}>
+                  <Button variant="ghost" size="xs" onClick={() => setCreating(true)}>
                     <Plus size={16} />
                     New role
                   </Button>
@@ -278,7 +278,7 @@ function Roles() {
                     <div class={styles.meta}>{role().description}</div>
                   </div>
                   <Show when={canManage() && !role().builtIn && (role().app === null || role().stale)}>
-                    <Button variant="plain" onClick={() => setDeleting(true)}>
+                    <Button variant="ghost" onClick={() => setDeleting(true)}>
                       Delete role
                     </Button>
                   </Show>
@@ -325,13 +325,12 @@ function Roles() {
                 </QueryBoundary>
                 <ConfirmDialog
                   open={deleting()}
-                  onOpenChange={setDeleting}
+                  onOpenChange={(details) => setDeleting(details.open)}
                   title={`Delete the ${roleLabel(role())} role?`}
-                  description={`${role().userCount} users lose the permissions granted by this role.`}
+                  message={`${role().userCount} users lose the permissions granted by this role.`}
                   confirmLabel="Delete"
                   tone="danger"
-                  loading={remove.isPending}
-                  onConfirm={() => remove.mutate(role().id)}
+                  onConfirm={() => remove.mutateAsync(role().id)}
                 />
               </div>
             )}

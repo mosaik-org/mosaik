@@ -1,6 +1,6 @@
 /**
  * `bun examples:verify [id...]` — typechecks, tests and builds every example the way a team's app gets
- * the SDK: copied out of the repository, with `@mosaik/sdk`, `@mosaik/web-sdk` and `@mosaik/mosaik-ui` installed
+ * the SDK: copied out of the repository, with `@mosaik/sdk`, `@mosaik/web-sdk` and `@mosaik/ui` installed
  * from the packed tarballs instead of linked from the workspace. That catches what the workspace hides: a file missing
  * from the tarball, an import the SDK does not export, a dependency only the monorepo has.
  * A failed example's copy is kept for a look.
@@ -43,7 +43,7 @@ for (const example of examples) {
     scripts?: Record<string, string>
   }
   for (const name of Object.keys(manifest.dependencies ?? {})) {
-    if (name.startsWith("@mosaik/") && !["@mosaik/sdk", "@mosaik/web-sdk", "@mosaik/mosaik-ui"].includes(name)) {
+    if (name.startsWith("@mosaik/") && !["@mosaik/sdk", "@mosaik/web-sdk", "@mosaik/ui"].includes(name)) {
       throw new Error(`${id} depends on ${name}`)
     }
   }
@@ -52,9 +52,7 @@ for (const example of examples) {
     "@mosaik/sdk": `file:${tarball}`,
     // Only for those that use them: an app with its own UI must install without them.
     ...(manifest.dependencies?.["@mosaik/web-sdk"] === undefined ? {} : { "@mosaik/web-sdk": `file:${web}` }),
-    ...(manifest.dependencies?.["@mosaik/mosaik-ui"] === undefined
-      ? {}
-      : { "@mosaik/mosaik-ui": `file:${components}` }),
+    ...(manifest.dependencies?.["@mosaik/ui"] === undefined ? {} : { "@mosaik/ui": `file:${components}` }),
   }
   await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 

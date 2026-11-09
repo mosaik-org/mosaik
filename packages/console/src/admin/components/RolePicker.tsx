@@ -1,7 +1,7 @@
 import type { Role } from "@mosaik/auth/contract"
 import { BuiltInRoles } from "@mosaik/core"
-import { CheckboxField, Input } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { CheckboxField, Input } from "@mosaik/ui"
 import { createMemo, createSignal, For, Show } from "solid-js"
 import { type AppRoles, groupAppRoles } from "../roles"
 

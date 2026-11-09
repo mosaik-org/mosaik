@@ -2,15 +2,16 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { searchValidator } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
 import { PageTitle } from "@mosaik/frame"
-import { EmptyState, Heading, Input, InputGroup, SelectField, Tabs } from "@mosaik/mosaik-ui"
 import { type AccessRequest, canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { createListCollection, EmptyState, Heading, Input, InputGroup, Select, Tabs } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
 import LayoutGrid from "lucide-solid/icons/layout-grid"
 import Search from "lucide-solid/icons/search"
 import { createMemo, createSignal, For, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { allApps, categoryOf } from "../../apps"
 import { AppCard } from "../../directory/AppCard"
 import {
@@ -37,10 +38,12 @@ export const Route = createFileRoute("/_app/directory/")({
   component: Directory,
 })
 
-const SORTS: ReadonlyArray<{ value: DirectorySort; label: string }> = [
-  { value: "name", label: "By name" },
-  { value: "popular", label: "Most used" },
-]
+const sorts = createListCollection<{ value: DirectorySort; label: string }>({
+  items: [
+    { value: "name", label: "By name" },
+    { value: "popular", label: "Most used" },
+  ],
+})
 
 /** The tab for no category in particular: not a name admins would give a category. */
 const ALL_CATEGORIES = "__all__"
@@ -146,13 +149,33 @@ function Directory() {
             />
           </InputGroup>
         </div>
-        <SelectField
-          aria-label="Sort"
-          items={SORTS}
-          value={sort()}
-          onValueChange={(value) => update({ sort: value === "name" ? undefined : (value ?? undefined) })}
+        <Select.Root
           class={css({ width: "40" })}
-        />
+          collection={sorts}
+          value={[sort()]}
+          onValueChange={(details) => update({ sort: details.value[0] === "popular" ? "popular" : undefined })}
+        >
+          <Select.Control>
+            <Select.Trigger aria-label="Sort">
+              <Select.ValueText />
+              <Select.Indicator />
+            </Select.Trigger>
+          </Select.Control>
+          <Portal>
+            <Select.Positioner>
+              <Select.Content>
+                <For each={sorts.items}>
+                  {(item) => (
+                    <Select.Item item={item}>
+                      <Select.ItemText>{item.label}</Select.ItemText>
+                      <Select.ItemIndicator />
+                    </Select.Item>
+                  )}
+                </For>
+              </Select.Content>
+            </Select.Positioner>
+          </Portal>
+        </Select.Root>
       </div>
 
       <Tabs.Root
@@ -184,18 +207,22 @@ function Directory() {
       <Show
         when={shown().length > 0}
         fallback={
-          <EmptyState
-            icon={<Search size={32} />}
-            title="No apps found"
-            description="Try another search, or another category."
-          />
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <Search />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>No apps found</EmptyState.Title>
+              <EmptyState.Description>Try another search, or another category.</EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
         }
       >
         <Show when={grouped()} fallback={<div class={styles.grid}>{<For each={shown()}>{card}</For>}</div>}>
           <For each={groupByCategory(shown())}>
             {(group) => (
               <section class={styles.section} aria-label={group.category}>
-                <Heading textStyle="md">{group.category}</Heading>
+                <Heading size="md">{group.category}</Heading>
                 <div class={styles.grid}>
                   <For each={group.apps}>{card}</For>
                 </div>

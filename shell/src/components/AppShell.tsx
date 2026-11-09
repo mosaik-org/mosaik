@@ -17,8 +17,8 @@ import {
   useFindPlaces,
   usePageLayout,
 } from "@mosaik/frame"
-import { IconButton, Kbd, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { IconButton, Kbd, Tooltip } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { Link, useNavigate, useRouterState } from "@tanstack/solid-router"
 import Menu from "lucide-solid/icons/menu"
@@ -27,6 +27,7 @@ import PanelLeftOpen from "lucide-solid/icons/panel-left-open"
 import Search from "lucide-solid/icons/search"
 import Sparkles from "lucide-solid/icons/sparkles"
 import { type Accessor, createEffect, createSignal, type JSX, on, onCleanup, onMount, Show, Suspense } from "solid-js"
+import { Portal } from "solid-js/web"
 import { allApps, appForPath } from "../apps"
 import { NotificationBell } from "../notifications/NotificationBell"
 import { StatusesProvider } from "../statuses/StatusesProvider"
@@ -51,7 +52,7 @@ const styles = {
     flex: "1",
     minWidth: "0",
     minHeight: "0",
-    transition: "margin-right token(durations.normal) token(easings.standard)",
+    transition: "margin-right token(durations.normal) token(easings.inOut)",
     _motionReduce: { transition: "none" },
     "&[data-assistant=true]": { marginRight: { lg: "400px" } },
   }),
@@ -67,7 +68,7 @@ const styles = {
     borderLeftWidth: "1px",
     boxShadow: { base: "lg", lg: "none" },
     translate: "100% 0",
-    transition: "translate token(durations.normal) token(easings.standard)",
+    transition: "translate token(durations.normal) token(easings.inOut)",
     _motionReduce: { transition: "none" },
     "&[data-open=true]": { translate: "0 0" },
   }),
@@ -81,7 +82,7 @@ const styles = {
     _motionReduce: { transition: "none" },
     "&[data-rail=true]": { width: "64px" },
     // Sticky, it stacks its content on its own: open over the page, it is raised above the top bar.
-    "&[data-floating=true]": { zIndex: "banner" },
+    "&[data-floating=true]": { zIndex: "overlay" },
   }),
   sidebar: css({
     display: "flex",
@@ -90,7 +91,7 @@ const styles = {
     height: "full",
     overflow: "hidden",
     borderRightWidth: "1px",
-    bg: "canvas.sunken",
+    bg: "bg.subtle",
     // The rail opened over the page, as wide as the sidebar.
     "&[data-floating=true]": { position: "absolute", insetY: "0", left: "0", width: "240px", boxShadow: "lg" },
   }),
@@ -105,8 +106,8 @@ const styles = {
     color: "fg.muted",
     cursor: "pointer",
     transition: "background 0.15s, color 0.15s",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    _hover: { bg: "gray.subtle", color: "fg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "-2px" },
   }),
   drawer: css({
     position: "fixed",
@@ -119,11 +120,11 @@ const styles = {
     width: "260px",
     display: "flex",
     flexDirection: "column",
-    bg: "canvas.sunken",
+    bg: "bg.subtle",
     borderRightWidth: "1px",
-    animation: "slide-from-bottom 0.15s ease-out",
+    animation: "slide-in-bottom token(durations.fast) token(easings.out)",
   }),
-  backdrop: css({ flex: "1", bg: "black.a7" }),
+  backdrop: css({ flex: "1", bg: "bg.backdrop" }),
   brand: css({
     display: "flex",
     alignItems: "center",
@@ -149,8 +150,8 @@ const styles = {
     width: "7",
     height: "7",
     borderRadius: "md",
-    bg: "accent.solid.bg",
-    color: "accent.solid.fg",
+    bg: "accent.solid",
+    color: "accent.contrast",
     fontSize: "sm",
   }),
   content: css({
@@ -176,7 +177,7 @@ const styles = {
     height: "14",
     px: { base: "4", md: "8" },
     borderBottomWidth: "1px",
-    bg: "canvas/85",
+    bg: "bg/85",
     backdropFilter: "blur(8px)",
   }),
   // What the page puts in the header: the room left beside the frame's own buttons, cut short if it must.
@@ -202,13 +203,13 @@ const styles = {
     minW: { base: "auto", xl: "56" },
     borderWidth: "1px",
     borderRadius: "l2",
-    bg: "canvas.sunken",
+    bg: "bg.subtle",
     color: "fg.muted",
     fontSize: "sm",
     cursor: "pointer",
     transition: "border-color 0.15s",
-    _hover: { borderColor: "gray.outline.border" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+    _hover: { borderColor: "gray.border" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing" },
   }),
 }
 
@@ -247,21 +248,28 @@ const SidebarToggle = (props: { state: SidebarState }) => {
       : `${opens() ? "Open" : "Close"} the sidebar`
   return (
     <div class={styles.sidebarFooter}>
-      <Tooltip content={label()} positioning={{ placement: "right" }}>
-        {(trigger) => (
-          <button
-            type="button"
-            {...trigger()}
-            class={styles.sidebarToggle}
-            aria-label={label()}
-            onClick={() => props.state.toggle()}
-          >
-            <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
-              <PanelLeftOpen size={18} />
-            </Show>
-          </button>
-        )}
-      </Tooltip>
+      <Tooltip.Root positioning={{ placement: "right" }}>
+        <Tooltip.Trigger
+          asChild={(trigger) => (
+            <button
+              type="button"
+              {...trigger()}
+              class={styles.sidebarToggle}
+              aria-label={label()}
+              onClick={() => props.state.toggle()}
+            >
+              <Show when={opens()} fallback={<PanelLeftClose size={18} />}>
+                <PanelLeftOpen size={18} />
+              </Show>
+            </button>
+          )}
+        />
+        <Portal>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{label()}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Portal>
+      </Tooltip.Root>
     </div>
   )
 }
@@ -420,7 +428,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
           <div class={styles.content} data-layout={layout()}>
             <header class={styles.header}>
               <div class={css({ hideFrom: "md" })}>
-                <IconButton variant="plain" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
+                <IconButton variant="ghost" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}>
                   <Menu size={18} />
                 </IconButton>
               </div>
@@ -429,7 +437,7 @@ export const AppShell = (props: { children: JSX.Element }) => {
               <SearchButton />
               <Show when={assistantReady()}>
                 <IconButton
-                  variant={assistantOpen() ? "subtle" : "plain"}
+                  variant={assistantOpen() ? "subtle" : "ghost"}
                   aria-label="Assistant (Ctrl+J)"
                   aria-pressed={assistantOpen()}
                   onClick={() => setPanelOpen((open) => !open)}

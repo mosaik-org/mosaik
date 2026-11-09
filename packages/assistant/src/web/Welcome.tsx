@@ -1,6 +1,6 @@
 import { usePrincipal } from "@mosaik/auth/web"
-import { Button } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import Sparkles from "lucide-solid/icons/sparkles"
 import { For, type JSX, Show } from "solid-js"
@@ -24,11 +24,11 @@ const styles = {
     width: "12",
     height: "12",
     borderRadius: "full",
-    bg: "gray.subtle.bg",
+    bg: "gray.subtle",
     color: "fg.muted",
   }),
   greeting: css({ display: "flex", flexDirection: "column", gap: "1" }),
-  title: css({ fontSize: "xl", fontWeight: "semibold", color: "fg.default" }),
+  title: css({ fontSize: "xl", fontWeight: "semibold", color: "fg" }),
   lead: css({ fontSize: "sm", color: "fg.muted" }),
   suggestions: css({ display: "grid", gridTemplateColumns: { base: "1fr", sm: "1fr 1fr" }, gap: "2", width: "full" }),
   // A Button that wraps: a question may take two lines.

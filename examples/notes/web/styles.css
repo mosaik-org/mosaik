@@ -15,7 +15,7 @@
   align-items: center;
 }
 .link {
-  color: var(--mk-colors-accent-plain-fg);
+  color: var(--mk-colors-accent-fg);
   font-weight: var(--mk-font-weights-medium);
 }
 .main {
@@ -45,6 +45,6 @@
 }
 .error {
   justify-self: stretch;
-  color: var(--mk-colors-danger-plain-fg);
+  color: var(--mk-colors-danger-fg);
   font-size: var(--mk-font-sizes-sm);
 }

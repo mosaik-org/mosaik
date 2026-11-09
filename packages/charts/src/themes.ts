@@ -25,10 +25,10 @@ export type ReadToken = (path: Extract<Token, `colors.${string}` | "fonts.body">
  * page, so its shadow and corners are the variables themselves.
  */
 export const chartTheme = (read: ReadToken) => {
-  const text = read("colors.fg.default")
+  const text = read("colors.fg")
   const mutedText = read("colors.fg.muted")
   const line = read("colors.border")
-  const surface = read("colors.gray.surface.bg")
+  const surface = read("colors.bg.panel")
   return {
     color: CHART_COLORS.map(read),
     backgroundColor: "transparent",
@@ -49,7 +49,7 @@ export const chartTheme = (read: ReadToken) => {
       axisPointer: {
         lineStyle: { color: mutedText, type: "dashed" },
         crossStyle: { color: mutedText },
-        shadowStyle: { color: read("colors.gray.a3") },
+        shadowStyle: { color: read("colors.gray.3") },
       },
     },
     categoryAxis: {

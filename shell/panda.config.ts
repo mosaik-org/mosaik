@@ -1,5 +1,5 @@
 import { defineConfig } from "@pandacss/dev"
-import { pandaConfig } from "../packages/styled-system/panda.config"
+import { pandaConfig, UI_SOURCES } from "../packages/styled-system/panda.config"
 
 /**
  * CSS extraction for the whole app: scans the shell, every shared UI package (Core's console too) and
@@ -8,6 +8,7 @@ import { pandaConfig } from "../packages/styled-system/panda.config"
 export default defineConfig({
   ...pandaConfig,
   include: [
+    UI_SOURCES,
     "./src/**/*.{ts,tsx}",
     "../packages/{table,charts,web-kit,frame,console,assistant}/src/**/*.{ts,tsx}",
     "../apps/*/web/**/*.{ts,tsx}",

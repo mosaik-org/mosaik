@@ -1,3 +1,4 @@
+import { css } from "@mosaik/web-sdk/css"
 import { UserAvatar } from "@mosaik/web-sdk/ui"
 import {
   PRIORITIES,
@@ -14,6 +15,9 @@ import { PriorityIcon } from "../components/PriorityIcon"
 import { StatusIcon } from "../components/StatusIcon"
 import { Unassigned } from "../components/Unassigned"
 import type { Desk } from "../context"
+
+// As tall as an item's line of text, a little under the smallest avatar.
+const avatar = css({ boxSize: "6" })
 
 /** "REQ-12", or "3 requests": what is being changed, in the fewest words. */
 const named = (rows: ReadonlyArray<RequestRow>) => {
@@ -71,7 +75,7 @@ export const createRequestPickers = (desk: Desk, afterChange: () => void = () =>
           ...others.map((agent) => ({
             value: agent.id,
             label: agent.name,
-            icon: <UserAvatar user={agent} size="2xs" />,
+            icon: <UserAvatar user={agent} size="xs" class={avatar} />,
           })),
           { value: NOBODY, label: "Unassigned", icon: <Unassigned /> },
         ],

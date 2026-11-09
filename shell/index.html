@@ -7,9 +7,9 @@
     <title>Mosaik</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script>
-      // Apply the theme before first paint (see ThemeProvider in @mosaik/mosaik-ui).
+      // Apply the theme before first paint (see ThemeProvider in @mosaik/web-kit).
       try {
-        const theme = localStorage.getItem("mosaik-ui-theme") ?? "system"
+        const theme = localStorage.getItem("mosaik-theme") ?? "system"
         const dark = theme === "dark" || (theme === "system" && matchMedia("(prefers-color-scheme: dark)").matches)
         document.documentElement.classList.toggle("dark", dark)
       } catch {}

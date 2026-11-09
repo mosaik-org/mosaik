@@ -2,9 +2,9 @@ import { admin } from "@mosaik/auth/contract"
 import { usePrincipal } from "@mosaik/auth/web"
 import { searchValidator } from "@mosaik/client/solid"
 import { PageTitle } from "@mosaik/frame"
-import { Button, EmptyState, Tabs } from "@mosaik/mosaik-ui"
 import { canManageApp } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button, EmptyState, Tabs } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
@@ -45,7 +45,7 @@ const styles = {
     gap: "1",
     fontSize: "sm",
     color: "fg.muted",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   }),
   layout: css({
     display: "grid",
@@ -86,11 +86,17 @@ function ManagedApp() {
       <Show
         when={manages()}
         fallback={
-          <EmptyState
-            icon={<Lock size={32} />}
-            title="You don't decide about this app"
-            description="Its owners decide who can use it, or the administrators when it has none."
-          />
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <Lock />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>You don't decide about this app</EmptyState.Title>
+              <EmptyState.Description>
+                Its owners decide who can use it, or the administrators when it has none.
+              </EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
         }
       >
         <QueryBoundary query={about}>

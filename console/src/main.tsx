@@ -1,6 +1,5 @@
 import "./index.css"
-import { ThemeProvider } from "@mosaik/mosaik-ui"
-import { Toasts } from "@mosaik/web-kit"
+import { ThemeProvider, Toasts } from "@mosaik/web-kit"
 import { QueryClientProvider } from "@tanstack/solid-query"
 import { RouterProvider } from "@tanstack/solid-router"
 import { render } from "solid-js/web"

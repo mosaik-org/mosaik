@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.build.json",
-  "compilerOptions": {
-    // Through the package's own `node_modules`, so declarations name `@pandacss/types` portably.
-    "preserveSymlinks": true
-  },
-  "include": ["src/theme"],
-  "exclude": []
-}

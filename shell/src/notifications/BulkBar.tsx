@@ -1,7 +1,7 @@
 import type { ListNavigation } from "@mosaik/client/solid"
-import { Button } from "@mosaik/mosaik-ui"
 import type { InboxItem } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button } from "@mosaik/ui"
 import { Show } from "solid-js"
 import type { InboxActions } from "./actions"
 import { SnoozeMenu } from "./SnoozeMenu"
@@ -16,10 +16,10 @@ const styles = {
     py: "2",
     borderTopWidth: "1px",
     borderColor: "border",
-    bg: "gray.surface.bg",
+    bg: "gray.subtle",
     flexShrink: "0",
   }),
-  count: css({ fontSize: "sm", fontWeight: "medium", color: "fg.default", mr: "auto" }),
+  count: css({ fontSize: "sm", fontWeight: "medium", color: "fg", mr: "auto" }),
 }
 
 /** What can be done to the marked items, in view for as long as some are. */
@@ -37,27 +37,27 @@ export const BulkBar = (props: { list: ListNavigation<InboxItem>; actions: Inbox
       <div class={styles.bar} role="toolbar" aria-label="Selected items">
         <span class={styles.count}>{props.list.selected().size} selected</span>
         <Show when={open().length > 0}>
-          <Button size="xs" variant="plain" onClick={apply(() => props.actions.resolve(open()))}>
+          <Button size="xs" variant="ghost" onClick={apply(() => props.actions.resolve(open()))}>
             Resolve
           </Button>
           <SnoozeMenu
             trigger={(trigger) => (
-              <Button {...trigger()} size="xs" variant="plain">
+              <Button {...trigger()} size="xs" variant="ghost">
                 Snooze
               </Button>
             )}
             onSnooze={(time) => apply(() => props.actions.snooze(open(), time))()}
           />
-          <Button size="xs" variant="plain" onClick={apply(() => props.actions.markRead(open()))}>
+          <Button size="xs" variant="ghost" onClick={apply(() => props.actions.markRead(open()))}>
             Mark as read
           </Button>
         </Show>
         <Show when={putAway().length > 0}>
-          <Button size="xs" variant="plain" onClick={apply(() => props.actions.reopen(putAway()))}>
+          <Button size="xs" variant="ghost" onClick={apply(() => props.actions.reopen(putAway()))}>
             Bring back
           </Button>
         </Show>
-        <Button size="xs" variant="plain" onClick={() => props.list.clearSelection()}>
+        <Button size="xs" variant="ghost" onClick={() => props.list.clearSelection()}>
           Clear
         </Button>
       </div>

@@ -1,11 +1,12 @@
 import { signInUrl } from "@mosaik/auth/contract"
 import type { AnyApp } from "@mosaik/core"
 import { AppIcon, appColor, StatusMark, useStatusSummary } from "@mosaik/frame"
-import { Badge, Button, Card, IconButton } from "@mosaik/mosaik-ui"
 import type { AccessRequest } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Button, Card, IconButton } from "@mosaik/ui"
 import { Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
+import Clock from "lucide-solid/icons/clock"
 import Lock from "lucide-solid/icons/lock"
 import Pin from "lucide-solid/icons/pin"
 import { type JSX, Match, Show, Switch } from "solid-js"
@@ -15,13 +16,13 @@ const styles = {
   card: css({ display: "flex", flexDirection: "column", gap: "3", height: "full" }),
   header: css({ display: "flex", alignItems: "flex-start", gap: "3" }),
   // In the app's colour; quiet without one, for an app the person cannot open.
-  icon: css({ display: "flex", flexShrink: "0", color: "fg.subtle" }),
+  icon: css({ display: "flex", flexShrink: "0", color: "fg.muted" }),
   titles: css({ display: "flex", flexDirection: "column", gap: "0.5", flex: "1", minW: "0" }),
   name: css({
     fontWeight: "semibold",
     truncate: true,
     _hover: { textDecoration: "underline" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "1px" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "1px" },
   }),
   category: css({ fontSize: "xs", color: "fg.muted" }),
   description: css({ color: "fg.muted", fontSize: "sm", flex: "1", lineClamp: "3" }),
@@ -33,10 +34,10 @@ const styles = {
     fontSize: "sm",
     fontWeight: "medium",
     color: "fg.muted",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   }),
   note: css({ fontSize: "xs", color: "fg.muted" }),
-  pinned: css({ color: "fg.default", fill: "currentColor" }),
+  pinned: css({ color: "fg", fill: "currentColor" }),
 }
 
 export interface AppCardProps {
@@ -67,7 +68,7 @@ export const AppCard = (props: AppCardProps) => {
         <IconButton
           aria-label={props.pinned ? `Unpin ${props.app.name}` : `Pin ${props.app.name}`}
           size="xs"
-          variant="plain"
+          variant="ghost"
           aria-pressed={props.pinned}
           onClick={() => toggle()()}
         >
@@ -104,7 +105,8 @@ export const AppCard = (props: AppCardProps) => {
               </Link>
             </Match>
             <Match when={props.request?.status === "pending"}>
-              <Badge variant="dot" colorPalette="accent">
+              <Badge>
+                <Clock />
                 Access requested
               </Badge>
             </Match>

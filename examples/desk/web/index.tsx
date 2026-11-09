@@ -1,5 +1,5 @@
-import { Button } from "@mosaik/mosaik-ui"
 import { searchValidator } from "@mosaik/sdk/solid"
+import { Button } from "@mosaik/ui"
 import { AppLayout, defineWebApp } from "@mosaik/web-sdk/portal"
 import { createRoute, lazyRouteComponent } from "@tanstack/solid-router"
 import { Schema } from "effect"
@@ -14,7 +14,7 @@ const SetupSearch = Schema.Struct({ tab: Schema.optional(Schema.Literals(["queue
 const NewRequestButton = () => {
   const { newRequest } = useDesk()
   return (
-    <Button size="sm" variant="subtle" colorPalette="gray" onClick={() => newRequest.open()}>
+    <Button size="sm" variant="subtle" onClick={() => newRequest.open()}>
       <Plus />
       New request
     </Button>

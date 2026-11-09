@@ -7,8 +7,8 @@ const styles = {
   details: css({ display: "flex", flexDirection: "column", gap: "1.5", fontSize: "sm" }),
   description: css({ color: "fg.muted" }),
   list: css({ display: "flex", flexDirection: "column", gap: "1" }),
-  item: css({ display: "flex", alignItems: "flex-start", gap: "2", color: "fg.default" }),
-  check: css({ flexShrink: "0", mt: "0.5", color: "success.plain.fg" }),
+  item: css({ display: "flex", alignItems: "flex-start", gap: "2", color: "fg" }),
+  check: css({ flexShrink: "0", mt: "0.5", color: "success.fg" }),
 }
 
 /** What a role lets people do, besides opening the app (which every app role does). */

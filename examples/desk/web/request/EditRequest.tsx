@@ -1,5 +1,5 @@
-import { Button, Modal, TextareaField, TextField } from "@mosaik/mosaik-ui"
 import { createForm } from "@mosaik/sdk/solid"
+import { Button, Modal, TextareaField, TextField } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { Schema } from "effect"
 import { createEffect, on } from "solid-js"
@@ -34,11 +34,11 @@ export const EditRequestDialog = (props: { row: RequestRow; open: boolean; onOpe
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title="Edit request"
       footer={
         <>
-          <Button variant="outline" colorPalette="gray" onClick={() => props.onOpenChange(false)}>
+          <Button variant="outline" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="desk-edit-request" loading={form.submitting()}>

@@ -10,10 +10,10 @@ const mark = cva({
   base: { display: "inline-grid", placeItems: "center", flexShrink: "0" },
   variants: {
     priority: {
-      urgent: { color: "danger.plain.fg" },
-      high: { color: "fg.subtle" },
-      normal: { color: "fg.subtle" },
-      low: { color: "fg.subtle" },
+      urgent: { color: "danger.fg" },
+      high: { color: "fg.muted" },
+      normal: { color: "fg.muted" },
+      low: { color: "fg.muted" },
     },
   },
 })
@@ -24,7 +24,7 @@ const ICON_SIZE = 14
 const styles = {
   down: css({ transform: "rotate(180deg)" }),
   // Filled as the others are, with the mark in the triangle cut out in the page's colour.
-  urgent: css({ "& path:not(:first-of-type)": { stroke: "canvas" } }),
+  urgent: css({ "& path:not(:first-of-type)": { stroke: "bg" } }),
 }
 
 /**

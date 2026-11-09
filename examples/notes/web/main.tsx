@@ -1,7 +1,7 @@
-import { Button, Card, EmptyState, TextareaField, ThemeProvider, ThemeToggle } from "@mosaik/mosaik-ui"
 import { errorMessage, IdentityApi, makeApiClient, standaloneLinks, toast } from "@mosaik/sdk/client"
 import { createForm } from "@mosaik/sdk/solid"
-import { Toasts } from "@mosaik/web-sdk/ui"
+import { Button, Card, EmptyState, TextareaField } from "@mosaik/ui"
+import { ThemeProvider, ThemeToggle, Toasts } from "@mosaik/web-sdk/ui"
 import { createResource, For, Show } from "solid-js"
 import { render } from "solid-js/web"
 import { NewNote, type Note, NotesApi } from "../api"
@@ -38,7 +38,7 @@ const Header = () => (
             <a class="link" href={standaloneLinks.notificationSettings}>
               Notifications
             </a>
-            <Button type="submit" variant="plain" size="xs">
+            <Button type="submit" variant="ghost" size="xs">
               Sign out
             </Button>
           </form>
@@ -97,7 +97,14 @@ const NoteList = () => {
       </Show>
       <For
         each={list() ?? []}
-        fallback={<EmptyState title="No notes yet" description="Notes the team posts show here." />}
+        fallback={
+          <EmptyState.Root>
+            <EmptyState.Content>
+              <EmptyState.Title>No notes yet</EmptyState.Title>
+              <EmptyState.Description>Notes the team posts show here.</EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        }
       >
         {(note) => (
           <Card.Root>
@@ -108,7 +115,7 @@ const NoteList = () => {
                   {note.author.name} · {new Date(note.createdAt.epochMilliseconds).toLocaleString()}
                 </span>
                 <Show when={note.author.id === principal()?.user?.id || can(app.perm("notes.delete"))}>
-                  <Button variant="plain" size="xs" onClick={() => void remove(note)}>
+                  <Button variant="ghost" size="xs" onClick={() => void remove(note)}>
                     Delete
                   </Button>
                 </Show>
@@ -129,9 +136,13 @@ const App = () => (
         <Show
           when={principal()?.can(app.accessPermission)}
           fallback={
-            <EmptyState
-              title={principal()?.user ? "You cannot read notes yet" : "Sign in to read the team's notes"}
-              action={
+            <EmptyState.Root>
+              <EmptyState.Content>
+                <EmptyState.Title>
+                  {principal()?.user ? "You cannot read notes yet" : "Sign in to read the team's notes"}
+                </EmptyState.Title>
+              </EmptyState.Content>
+              <EmptyState.Actions>
                 <Show
                   when={principal()?.user}
                   fallback={
@@ -144,8 +155,8 @@ const App = () => (
                     Request access
                   </a>
                 </Show>
-              }
-            />
+              </EmptyState.Actions>
+            </EmptyState.Root>
           }
         >
           <NoteList />

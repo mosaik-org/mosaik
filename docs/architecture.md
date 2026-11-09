@@ -146,7 +146,7 @@ code runs (both sides, server, pages) and which layer it needs (Core, or the Por
 the internal packages keep the split the monorepo needs; only what the entry points export is public.
 
 Three of those packages hold what pages use, by what they need. `client/solid` needs Solid and no components, so
-an app with its own UI can use it. `web-kit` holds Mosaik's components, on `@mosaik/mosaik-ui`. `frame` holds what
+an app with its own UI can use it. `web-kit` holds Mosaik's components, on `@mosaik/ui` (the component library, a repository of its own). `frame` holds what
 surrounds a page (its layout, tabs and header, the command palette, status marks): it is Core's rather than the
 Portal's because Core's console hosts pages too, and the console's pages run in both, but only `@mosaik/web-sdk/portal`
 offers it to apps, as a standalone app has no frame.

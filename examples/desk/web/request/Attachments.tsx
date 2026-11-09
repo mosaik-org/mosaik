@@ -1,5 +1,5 @@
-import { Button, IconButton } from "@mosaik/mosaik-ui"
 import { errorMessage, formatBytes, toast, uploadFile } from "@mosaik/sdk/client"
+import { Button, IconButton } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { useQuery, useQueryClient } from "@tanstack/solid-query"
 import Paperclip from "lucide-solid/icons/paperclip"
@@ -17,7 +17,7 @@ const styles = {
     minW: "0",
     truncate: true,
     fontSize: "sm",
-    color: "fg.default",
+    color: "fg",
     _hover: { textDecoration: "underline" },
   }),
   size: css({ fontSize: "xs", color: "fg.muted", flexShrink: "0" }),
@@ -79,8 +79,8 @@ export const Attachments = (props: { id: RequestId; mayAdd: boolean; mayRemove: 
               <span class={styles.size}>{formatBytes(attachment.size)}</span>
               <Show when={props.mayRemove}>
                 <IconButton
-                  size="2xs"
-                  variant="plain"
+                  size="xs"
+                  variant="ghost"
                   aria-label={`Remove ${attachment.name}`}
                   onClick={() => void remove(attachment.name)}
                 >
@@ -105,7 +105,7 @@ export const Attachments = (props: { id: RequestId; mayAdd: boolean; mayRemove: 
             if (file !== undefined) void upload(file)
           }}
         />
-        <Button class={styles.add} size="sm" variant="plain" loading={uploading()} onClick={() => picker?.click()}>
+        <Button class={styles.add} size="sm" variant="ghost" loading={uploading()} onClick={() => picker?.click()}>
           <Paperclip />
           Attach a file
         </Button>

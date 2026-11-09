@@ -1,15 +1,17 @@
 import { Chart, sparklineOption } from "@mosaik/charts"
 import { formatRelativeTime } from "@mosaik/client"
 import { createEventStream } from "@mosaik/client/solid"
-import { Badge, Card } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Card } from "@mosaik/ui"
 import { Freshness, QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { DateTime } from "effect"
 import CircleCheck from "lucide-solid/icons/circle-check"
+import CircleDashed from "lucide-solid/icons/circle-dashed"
 import CircleAlert from "lucide-solid/icons/circle-exclamation-point"
-import { For, Show } from "solid-js"
+import TriangleAlert from "lucide-solid/icons/triangle-exclamation-point"
+import { For, type JSX, Show } from "solid-js"
 import { liveUrl, type ServiceState, type ServiceStatus, StatusSnapshot } from "../../api"
 import { snapshotQuery } from "../queries"
 
@@ -18,12 +20,13 @@ export const Route = createFileRoute("/_app/status/")({
   component: StatusPage,
 })
 
-const STATE = {
-  up: { tone: "success", label: "Operational" },
-  degraded: { tone: "warning", label: "Degraded" },
-  down: { tone: "danger", label: "Down" },
-  unknown: { tone: "neutral", label: "Checking…" },
-} as const satisfies Record<ServiceState, { tone: string; label: string }>
+/** A service's state: grey while it works or is being checked, amber or red when people should look. */
+const STATE: Record<ServiceState, { label: string; icon: () => JSX.Element; tone?: "warning" | "danger" }> = {
+  up: { label: "Operational", icon: () => <CircleCheck /> },
+  degraded: { label: "Degraded", icon: () => <TriangleAlert />, tone: "warning" },
+  down: { label: "Down", icon: () => <CircleAlert />, tone: "danger" },
+  unknown: { label: "Checking…", icon: () => <CircleDashed /> },
+}
 
 const styles = {
   banner: css({
@@ -34,8 +37,8 @@ const styles = {
     py: "4",
     borderRadius: "l3",
     fontWeight: "medium",
-    "&[data-healthy=true]": { bg: "success.subtle.bg", color: "success.plain.fg" },
-    "&[data-healthy=false]": { bg: "danger.subtle.bg", color: "danger.plain.fg" },
+    "&[data-healthy=true]": { bg: "success.subtle", color: "success.fg" },
+    "&[data-healthy=false]": { bg: "danger.subtle", color: "danger.fg" },
   }),
   grid: css({
     display: "grid",
@@ -52,7 +55,8 @@ const ServiceCard = (props: { service: ServiceStatus }) => (
       <div class={css({ display: "flex", flexDirection: "column", gap: "3" })}>
         <div class={css({ display: "flex", justifyContent: "space-between", alignItems: "center" })}>
           <span class={styles.name}>{props.service.name}</span>
-          <Badge variant="dot" colorPalette={STATE[props.service.state].tone}>
+          <Badge colorPalette={STATE[props.service.state].tone}>
+            {STATE[props.service.state].icon()}
             {STATE[props.service.state].label}
           </Badge>
         </div>

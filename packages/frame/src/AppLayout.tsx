@@ -1,9 +1,7 @@
 import { useCan } from "@mosaik/auth/web"
 import type { AnyApp } from "@mosaik/core"
-import { ActionMenu } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Link, Outlet, useLocation, useNavigate } from "@tanstack/solid-router"
-import Check from "lucide-solid/icons/check"
+import { Link, Outlet, useLocation } from "@tanstack/solid-router"
 import ChevronDown from "lucide-solid/icons/chevron-down"
 import { createMemo, type JSX, Show } from "solid-js"
 import { AppIcon } from "./AppIcon"
@@ -11,6 +9,7 @@ import { AppTabs } from "./AppTabs"
 import { appColor } from "./appColor"
 import { appPageLinks, currentPage } from "./appPages"
 import { FrameHeader } from "./FrameHeader"
+import { PagesMenu } from "./PagesMenu"
 
 const styles = {
   // In the frame's header: the app, as the page's heading.
@@ -27,10 +26,10 @@ const styles = {
     alignItems: "center",
     gap: "2",
     minW: "0",
-    color: "fg.default",
+    color: "fg",
     cursor: "pointer",
-    _hover: { color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", borderRadius: "l1" },
+    _hover: { color: "fg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid", borderRadius: "l1" },
   }),
   page: css({ color: "fg.muted", truncate: true }),
   // From tablets up, where the app's pages are tabs beside it; on phones, a menu of them.
@@ -54,7 +53,6 @@ export interface AppLayoutProps {
 export const AppLayout = (props: AppLayoutProps) => {
   const can = useCan()
   const location = useLocation()
-  const navigate = useNavigate()
   const links = createMemo(() => appPageLinks(props.app, can))
   const current = () => currentPage(links(), location().pathname)
   const icon = () => props.icon ?? props.app.portal.icon
@@ -89,7 +87,7 @@ export const AppLayout = (props: AppLayoutProps) => {
             {/* On phones, no room for tabs: the app's name opens its pages. Hidden around the menu, as
                   its trigger brings classes of its own. */}
             <span class={styles.narrow}>
-              <ActionMenu
+              <PagesMenu
                 trigger={(trigger) => (
                   <button type="button" {...trigger()}>
                     <span class={styles.app}>
@@ -99,12 +97,8 @@ export const AppLayout = (props: AppLayoutProps) => {
                     </span>
                   </button>
                 )}
-                items={links().map((link) => ({
-                  value: link.to,
-                  label: link.label,
-                  ...(link.to === current()?.to ? { icon: <Check size={14} /> } : {}),
-                  onSelect: () => void navigate({ href: link.to }),
-                }))}
+                links={links()}
+                current={current()?.to}
               />
             </span>
           </Show>

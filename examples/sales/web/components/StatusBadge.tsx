@@ -1,13 +1,5 @@
-import { Badge } from "@mosaik/mosaik-ui"
+import { Badge } from "@mosaik/ui"
 import type { OrderStatus } from "../../api"
-
-const TONES = {
-  pending: "warning",
-  paid: "accent",
-  shipped: "success",
-  refunded: "danger",
-  cancelled: "neutral",
-} as const
 
 const LABELS: Record<OrderStatus, string> = {
   pending: "Pending",
@@ -19,8 +11,9 @@ const LABELS: Record<OrderStatus, string> = {
 
 export const statusLabel = (status: OrderStatus): string => LABELS[status]
 
+/** An order's status: grey, but amber while it waits for approval, the one status someone must act on. */
 export const StatusBadge = (props: { status: OrderStatus }) => (
-  <Badge variant="dot" colorPalette={TONES[props.status]}>
+  <Badge size="sm" colorPalette={props.status === "pending" ? "warning" : undefined}>
     {LABELS[props.status]}
   </Badge>
 )

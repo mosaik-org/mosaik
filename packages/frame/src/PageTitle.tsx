@@ -10,7 +10,7 @@ const styles = {
     minW: "0",
     fontSize: "sm",
     fontWeight: "medium",
-    color: "fg.default",
+    color: "fg",
   }),
   text: css({ truncate: true }),
   // From tablets up, in the bar beside the title; on phones, where they would crowd it out, at the

@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@mosaik/client": "workspace:*",
-    "@mosaik/mosaik-ui": "workspace:*",
     "@mosaik/styled-system": "workspace:*",
+    "@mosaik/ui": "file:../../../mosaik-ui/dist/package",
     "echarts": "^6.1.0",
     "solid-js": "^1.9.17"
   }

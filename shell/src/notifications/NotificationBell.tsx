@@ -1,7 +1,7 @@
 import { createEventStream } from "@mosaik/client/solid"
-import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { InboxEvent, inboxLiveUrl } from "@mosaik/notifications/contract"
 import { css, cva } from "@mosaik/styled-system/css"
+import { Badge, EmptyState, IconButton, Popover, Spinner, Tooltip } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import Bell from "lucide-solid/icons/bell"
@@ -32,7 +32,7 @@ const mark = cva({
     h: "2",
     borderRadius: "full",
     pointerEvents: "none",
-    outline: "2px solid token(colors.canvas)",
+    outline: "2px solid token(colors.bg)",
     fontSize: "2xs",
     fontWeight: "semibold",
     lineHeight: "1",
@@ -41,8 +41,8 @@ const mark = cva({
   },
   variants: {
     critical: {
-      true: { bg: "danger.solid.bg", color: "danger.solid.fg" },
-      false: { bg: "accent.solid.bg", color: "accent.solid.fg" },
+      true: { bg: "danger.solid", color: "danger.contrast" },
+      false: { bg: "accent.solid", color: "accent.contrast" },
     },
   },
 })
@@ -114,7 +114,7 @@ export const NotificationBell = () => {
     >
       <Popover.Trigger
         asChild={(trigger) => (
-          <IconButton {...trigger()} variant="plain" aria-label={label()} class={styles.trigger}>
+          <IconButton {...trigger()} variant="ghost" aria-label={label()} class={styles.trigger}>
             <Bell size={18} />
             <Show
               when={todo() > 0}
@@ -138,58 +138,79 @@ export const NotificationBell = () => {
               <span class={styles.title}>
                 Inbox
                 <Show when={todo() > 0}>
-                  <Badge size="sm" colorPalette="gray">
+                  <Badge size="sm">
                     <span class={css({ srOnly: true })}>To do: </span>
                     {todo() > 99 ? "99+" : todo()}
                   </Badge>
                 </Show>
               </span>
               <Show when={unread() > 0}>
-                <Tooltip content="Mark all as read">
-                  {(tip) => (
+                <Tooltip.Root>
+                  <Tooltip.Trigger
+                    asChild={(tip) => (
+                      <IconButton
+                        {...tip()}
+                        size="xs"
+                        variant="ghost"
+                        aria-label="Mark all as read"
+                        loading={actions.markAllRead.isPending}
+                        onClick={() => actions.markAllRead.mutate()}
+                      >
+                        <CheckCheck size={16} />
+                      </IconButton>
+                    )}
+                  />
+                  <Portal>
+                    <Tooltip.Positioner>
+                      <Tooltip.Content>Mark all as read</Tooltip.Content>
+                    </Tooltip.Positioner>
+                  </Portal>
+                </Tooltip.Root>
+              </Show>
+              <Tooltip.Root>
+                <Tooltip.Trigger
+                  asChild={(tip) => (
                     <IconButton
                       {...tip()}
                       size="xs"
-                      variant="plain"
-                      aria-label="Mark all as read"
-                      loading={actions.markAllRead.isPending}
-                      onClick={() => actions.markAllRead.mutate()}
-                    >
-                      <CheckCheck size={16} />
-                    </IconButton>
+                      variant="ghost"
+                      aria-label="All notifications"
+                      asChild={(link) => (
+                        <Link to="/notifications" {...link()} onClick={close}>
+                          <Inbox size={16} />
+                        </Link>
+                      )}
+                    />
                   )}
-                </Tooltip>
-              </Show>
-              <Tooltip content="All notifications">
-                {(tip) => (
-                  <IconButton
-                    {...tip()}
-                    size="xs"
-                    variant="plain"
-                    aria-label="All notifications"
-                    asChild={(link) => (
-                      <Link to="/notifications" {...link()} onClick={close}>
-                        <Inbox size={16} />
-                      </Link>
-                    )}
-                  />
-                )}
-              </Tooltip>
-              <Tooltip content="Notification settings">
-                {(tip) => (
-                  <IconButton
-                    {...tip()}
-                    size="xs"
-                    variant="plain"
-                    aria-label="Notification settings"
-                    asChild={(link) => (
-                      <Link to="/notifications/settings" {...link()} onClick={close}>
-                        <Settings size={16} />
-                      </Link>
-                    )}
-                  />
-                )}
-              </Tooltip>
+                />
+                <Portal>
+                  <Tooltip.Positioner>
+                    <Tooltip.Content>All notifications</Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Portal>
+              </Tooltip.Root>
+              <Tooltip.Root>
+                <Tooltip.Trigger
+                  asChild={(tip) => (
+                    <IconButton
+                      {...tip()}
+                      size="xs"
+                      variant="ghost"
+                      aria-label="Notification settings"
+                      asChild={(link) => (
+                        <Link to="/notifications/settings" {...link()} onClick={close}>
+                          <Settings size={16} />
+                        </Link>
+                      )}
+                    />
+                  )}
+                />
+                <Portal>
+                  <Tooltip.Positioner>
+                    <Tooltip.Content>Notification settings</Tooltip.Content>
+                  </Tooltip.Positioner>
+                </Portal>
+              </Tooltip.Root>
             </div>
             <div class={styles.list}>
               {/* Its own boundary: a list waiting for its data shows a spinner here, and does not suspend
@@ -218,11 +239,15 @@ export const NotificationBell = () => {
                       actions.show(item)
                     }}
                     empty={
-                      <EmptyState
-                        icon={<BellOff />}
-                        title="You're all caught up"
-                        description="Nothing waits for you."
-                      />
+                      <EmptyState.Root>
+                        <EmptyState.Indicator>
+                          <BellOff />
+                        </EmptyState.Indicator>
+                        <EmptyState.Content>
+                          <EmptyState.Title>You're all caught up</EmptyState.Title>
+                          <EmptyState.Description>Nothing waits for you.</EmptyState.Description>
+                        </EmptyState.Content>
+                      </EmptyState.Root>
                     }
                   />
                 </Show>

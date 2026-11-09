@@ -1,5 +1,5 @@
-import { IconButton } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { IconButton } from "@mosaik/ui"
 import ArrowUp from "lucide-solid/icons/arrow-up"
 import Square from "lucide-solid/icons/square"
 import { createEffect, type JSX, on, Show } from "solid-js"
@@ -15,11 +15,11 @@ const styles = {
     borderWidth: "1px",
     borderRadius: "l3",
     // Translucent: what scrolls under it shows through, blurred.
-    bg: "gray.surface.bg/75",
+    bg: "bg.panel/75",
     backdropFilter: "blur(16px) saturate(1.5)",
     boxShadow: "xs",
     transition: "border-color 0.15s, box-shadow 0.15s",
-    _focusWithin: { borderColor: "accent.solid.bg", boxShadow: "0 0 0 1px token(colors.accent.solid.bg)" },
+    _focusWithin: { borderColor: "accent.solid", boxShadow: "0 0 0 1px token(colors.accent.solid)" },
   }),
   input: css({
     flex: "1",
@@ -28,7 +28,7 @@ const styles = {
     border: "none",
     outline: "none",
     bg: "transparent",
-    color: "fg.default",
+    color: "fg",
     fontSize: "sm",
     lineHeight: "1.5",
     resize: "none",
@@ -52,7 +52,7 @@ const styles = {
     borderRadius: "l2",
     fontSize: "xs",
     color: "fg.muted",
-    bg: "canvas/85",
+    bg: "bg/85",
     backdropFilter: "blur(8px)",
   }),
 }

@@ -1,5 +1,5 @@
-import { ActionMenu, ConfirmDialog, Heading, IconButton, Spinner, Tooltip } from "@mosaik/mosaik-ui"
 import { toast } from "@mosaik/sdk/client"
+import { ActionMenu, ConfirmDialog, Heading, IconButton, Spinner, Tooltip } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { useQuery } from "@tanstack/solid-query"
 import type { LucideProps } from "lucide-solid"
@@ -13,7 +13,7 @@ import Reply from "lucide-solid/icons/reply"
 import RotateCcw from "lucide-solid/icons/rotate-ccw"
 import Trash from "lucide-solid/icons/trash"
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js"
-import { Dynamic } from "solid-js/web"
+import { Dynamic, Portal } from "solid-js/web"
 import { type ReplyKind, type RequestId, type RequestRow, requesterMayDelete, requestNumber } from "../../api"
 import { desk as manifest } from "../../manifest"
 import { AttentionReason } from "../components/AttentionReason"
@@ -119,7 +119,7 @@ export const RequestPane = (props: {
               <IconButton
                 class={styles.back}
                 size="sm"
-                variant="plain"
+                variant="ghost"
                 aria-label="Back to the list"
                 onClick={props.onBack}
               >
@@ -127,9 +127,7 @@ export const RequestPane = (props: {
               </IconButton>
               <div class={styles.heading}>
                 <div class={styles.number}>{`${requestNumber(row().id)} · ${row().queueName}`}</div>
-                <Heading as="h2" textStyle="md" fontWeight="semibold">
-                  {row().title}
-                </Heading>
+                <Heading size="md">{row().title}</Heading>
                 <Show when={asAgent()}>
                   <AttentionReason request={row()} />
                 </Show>
@@ -137,7 +135,7 @@ export const RequestPane = (props: {
                   <NextStep row={row()} asAgent={asAgent()} compose={(kind) => composer?.focus(kind)} />
                   <ActionMenu
                     trigger={(trigger) => (
-                      <IconButton {...trigger()} size="sm" variant="plain" aria-label="More">
+                      <IconButton {...trigger()} size="sm" variant="ghost" aria-label="More">
                         <Ellipsis />
                       </IconButton>
                     )}
@@ -198,15 +196,12 @@ export const RequestPane = (props: {
             <EditRequestDialog row={row()} open={editing()} onOpenChange={setEditing} />
             <ConfirmDialog
               open={deleting()}
-              onOpenChange={setDeleting}
+              onOpenChange={(details) => setDeleting(details.open)}
               title={`Delete ${requestNumber(row().id)}?`}
-              description="Its story and its files go with it. This can't be undone."
+              message="Its story and its files go with it. This can't be undone."
               confirmLabel="Delete"
               tone="danger"
-              onConfirm={() => {
-                setDeleting(false)
-                void desk.actions.remove(row().id)
-              }}
+              onConfirm={() => void desk.actions.remove(row().id)}
             />
           </article>
         )
@@ -247,21 +242,29 @@ const NextStep = (props: { row: RequestRow; asAgent: boolean; compose: (kind: Re
   return (
     <Show when={step()}>
       {(next) => (
-        <Tooltip content={next().keyName === undefined ? next().label : `${next().label} (${next().keyName})`}>
-          {(trigger) => (
-            <IconButton
-              {...trigger()}
-              class={styles.round}
-              size="sm"
-              variant="subtle"
-              colorPalette="gray"
-              aria-label={next().label}
-              onClick={() => next().run()}
-            >
-              <Dynamic component={next().icon} />
-            </IconButton>
-          )}
-        </Tooltip>
+        <Tooltip.Root>
+          <Tooltip.Trigger
+            asChild={(trigger) => (
+              <IconButton
+                {...trigger()}
+                class={styles.round}
+                size="sm"
+                variant="subtle"
+                aria-label={next().label}
+                onClick={() => next().run()}
+              >
+                <Dynamic component={next().icon} />
+              </IconButton>
+            )}
+          />
+          <Portal>
+            <Tooltip.Positioner>
+              <Tooltip.Content>
+                {next().keyName === undefined ? next().label : `${next().label} (${next().keyName})`}
+              </Tooltip.Content>
+            </Tooltip.Positioner>
+          </Portal>
+        </Tooltip.Root>
       )}
     </Show>
   )

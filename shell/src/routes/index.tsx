@@ -3,8 +3,8 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { usePageStatuses } from "@mosaik/client/solid"
 import type { AnyApp } from "@mosaik/core"
 import { AppIcon, appColor, PageTitle } from "@mosaik/frame"
-import { Button, Card, EmptyState, Heading } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Card, EmptyState, Heading } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, Link } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
@@ -46,7 +46,7 @@ const styles = {
   tile: css({
     height: "full",
     transition: "border-color 0.15s",
-    _hover: { borderColor: "gray.surface.border.hover" },
+    _hover: { borderColor: "gray.border.emphasized" },
   }),
   tileText: css({ display: "flex", flexDirection: "column", gap: "0.5", minW: "0" }),
   name: css({ fontWeight: "semibold", truncate: true }),
@@ -58,7 +58,7 @@ const styles = {
     fontSize: "sm",
     fontWeight: "medium",
     color: "fg.muted",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   }),
   hint: css({ fontSize: "sm", color: "fg.muted" }),
   pages: css({ display: "flex", flexDirection: "column" }),
@@ -72,8 +72,8 @@ const styles = {
     borderBottomWidth: "1px",
     borderColor: "border",
     _last: { borderBottomWidth: "0" },
-    _hover: { bg: "gray.subtle.bg" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    _hover: { bg: "gray.subtle" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "-2px" },
   }),
   pageApp: css({ ml: "auto", fontSize: "xs", color: "fg.muted", flexShrink: "0" }),
   muted: css({ px: "4", py: "6", fontSize: "sm", color: "fg.muted", textAlign: "center" }),
@@ -99,7 +99,7 @@ const AppCard = (props: { app: AnyApp }) => (
 const Section = (props: { title: string; aside?: JSX.Element; children: JSX.Element }) => (
   <section class={styles.section} aria-label={props.title}>
     <div class={styles.sectionHeader}>
-      <Heading textStyle="md">{props.title}</Heading>
+      <Heading size="md">{props.title}</Heading>
       {props.aside}
     </div>
     {props.children}
@@ -156,11 +156,15 @@ const Personal = (props: { user: string }) => {
           </p>
         </Show>
         <Show when={apps.accessible().length === 0}>
-          <EmptyState
-            icon={<LayoutGrid size={32} />}
-            title="No apps available yet"
-            description="Find the app you need in All apps and ask for access."
-            action={
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <LayoutGrid />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>No apps available yet</EmptyState.Title>
+              <EmptyState.Description>Find the app you need in All apps and ask for access.</EmptyState.Description>
+            </EmptyState.Content>
+            <EmptyState.Actions>
               <Button
                 variant="outline"
                 asChild={(link) => (
@@ -169,8 +173,8 @@ const Personal = (props: { user: string }) => {
                   </Link>
                 )}
               />
-            }
-          />
+            </EmptyState.Actions>
+          </EmptyState.Root>
         </Show>
       </div>
 
@@ -188,7 +192,7 @@ const Personal = (props: { user: string }) => {
             </Link>
           }
         >
-          <Card.Root>
+          <Card.Root p="0" overflow="hidden">
             <NotificationList
               sections={sectionsOf(open.data?.items ?? [], "kind", Date.now())}
               actions={inbox}
@@ -199,7 +203,7 @@ const Personal = (props: { user: string }) => {
         </Section>
         <Show when={pages.length > 0}>
           <Section title="Recent pages">
-            <Card.Root>
+            <Card.Root p="0" overflow="hidden">
               <nav class={styles.pages} aria-label="Recent pages">
                 <For each={pages.slice(0, 6)}>
                   {(page) => (

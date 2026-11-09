@@ -256,7 +256,7 @@ export const api = createApi(Api)
 
   "web/pages/home.tsx": `import { css } from "@mosaik/web-sdk/css"
 import { useAction } from "@mosaik/sdk/solid"
-import { Button, Card${t.database ? ", Stat" : ""} } from "@mosaik/mosaik-ui"
+import { Button, Card${t.database ? ", Stat" : ""} } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { api } from "../api"
@@ -270,16 +270,26 @@ export default function Home() {
       {(data) => (
         <div class={css({ display: "grid", gap: "4", gridTemplateColumns: { base: "1fr", md: "repeat(2, 1fr)" } })}>
           <Card.Root>
-            <Card.Body gap="2">
-            <p class={css({ fontSize: "2xl", fontWeight: "semibold" })}>{data().message}</p>
-            <p class={css({ color: "fg.muted", fontSize: "sm" })}>${t.name} {data().version}</p>
-            <div>
+            <Card.Header>
+              <Card.Title>{data().message}</Card.Title>
+              <Card.Description>${t.name} {data().version}</Card.Description>
+            </Card.Header>
+            <Card.Footer justifyContent="flex-start">
               <Button loading={notify.pending()} onClick={() => void notify.run()}>
                 Notify me
               </Button>
-            </div>
-            </Card.Body>
-          </Card.Root>${t.database ? '\n          <Stat label="Greetings served" value={String(data().count)} />' : ""}
+            </Card.Footer>
+          </Card.Root>${
+            t.database
+              ? `
+          <Card.Root>
+            <Stat.Root>
+              <Stat.Label>Greetings served</Stat.Label>
+              <Stat.Value>{data().count}</Stat.Value>
+            </Stat.Root>
+          </Card.Root>`
+              : ""
+          }
         </div>
       )}
     </QueryBoundary>

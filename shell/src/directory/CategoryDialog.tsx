@@ -1,8 +1,8 @@
 import { errorMessage, toast } from "@mosaik/client"
 import type { AnyApp } from "@mosaik/core"
-import { Button, Modal, TextField } from "@mosaik/mosaik-ui"
+import { Button, Modal, TextField } from "@mosaik/ui"
 import { useMutation } from "@tanstack/solid-query"
-import { createEffect, createSignal, on, Show } from "solid-js"
+import { createEffect, createSignal, createUniqueId, For, on, Show } from "solid-js"
 import { categoryOf, setCategoryOverride } from "../apps"
 import { portalApi } from "../portalApi"
 import { DEFAULT_CATEGORY } from "./filter"
@@ -15,6 +15,7 @@ export const CategoryDialog = (props: {
   onOpenChange: (open: boolean) => void
 }) => {
   const [category, setCategory] = createSignal("")
+  const suggestions = createUniqueId()
   createEffect(
     on(
       () => props.open,
@@ -45,13 +46,13 @@ export const CategoryDialog = (props: {
   return (
     <Modal
       open={props.open}
-      onOpenChange={props.onOpenChange}
+      onOpenChange={(details) => props.onOpenChange(details.open)}
       title={`Category of ${props.app.name}`}
       description="Where the app is listed in All apps, for everyone."
       footer={
         <>
           <Show when={categoryOf(props.app) !== own()}>
-            <Button variant="plain" disabled={save.isPending} onClick={() => save.mutate(null)}>
+            <Button variant="ghost" disabled={save.isPending} onClick={() => save.mutate(null)}>
               Use the app's own ({own()})
             </Button>
           </Show>
@@ -64,13 +65,11 @@ export const CategoryDialog = (props: {
         </>
       }
     >
-      <TextField
-        label="Category"
-        value={category()}
-        onValueChange={setCategory}
-        suggestions={props.categories}
-        maxLength={40}
-      />
+      {/* The categories in use, offered as people type (the browser's own list): any other is accepted too. */}
+      <TextField label="Category" value={category()} onValueChange={setCategory} list={suggestions} maxLength={40} />
+      <datalist id={suggestions}>
+        <For each={props.categories}>{(suggestion) => <option value={suggestion} />}</For>
+      </datalist>
     </Modal>
   )
 }

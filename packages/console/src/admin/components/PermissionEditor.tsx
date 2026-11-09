@@ -1,7 +1,7 @@
 import type { CatalogApp } from "@mosaik/auth/contract"
 import { grantCovers } from "@mosaik/core"
-import { Badge, Card, CheckboxField, SwitchField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Badge, Card, CheckboxField, SwitchField } from "@mosaik/ui"
 import { For, Show } from "solid-js"
 
 export interface PermissionEditorProps {

@@ -33,7 +33,11 @@ ECharts in the browser, and Postgres.
 
 ## Quick start
 
+The component library, `@mosaik/ui`, is a repository of its own: check it out beside this one, as
+`../mosaik-ui`, and build it once (again after changing it, then `bun install` here).
+
 ```sh
+(cd ../mosaik-ui && bun install && bun run build)
 bun install
 bun infra:up     # Postgres + Jaeger + Mailpit (docker)
 bun dev          # provisions databases, runs everything
@@ -170,13 +174,12 @@ packages/         The SDK and shared code
   web-build       Building pages on Mosaik's UI: the standalone page, the app's Panda config and styles
   db              Postgres layer + migrations, per-service provisioning
   client          Typed browser API client and formatters · solid (the API, forms, list navigation, URL state, event streams; no components)
-  mosaik-ui       @mosaik/mosaik-ui: the components apps import; Solid on Ark UI + Panda, standing alone (it imports nothing of Mosaik); see its README
   table           DataTable (TanStack Table, client or server-side)
   charts          ECharts wrapper drawing with the theme's tokens (chart.1…6, text, lines), option builders
-  web-kit         Mosaik's components, on mosaik-ui: QueryBoundary, Freshness, UserAvatar, SettingField, Toasts
+  web-kit         Mosaik's components, on @mosaik/ui: QueryBoundary, Freshness, UserAvatar, SettingField, Toasts, ErrorState, the theme switch
   frame           Around a page, in the shell and the console: AppLayout, tabs, header, the command palette and shortcuts, status marks, AppIcon
   connectors      Server-side clients for external systems (Jira, SMTP, Slack, Teams)
-  styled-system   Mosaik's theme for @mosaik/mosaik-ui, the generated runtime and the kit's stylesheet
+  styled-system   Mosaik's theme for @mosaik/ui (the library in ../mosaik-ui), the generated runtime and the kit's stylesheet
 tooling/          Dev runner, provisioning, scaffolding, boundary checks
 infra/            compose.dev.yml (local infra), compose.yml + Dockerfile (deployment)
 docs/             Architecture, building apps, operating Mosaik
@@ -197,5 +200,4 @@ docs/             Architecture, building apps, operating Mosaik
 
 ## License
 
-MIT: see [LICENSE](LICENSE). `@mosaik/mosaik-ui` started from Park UI and draws icons from Lucide; their
-notices are in [its LICENSE](packages/mosaik-ui/LICENSE).
+MIT: see [LICENSE](LICENSE).

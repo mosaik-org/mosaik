@@ -12,16 +12,16 @@ const styles = css({
   "& ul": { listStyleType: "disc" },
   "& ol": { listStyleType: "decimal" },
   "& h1, & h2, & h3": { fontWeight: "semibold" },
-  "& a": { color: "accent.plain.fg", textDecoration: "underline", textUnderlineOffset: "2px" },
+  "& a": { color: "accent.fg", textDecoration: "underline", textUnderlineOffset: "2px" },
   // Links to pages of Mosaik: chips, apart from links leaving it.
   "& a[data-place]": {
     px: "2",
     borderRadius: "full",
-    bg: "gray.subtle.bg",
-    color: "fg.default",
+    bg: "gray.subtle",
+    color: "fg",
     textDecoration: "none",
     whiteSpace: "nowrap",
-    _hover: { bg: "gray.subtle.bg.hover" },
+    _hover: { bg: "gray.subtle.hover" },
   },
   "& code": { fontFamily: "mono", fontSize: "0.85em", bg: "gray.3", px: "1", py: "0.5", borderRadius: "l1" },
   "& [data-code]": { position: "relative" },
@@ -35,11 +35,11 @@ const styles = css({
     py: "0.5",
     borderRadius: "l1",
     borderWidth: "1px",
-    bg: "gray.surface.bg",
+    bg: "bg.panel",
     fontSize: "xs",
     color: "fg.muted",
     cursor: "pointer",
-    _hover: { color: "fg.default" },
+    _hover: { color: "fg" },
   },
   // Wide tables scroll on their own instead of widening the reply.
   "& table": {
@@ -54,9 +54,9 @@ const styles = css({
     fontSize: "xs",
   },
   "& th, & td": { px: "3", py: "1.5", textAlign: "start", borderBottomWidth: "1px", verticalAlign: "top" },
-  "& th": { bg: "gray.a3", fontWeight: "semibold", color: "fg.muted", whiteSpace: "nowrap" },
+  "& th": { bg: "gray.3", fontWeight: "semibold", color: "fg.muted", whiteSpace: "nowrap" },
   "& tr:last-child td": { borderBottomWidth: "0" },
-  "& tbody tr:nth-child(even) td": { bg: "gray.a2" },
+  "& tbody tr:nth-child(even) td": { bg: "gray.2" },
 })
 
 const sizes = { sm: css({ fontSize: "sm" }), md: css({ fontSize: "md" }) }

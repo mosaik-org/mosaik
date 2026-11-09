@@ -1,9 +1,9 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { formatRelativeTime } from "@mosaik/client"
 import type { AppTab } from "@mosaik/console"
-import { Button, Card, Stat } from "@mosaik/mosaik-ui"
 import type { AppAbout } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Card, Stat } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { queryOptions, useQuery } from "@tanstack/solid-query"
 import { createSignal, Show } from "solid-js"
@@ -51,9 +51,21 @@ const InThePortal = (props: { readonly about: AppAbout }) => {
             {(stats) => (
               <div class={styles.column}>
                 <div class={styles.stats}>
-                  <Stat label="This month" value={stats().activeUsers} hint="people" />
-                  <Stat label="Ever" value={stats().users} hint="people" />
-                  <Stat label="Opened" value={stats().opens} hint="times" />
+                  <Stat.Root>
+                    <Stat.Label>This month</Stat.Label>
+                    <Stat.Value>{stats().activeUsers}</Stat.Value>
+                    <Stat.Help>people</Stat.Help>
+                  </Stat.Root>
+                  <Stat.Root>
+                    <Stat.Label>Ever</Stat.Label>
+                    <Stat.Value>{stats().users}</Stat.Value>
+                    <Stat.Help>people</Stat.Help>
+                  </Stat.Root>
+                  <Stat.Root>
+                    <Stat.Label>Opened</Stat.Label>
+                    <Stat.Value>{stats().opens}</Stat.Value>
+                    <Stat.Help>times</Stat.Help>
+                  </Stat.Root>
                 </div>
                 <Show when={stats().lastOpenedAt}>
                   {(at) => <span class={styles.muted}>Last opened {formatRelativeTime(at())}.</span>}

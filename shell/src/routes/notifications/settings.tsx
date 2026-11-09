@@ -2,9 +2,9 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions, usePrincipal } from "@mosaik/auth/web"
 import type { PersonalChannel } from "@mosaik/core"
 import { PageTitle } from "@mosaik/frame"
-import { Card, EmptyState, SwitchField } from "@mosaik/mosaik-ui"
 import type { NotificationTypeSettings } from "@mosaik/notifications/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Card, EmptyState, SwitchField } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute, redirect } from "@tanstack/solid-router"
@@ -84,7 +84,14 @@ function SettingsPage() {
               fallback={
                 <Card.Root>
                   <Card.Body gap="4">
-                    <EmptyState icon={<BellOff size={24} />} title="No app sends notifications yet" />
+                    <EmptyState.Root>
+                      <EmptyState.Indicator>
+                        <BellOff />
+                      </EmptyState.Indicator>
+                      <EmptyState.Content>
+                        <EmptyState.Title>No app sends notifications yet</EmptyState.Title>
+                      </EmptyState.Content>
+                    </EmptyState.Root>
                   </Card.Body>
                 </Card.Root>
               }

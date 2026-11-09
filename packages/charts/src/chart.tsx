@@ -1,6 +1,6 @@
 import { onPageThemeChange, type PageTheme, pageTheme } from "@mosaik/client"
-import { Spinner } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { Spinner } from "@mosaik/ui"
 import { type EChartsCoreOption, type EChartsType, init } from "echarts/core"
 import { createEffect, createSignal, mergeProps, on, onCleanup, onMount, Show } from "solid-js"
 import "./setup"
@@ -15,7 +15,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    bg: "gray.surface.bg/60",
+    bg: "bg.panel/60",
     color: "fg.muted",
     animation: "fade-in 150ms ease-out",
   }),

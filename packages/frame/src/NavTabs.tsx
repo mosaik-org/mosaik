@@ -25,10 +25,10 @@ const tab = css({
   color: "fg.muted",
   whiteSpace: "nowrap",
   transition: "color 0.15s",
-  _hover: { color: "fg.default" },
-  _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px", borderRadius: "sm" },
+  _hover: { color: "fg" },
+  _focusVisible: { outline: "2px solid", outlineColor: "accent.solid", outlineOffset: "-2px", borderRadius: "sm" },
   "&[data-status=active]": {
-    color: "fg.default",
+    color: "fg",
     _after: {
       content: '""',
       position: "absolute",
@@ -36,7 +36,7 @@ const tab = css({
       bottom: "-1px",
       height: "2px",
       borderRadius: "full",
-      bg: "fg.default",
+      bg: "fg",
     },
   },
 })

@@ -1,8 +1,8 @@
 import { errorMessage, formatRelativeTime, toast } from "@mosaik/client"
 import { fromSettingDeclaration, settingProblem } from "@mosaik/core"
-import { Button, Card } from "@mosaik/mosaik-ui"
 import type { AppSettingState, AppSettings, AppSettingsChange } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Card } from "@mosaik/ui"
 import { QueryBoundary, SettingField } from "@mosaik/web-kit"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createMemo, createSignal, For, Show } from "solid-js"
@@ -24,7 +24,7 @@ const styles = {
   stack: css({ display: "flex", flexDirection: "column", gap: "5" }),
   setting: css({ display: "flex", flexDirection: "column", gap: "1.5" }),
   meta: css({ display: "flex", alignItems: "center", gap: "2", fontSize: "xs", color: "fg.muted", minH: "6" }),
-  outdated: css({ fontSize: "xs", color: "warning.plain.fg" }),
+  outdated: css({ fontSize: "xs", color: "warning.fg" }),
   footer: css({ display: "flex", justifyContent: "flex-end", gap: "2" }),
 }
 
@@ -108,7 +108,7 @@ const SettingsForm = (props: { user: string; app: string; appName: string; setti
                         <>
                           <span>{`Changed by ${state.changedBy} ${formatRelativeTime(at())}`}</span>
                           <Button
-                            variant="plain"
+                            variant="ghost"
                             size="xs"
                             disabled={save.isPending}
                             onClick={() => save.mutate({ [name]: null })}
@@ -127,7 +127,7 @@ const SettingsForm = (props: { user: string; app: string; appName: string; setti
       </Card.Body>
       <Card.Footer class={styles.footer}>
         <Show when={Object.keys(draft()).length > 0}>
-          <Button variant="plain" disabled={save.isPending} onClick={() => setDraft({})}>
+          <Button variant="ghost" disabled={save.isPending} onClick={() => setDraft({})}>
             Discard changes
           </Button>
         </Show>

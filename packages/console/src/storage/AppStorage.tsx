@@ -1,8 +1,8 @@
 import { usePrincipal } from "@mosaik/auth/web"
 import { errorMessage, formatBytes, formatNumber, toast } from "@mosaik/client"
-import { Button, Card, NumberField, Progress } from "@mosaik/mosaik-ui"
 import { AccessAdmin, type StorageUsage } from "@mosaik/platform/contract"
 import { css } from "@mosaik/styled-system/css"
+import { Button, Card, NumberField, Progress } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createSignal, Show } from "solid-js"
@@ -94,7 +94,7 @@ const StorageCard = (props: { user: string; app: string; appName: string; usage:
                 Save
               </Button>
               <Show when={!props.usage.defaultLimit}>
-                <Button variant="plain" disabled={save.isPending} onClick={() => save.mutate(null)}>
+                <Button variant="ghost" disabled={save.isPending} onClick={() => save.mutate(null)}>
                   Back to the default
                 </Button>
               </Show>

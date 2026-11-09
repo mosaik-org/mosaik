@@ -2,8 +2,8 @@ import { signInUrl } from "@mosaik/auth/contract"
 import { sessionQueryOptions } from "@mosaik/auth/web"
 import { createListNavigation, searchValidator } from "@mosaik/client/solid"
 import { type Command, FRAME_TOP, PageTitle, useCommands } from "@mosaik/frame"
-import { ActionMenu, Button, EmptyState, IconButton, SelectField, Spinner, Tabs } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { ActionMenu, Button, createListCollection, EmptyState, IconButton, Select, Spinner, Tabs } from "@mosaik/ui"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { createFileRoute, redirect } from "@tanstack/solid-router"
 import { Schema } from "effect"
@@ -13,6 +13,7 @@ import CheckCheck from "lucide-solid/icons/check-check"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import Settings from "lucide-solid/icons/settings"
 import { createEffect, createMemo, For, on, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { sourceName } from "../../apps"
 import { useInboxActions } from "../../notifications/actions"
 import { viewQuery } from "../../notifications/api"
@@ -147,17 +148,19 @@ function NotificationsPage() {
   const countOf = (of: InboxView) =>
     of === "todo" ? counts()?.actions : of === "updates" ? counts()?.information : undefined
 
-  const appFilter = () => {
+  const appFilter = createMemo(() => {
     const sources = firstPage()?.sources ?? []
     const chosen = source()
     // The app chosen stays a choice when nothing of it is left.
     const listed = chosen === undefined || sources.some((count) => count.source === chosen)
-    return [
-      { value: ALL_APPS, label: "All apps" },
-      ...sources.map((count) => ({ value: count.source, label: `${sourceName(count.source)} (${count.count})` })),
-      ...(listed || chosen === undefined ? [] : [{ value: chosen, label: sourceName(chosen) }]),
-    ]
-  }
+    return createListCollection({
+      items: [
+        { value: ALL_APPS, label: "All apps" },
+        ...sources.map((count) => ({ value: count.source, label: `${sourceName(count.source)} (${count.count})` })),
+        ...(listed || chosen === undefined ? [] : [{ value: chosen, label: sourceName(chosen) }]),
+      ],
+    })
+  })
 
   /** On what is marked if anything is, otherwise on where the person is. */
   const onTargets = (use: (targets: ReturnType<typeof list.targets>) => void) => () => {
@@ -273,6 +276,7 @@ function NotificationsPage() {
           class={styles.tabs}
           size="sm"
           variant="subtle"
+          colorPalette="gray"
           value={view()}
           onValueChange={(details) => showView(details.value as InboxView)}
         >
@@ -290,21 +294,42 @@ function NotificationsPage() {
         </Tabs.Root>
 
         <div class={styles.toolbar}>
-          <SelectField
+          <Select.Root
             class={styles.filter}
             size="sm"
-            aria-label="App"
-            items={appFilter()}
-            value={source() ?? ALL_APPS}
-            onValueChange={(value) =>
-              setSearch({ app: value === null || value === ALL_APPS ? undefined : value, item: undefined })
-            }
-          />
+            collection={appFilter()}
+            value={[source() ?? ALL_APPS]}
+            onValueChange={(details) => {
+              const value = details.value[0]
+              setSearch({ app: value === undefined || value === ALL_APPS ? undefined : value, item: undefined })
+            }}
+          >
+            <Select.Control>
+              <Select.Trigger aria-label="App">
+                <Select.ValueText />
+                <Select.Indicator />
+              </Select.Trigger>
+            </Select.Control>
+            <Portal>
+              <Select.Positioner>
+                <Select.Content>
+                  <For each={appFilter().items}>
+                    {(item) => (
+                      <Select.Item item={item}>
+                        <Select.ItemText>{item.label}</Select.ItemText>
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    )}
+                  </For>
+                </Select.Content>
+              </Select.Positioner>
+            </Portal>
+          </Select.Root>
           <span class={css({ flex: "1" })} />
           <Show when={view() === "updates" && items().length > 0}>
             <Button
               size="xs"
-              variant="plain"
+              variant="ghost"
               loading={actions.resolvingInformation()}
               onClick={() => actions.resolveInformation(source())}
             >
@@ -313,7 +338,7 @@ function NotificationsPage() {
           </Show>
           <ActionMenu
             trigger={(trigger) => (
-              <IconButton {...trigger()} size="xs" variant="plain" aria-label="More">
+              <IconButton {...trigger()} size="xs" variant="ghost" aria-label="More">
                 <Ellipsis size={16} />
               </IconButton>
             )}
@@ -350,22 +375,26 @@ function NotificationsPage() {
               actions={actions}
               arrivals={arrivals()}
               empty={
-                <EmptyState
-                  icon={<BellOff size={24} />}
-                  title={VIEWS[view()].empty.title}
-                  description={
-                    source() === undefined
-                      ? VIEWS[view()].empty.description
-                      : `Nothing here from ${sourceName(source() ?? "")}.`
-                  }
-                />
+                <EmptyState.Root>
+                  <EmptyState.Indicator>
+                    <BellOff />
+                  </EmptyState.Indicator>
+                  <EmptyState.Content>
+                    <EmptyState.Title>{VIEWS[view()].empty.title}</EmptyState.Title>
+                    <EmptyState.Description>
+                      {source() === undefined
+                        ? VIEWS[view()].empty.description
+                        : `Nothing here from ${sourceName(source() ?? "")}.`}
+                    </EmptyState.Description>
+                  </EmptyState.Content>
+                </EmptyState.Root>
               }
             />
             <Show when={inbox.hasNextPage}>
               <div class={styles.more}>
                 <Button
                   size="xs"
-                  variant="plain"
+                  variant="ghost"
                   loading={inbox.isFetchingNextPage}
                   onClick={() => void inbox.fetchNextPage()}
                 >
@@ -386,7 +415,12 @@ function NotificationsPage() {
           fallback={
             <div class={styles.nothingOpen}>
               <Show when={items().length > 0}>
-                <EmptyState title="Choose an item" description="What it says and what happened to it show here." />
+                <EmptyState.Root>
+                  <EmptyState.Content>
+                    <EmptyState.Title>Choose an item</EmptyState.Title>
+                    <EmptyState.Description>What it says and what happened to it show here.</EmptyState.Description>
+                  </EmptyState.Content>
+                </EmptyState.Root>
               </Show>
             </div>
           }

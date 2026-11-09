@@ -1,11 +1,12 @@
 import { type DateInput, formatDateTime, formatRelativeTime } from "@mosaik/client"
 import { useNow } from "@mosaik/client/solid"
 import { isFresh } from "@mosaik/core"
-import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
+import { IconButton, Tooltip } from "@mosaik/ui"
 import { DateTime, type Duration } from "effect"
 import RefreshCw from "lucide-solid/icons/refresh-cw"
 import { createMemo, type JSX, Show } from "solid-js"
+import { Portal } from "solid-js/web"
 import { freshnessState } from "./freshness-state"
 
 export interface FreshnessProps {
@@ -28,10 +29,10 @@ const dot = cva({
   base: { width: "2", height: "2", borderRadius: "full", flexShrink: "0" },
   variants: {
     state: {
-      fresh: { bg: "success.solid.bg" },
-      aging: { bg: "warning.solid.bg" },
-      stale: { bg: "danger.solid.bg" },
-      unknown: { bg: "fg.subtle" },
+      fresh: { bg: "success.solid" },
+      aging: { bg: "warning.solid" },
+      stale: { bg: "danger.solid" },
+      unknown: { bg: "fg.muted" },
     },
     live: { true: { animation: "fade-in 1s ease-in-out infinite alternate" } },
   },
@@ -82,13 +83,24 @@ export const Freshness = (props: FreshnessProps) => {
   return (
     <div class={styles.root} data-state={state()}>
       <span class={dot({ state: props.live ? "fresh" : state(), live: props.live ?? false })} aria-hidden="true" />
-      <Tooltip content={details()}>
-        <span class={styles.label}>{label()}</span>
-      </Tooltip>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          asChild={(trigger) => (
+            <span class={styles.label} {...trigger()}>
+              {label()}
+            </span>
+          )}
+        />
+        <Portal>
+          <Tooltip.Positioner>
+            <Tooltip.Content>{details()}</Tooltip.Content>
+          </Tooltip.Positioner>
+        </Portal>
+      </Tooltip.Root>
       <Show when={props.onRefresh}>
         {(refresh) => (
           <IconButton
-            variant="plain"
+            variant="ghost"
             aria-label="Refresh"
             size="xs"
             disabled={props.fetching}

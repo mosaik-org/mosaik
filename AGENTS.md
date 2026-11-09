@@ -20,9 +20,9 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
   `packages/console`, which the shell mounts too), `services/` (Core: gateway, auth, notifications,
   platform; Portal: portal), `apps/` (the Portal's built-in apps), `examples/` (example apps, written like a team's app: they
   import only the SDK), `packages/` (`packages/sdk` and `packages/web-sdk` are the packages apps use, re-exporting the
-  internal packages; `packages/portal` is the Portal's package: its contract, the mount API and the mounted build; `packages/mosaik-ui` is a component
-  library that stands alone, importing nothing of Mosaik, to be moved to its own repository),
-  `tooling/`, `infra/`, `docs/`.
+  internal packages; `packages/portal` is the Portal's package: its contract, the mount API and the mounted build),
+  `tooling/`, `infra/`, `docs/`. The component library, `@mosaik/ui`, is a repository of its own,
+  checked out beside this one (`../mosaik-ui`); the workspaces install its built package.
 - **New features for app teams** are shown in an example when that helps: examples are the code teams
   copy.
 - **Stack:** Bun and Effect 4 on the server; Solid, TanStack Router/Query/Table, Ark UI and Panda CSS in
@@ -37,6 +37,7 @@ for the part you touch, and [CONTRIBUTING.md](CONTRIBUTING.md) for the conventio
 | `bun dev` | run everything (needs `bun infra:up`); `--headless`: Core and standalone examples only |
 | `bun sdk:pack` | pack the SDK, after changing `packages/` that apps use |
 | `bun examples:verify` | build the examples against the packed SDK, after changing what `@mosaik/sdk` or `@mosaik/web-sdk` exports or packs |
+| `bun run build` in `../mosaik-ui`, then `bun install` | take a change to the component library |
 
 ## Working rules
 

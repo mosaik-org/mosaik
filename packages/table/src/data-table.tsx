@@ -1,5 +1,5 @@
-import { Skeleton, Table } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
+import { Skeleton, Table } from "@mosaik/ui"
 import {
   createTable,
   functionalUpdate,
@@ -22,7 +22,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     minW: "0",
-    bg: "gray.surface.bg",
+    bg: "bg.panel",
     borderWidth: "1px",
     borderColor: "border",
     borderRadius: "l3",
@@ -37,14 +37,18 @@ const styles = {
   empty: css({ py: "10", textAlign: "center", color: "fg.muted" }),
 }
 
-/** What a row adds to mosaik-ui's: opening something when clicked or chosen with the keyboard. */
+/** What a row adds to @mosaik/ui's: opening something when clicked or chosen with the keyboard. */
 const rowRecipe = cva({
   variants: {
     clickable: {
       true: {
         cursor: "pointer",
         outline: "none",
-        _focusVisible: { bg: "gray.subtle.bg", boxShadow: "inset 2px 0 0 {colors.accent.solid.bg}" },
+        // On the cells, as the hover's shade is: a row's own would show under theirs.
+        _focusVisible: {
+          "& > td": { bg: "bg.muted" },
+          "& > td:first-child": { boxShadow: "inset 2px 0 0 {colors.accent.solid}" },
+        },
       },
     },
   },
@@ -146,7 +150,7 @@ export function DataTable<TData extends RowData>(props: DataTableProps<TData>) {
   return (
     <div class={styles.root}>
       <div class={styles.scroller}>
-        <Table.Root size={props.size}>
+        <Table.Root size={props.size} interactive={Boolean(props.onRowClick)}>
           <Table.Head>
             <For each={table.getHeaderGroups()}>
               {(headerGroup) => (

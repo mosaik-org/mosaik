@@ -1,14 +1,14 @@
 import { type AuditRecord, admin } from "@mosaik/auth/contract"
 import { formatDateTime } from "@mosaik/client"
 import { searchValidator } from "@mosaik/client/solid"
-import { Badge, Button, SelectField } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
 import { createColumnHelper, DataTable } from "@mosaik/table"
+import { Badge, Button, createListCollection, Select } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useInfiniteQuery, useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Schema } from "effect"
-import { Show } from "solid-js"
+import { createMemo, For, Show } from "solid-js"
 import { auditQuery, catalogQuery } from "../../admin/queries"
 
 const AuditSearch = Schema.Struct({ app: Schema.optional(Schema.String) })
@@ -64,24 +64,48 @@ function Audit() {
   const catalog = useQuery(catalogQuery)
   const audit = useInfiniteQuery(() => auditQuery(search().app))
 
-  const filters = () => [
-    { value: "all", label: "All apps" },
-    ...(catalog.data ?? []).map((d) => ({ value: d.id, label: d.name })),
-  ]
+  const filters = createMemo(() =>
+    createListCollection({
+      items: [
+        { value: "all", label: "All apps" },
+        ...(catalog.data ?? []).map((d) => ({ value: d.id, label: d.name })),
+      ],
+    }),
+  )
   const entries = () => audit.data?.pages.flatMap((page) => page.entries) ?? []
 
   return (
     <div class={css({ display: "flex", flexDirection: "column", gap: "4" })}>
-      <SelectField
-        aria-label="App"
-        items={filters()}
-        value={search().app ?? "all"}
-        onValueChange={(value) =>
-          void navigate({ search: { app: value === "all" ? undefined : (value ?? undefined) } })
-        }
+      <Select.Root
+        collection={filters()}
+        value={[search().app ?? "all"]}
+        onValueChange={(details) => {
+          const app = details.value[0]
+          void navigate({ search: { app: app === "all" ? undefined : app } })
+        }}
         size="sm"
         class={css({ width: "56" })}
-      />
+      >
+        <Select.Label class={css({ srOnly: true })}>App</Select.Label>
+        <Select.Control>
+          <Select.Trigger>
+            <Select.ValueText />
+            <Select.Indicator />
+          </Select.Trigger>
+        </Select.Control>
+        <Select.Positioner>
+          <Select.Content>
+            <For each={filters().items}>
+              {(filter) => (
+                <Select.Item item={filter}>
+                  <Select.ItemText>{filter.label}</Select.ItemText>
+                  <Select.ItemIndicator />
+                </Select.Item>
+              )}
+            </For>
+          </Select.Content>
+        </Select.Positioner>
+      </Select.Root>
       <QueryBoundary query={audit}>
         {() => (
           <>

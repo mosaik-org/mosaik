@@ -1,10 +1,11 @@
-import { Card, SelectField, Stat } from "@mosaik/mosaik-ui"
 import { formatCompactCurrency, formatCurrency, formatNumber, formatPercent } from "@mosaik/sdk/client"
 import { useSearchParams } from "@mosaik/sdk/router"
+import { Card, SelectField, Skeleton, Stat } from "@mosaik/ui"
 import { Chart, donutChartOption, lineChartOption } from "@mosaik/web-sdk/charts"
 import { css } from "@mosaik/web-sdk/css"
 import { QueryBoundary, QueryFreshness } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
+import { Index } from "solid-js"
 import { SUMMARY_DEFAULTS, SummarySearch } from "../../api"
 import { summaryQuery } from "../queries"
 
@@ -35,30 +36,36 @@ export default function Overview() {
       <div class={styles.toolbar}>
         <QueryFreshness query={summary} staleAfter="5 minutes" />
         <SelectField
-          items={RANGES}
+          options={RANGES}
           value={String(days())}
           onValueChange={(value) => setSearch(() => ({ days: Number(value) }))}
           class={css({ width: "44" })}
         />
       </div>
 
-      <div class={styles.stats}>
-        <Stat
-          label="Revenue"
-          loading={summary.isPending}
-          value={formatCurrency(summary.data?.data.revenueCents ?? 0)}
-        />
-        <Stat label="Orders" loading={summary.isPending} value={formatNumber(summary.data?.data.orders ?? 0)} />
-        <Stat
-          label="Average order"
-          loading={summary.isPending}
-          value={formatCurrency(summary.data?.data.averageOrderCents ?? 0)}
-        />
-        <Stat
-          label="Refund rate"
-          loading={summary.isPending}
-          value={formatPercent(summary.data?.data.refundRate ?? 0)}
-        />
+      <div class={styles.stats} aria-busy={summary.isPending}>
+        <Index
+          each={[
+            { label: "Revenue", value: formatCurrency(summary.data?.data.revenueCents ?? 0) },
+            { label: "Orders", value: formatNumber(summary.data?.data.orders ?? 0) },
+            { label: "Average order", value: formatCurrency(summary.data?.data.averageOrderCents ?? 0) },
+            { label: "Refund rate", value: formatPercent(summary.data?.data.refundRate ?? 0) },
+          ]}
+        >
+          {(stat) => (
+            <Card.Root>
+              <Card.Body>
+                <Stat.Root>
+                  <Stat.Label>{stat().label}</Stat.Label>
+                  {/* Until the summary comes, a shape the size of a zero holds the number's place. */}
+                  <Skeleton loading={summary.isPending} alignSelf="flex-start">
+                    <Stat.Value>{stat().value}</Stat.Value>
+                  </Skeleton>
+                </Stat.Root>
+              </Card.Body>
+            </Card.Root>
+          )}
+        </Index>
       </div>
 
       <QueryBoundary query={summary}>

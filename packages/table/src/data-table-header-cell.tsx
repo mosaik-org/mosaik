@@ -1,5 +1,5 @@
-import { Table } from "@mosaik/mosaik-ui"
 import { cva } from "@mosaik/styled-system/css"
+import { Table } from "@mosaik/ui"
 import type { Header, RowData } from "@tanstack/solid-table"
 import ArrowDown from "lucide-solid/icons/arrow-down"
 import ArrowUp from "lucide-solid/icons/arrow-up"
@@ -8,15 +8,15 @@ import { type JSX, Match, Show, Switch } from "solid-js"
 import type { DataTableFeatures } from "./features"
 
 /**
- * Where a column's content sits, for its header and its cells, which are mosaik-ui's `Table` parts
- * (rows, lines, hover, padding and the header's type are the library's). Body cells are in the
- * text's own colour: in a data table the data is what is read.
+ * Where a column's content sits, for its header and its cells, which are @mosaik/ui's `Table` parts
+ * (rows, lines, hover, padding and the header's type are the library's).
  */
 export const cellRecipe = cva({
   variants: {
     kind: {
       header: {},
-      body: { color: "fg.default" },
+      // One line per row, so rows keep one height; a wide table scrolls sideways instead.
+      body: { whiteSpace: "nowrap" },
     },
     align: {
       left: { textAlign: "start" },
@@ -43,8 +43,8 @@ const sortButton = cva({
     borderRadius: "sm",
     cursor: "pointer",
     outline: "none",
-    _hover: { color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+    _hover: { color: "fg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid" },
     "& svg": { boxSize: "3.5", flexShrink: "0" },
   },
   variants: {
@@ -54,7 +54,7 @@ const sortButton = cva({
       right: { flexDirection: "row-reverse" },
     },
     sorted: {
-      true: { color: "fg.default" },
+      true: { color: "fg" },
       false: { "& svg": { opacity: "0.5" } },
     },
   },

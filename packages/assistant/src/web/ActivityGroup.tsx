@@ -1,5 +1,5 @@
-import { Spinner } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
+import { Spinner } from "@mosaik/ui"
 import Ban from "lucide-solid/icons/ban"
 import ChevronRight from "lucide-solid/icons/chevron-right"
 import CircleCheck from "lucide-solid/icons/circle-check"
@@ -22,14 +22,14 @@ const styles = {
     ml: "-2",
     borderRadius: "l2",
     cursor: "pointer",
-    _hover: { bg: "gray.subtle.bg", color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg" },
+    _hover: { bg: "gray.subtle", color: "fg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid" },
   }),
   chevron: css({ transition: "transform 0.15s", "[aria-expanded=true] > &": { transform: "rotate(90deg)" } }),
   list: css({ display: "flex", flexDirection: "column", gap: "1", pl: "2", ml: "1", borderLeftWidth: "2px" }),
   row: css({ display: "flex", alignItems: "flex-start", gap: "1.5", py: "0.5" }),
   app: css({ color: "fg.muted" }),
-  reason: css({ color: "danger.plain.fg", overflowWrap: "anywhere" }),
+  reason: css({ color: "danger.fg", overflowWrap: "anywhere" }),
 }
 
 const StatusIcon = (props: { readonly status: CallStatus }) => (
@@ -41,13 +41,13 @@ const StatusIcon = (props: { readonly status: CallStatus }) => (
       <Clock size={14} />
     </Match>
     <Match when={props.status.state === "done"}>
-      <CircleCheck size={14} class={css({ color: "success.plain.fg" })} />
+      <CircleCheck size={14} class={css({ color: "success.fg" })} />
     </Match>
     <Match when={props.status.state === "denied"}>
       <Ban size={14} />
     </Match>
     <Match when={props.status.state === "failed"}>
-      <CircleAlert size={14} class={css({ color: "danger.plain.fg" })} />
+      <CircleAlert size={14} class={css({ color: "danger.fg" })} />
     </Match>
   </Switch>
 )

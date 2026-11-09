@@ -1,3 +1,4 @@
+import { createForm, useAction } from "@mosaik/sdk/solid"
 import {
   ActionMenu,
   Button,
@@ -8,8 +9,7 @@ import {
   Table,
   TextareaField,
   TextField,
-} from "@mosaik/mosaik-ui"
-import { createForm, useAction } from "@mosaik/sdk/solid"
+} from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { QueryBoundary } from "@mosaik/web-sdk/ui"
 import { useQuery } from "@tanstack/solid-query"
@@ -27,8 +27,9 @@ const styles = {
   head: css({ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4" }),
   lead: css({ fontSize: "sm", color: "fg.muted" }),
   form: css({ display: "flex", flexDirection: "column", gap: "4" }),
-  name: css({ fontWeight: "medium", color: "fg.default" }),
+  name: css({ fontWeight: "medium", color: "fg" }),
   clip: css({ maxW: "md", truncate: true }),
+  actions: css({ width: "12", textAlign: "end" }),
 }
 
 const SavedReplyDialog = (props: { reply: SavedReply | undefined; onClose: () => void }) => {
@@ -46,11 +47,13 @@ const SavedReplyDialog = (props: { reply: SavedReply | undefined; onClose: () =>
   return (
     <Modal
       open
-      onOpenChange={(open) => !open && props.onClose()}
+      onOpenChange={(details) => {
+        if (!details.open) props.onClose()
+      }}
       title={props.reply === undefined ? "New saved reply" : "Edit saved reply"}
       footer={
         <>
-          <Button variant="outline" colorPalette="gray" onClick={props.onClose}>
+          <Button variant="outline" onClick={props.onClose}>
             Cancel
           </Button>
           <Button type="submit" form="desk-saved-reply" loading={form.submitting()}>
@@ -87,12 +90,18 @@ export const SavedReplies = () => {
           <Show
             when={list().length > 0}
             fallback={
-              <EmptyState
-                icon={<MessageSquareText />}
-                title="No saved replies yet"
-                description="Add the answers your team gives most often."
-                action={<Button onClick={() => setEditing(null)}>New saved reply</Button>}
-              />
+              <EmptyState.Root>
+                <EmptyState.Indicator>
+                  <MessageSquareText />
+                </EmptyState.Indicator>
+                <EmptyState.Content>
+                  <EmptyState.Title>No saved replies yet</EmptyState.Title>
+                  <EmptyState.Description>Add the answers your team gives most often.</EmptyState.Description>
+                </EmptyState.Content>
+                <EmptyState.Actions>
+                  <Button onClick={() => setEditing(null)}>New saved reply</Button>
+                </EmptyState.Actions>
+              </EmptyState.Root>
             }
           >
             <Table.Root>
@@ -100,7 +109,7 @@ export const SavedReplies = () => {
                 <Table.Row>
                   <Table.Header>Name</Table.Header>
                   <Table.Header>Text</Table.Header>
-                  <Table.Header w="12" />
+                  <Table.Header class={styles.actions} />
                 </Table.Row>
               </Table.Head>
               <Table.Body>
@@ -111,13 +120,13 @@ export const SavedReplies = () => {
                       <Table.Cell>
                         <div class={styles.clip}>{reply.body}</div>
                       </Table.Cell>
-                      <Table.Cell textAlign="end">
+                      <Table.Cell class={styles.actions}>
                         <ActionMenu
                           trigger={(trigger) => (
                             <IconButton
                               {...trigger()}
                               size="xs"
-                              variant="plain"
+                              variant="ghost"
                               aria-label={`Actions for ${reply.title}`}
                             >
                               <Ellipsis />
@@ -148,14 +157,15 @@ export const SavedReplies = () => {
       </Show>
       <ConfirmDialog
         open={removing() !== undefined}
-        onOpenChange={(open) => !open && setRemoving(undefined)}
+        onOpenChange={(details) => {
+          if (!details.open) setRemoving(undefined)
+        }}
         title={`Remove "${removing()?.title}"?`}
-        description="This can't be undone."
+        message="This can't be undone."
         confirmLabel="Remove"
         tone="danger"
         onConfirm={() => {
           const reply = removing()
-          setRemoving(undefined)
           if (reply !== undefined) void remove.run({ params: { id: reply.id } })
         }}
       />

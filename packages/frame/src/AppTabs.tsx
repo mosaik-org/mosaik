@@ -1,11 +1,10 @@
 import { usePageStatuses } from "@mosaik/client/solid"
-import { ActionMenu } from "@mosaik/mosaik-ui"
 import { css } from "@mosaik/styled-system/css"
-import { Link, useNavigate } from "@tanstack/solid-router"
-import Check from "lucide-solid/icons/check"
+import { Link } from "@tanstack/solid-router"
 import ChevronDown from "lucide-solid/icons/chevron-down"
 import { createEffect, createSignal, For, type JSX, on, onCleanup, onMount, Show } from "solid-js"
 import type { NavTabItem } from "./NavTabs"
+import { PagesMenu } from "./PagesMenu"
 import { StatusMark } from "./StatusMark"
 import { statusesAt, summarize } from "./statusSummary"
 import { tabsThatFit } from "./tabsThatFit"
@@ -34,11 +33,11 @@ const styles = {
     whiteSpace: "nowrap",
     cursor: "pointer",
     transition: "color 0.15s",
-    _hover: { color: "fg.default" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-4px", borderRadius: "l2" },
+    _hover: { color: "fg" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid", outlineOffset: "-4px", borderRadius: "l2" },
     // The open page: underlined along the bar's bottom edge.
     "&[data-active=true]": {
-      color: "fg.default",
+      color: "fg",
       fontWeight: "medium",
       _after: {
         content: '""',
@@ -47,7 +46,7 @@ const styles = {
         bottom: "-1px",
         height: "2px",
         borderRadius: "full",
-        bg: "fg.default",
+        bg: "fg",
       },
     },
   }),
@@ -66,7 +65,6 @@ export const AppTabs = (props: {
   /** The app's own address: what is there is the app's, shown beside it in the sidebar, not on a tab. */
   readonly home: string
 }): JSX.Element => {
-  const navigate = useNavigate()
   const statuses = usePageStatuses()
   const markOf = (link: NavTabItem) =>
     summarize(link.to === props.home ? [] : statusesAt(statuses(), link.to, { below: false }))
@@ -117,19 +115,15 @@ export const AppTabs = (props: {
           )}
         </For>
         <Show when={hidden().length > 0}>
-          <ActionMenu
+          <PagesMenu
             trigger={(trigger) => (
               // After the trigger's own props: it looks like the tabs, not like the menu's button.
               <button type="button" {...trigger()} class={styles.tab} data-active={hidden().some(isOpen)}>
                 More <ChevronDown size={14} />
               </button>
             )}
-            items={hidden().map((link) => ({
-              value: link.to,
-              label: link.label,
-              ...(isOpen(link) ? { icon: <Check size={14} /> } : {}),
-              onSelect: () => void navigate({ href: link.to }),
-            }))}
+            links={hidden()}
+            current={props.current}
           />
         </Show>
       </div>

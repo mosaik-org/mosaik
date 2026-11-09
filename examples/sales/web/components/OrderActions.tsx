@@ -1,6 +1,7 @@
-import { ActionMenu, ConfirmDialog, IconButton, TextField } from "@mosaik/mosaik-ui"
 import { formatCurrency } from "@mosaik/sdk/client"
 import { createForm, useAction, useCan } from "@mosaik/sdk/solid"
+import { ActionMenu, Button, Dialog, IconButton, Modal, TextField } from "@mosaik/ui"
+import { css } from "@mosaik/web-sdk/css"
 import { useQuery } from "@tanstack/solid-query"
 import Ellipsis from "lucide-solid/icons/ellipsis"
 import { createSignal, Show } from "solid-js"
@@ -9,6 +10,11 @@ import { sales } from "../../manifest"
 import { optionsQuery, salesApi } from "../queries"
 import { AttachmentsDialog } from "./Attachments"
 import { statusLabel } from "./StatusBadge"
+
+const styles = {
+  form: css({ display: "flex", flexDirection: "column", gap: "3" }),
+  error: css({ textStyle: "sm", color: "danger.fg" }),
+}
 
 /** Row actions for an order: its attachments for everyone, and what else the principal may do. */
 export const OrderActions = (props: { order: Order }) => {
@@ -19,6 +25,8 @@ export const OrderActions = (props: { order: Order }) => {
   const [refunding, setRefunding] = createSignal(false)
   const [attaching, setAttaching] = createSignal(false)
   const order = () => ({ params: { id: props.order.id } })
+  // Its own per row, as the footer's button submits the form from outside it.
+  const formId = () => `sales-refund-${props.order.id}`
 
   // Both change what the orders list and the summary show: refetch everything of the app.
   const setStatus = useAction(salesApi.orders.setStatus, {
@@ -67,29 +75,49 @@ export const OrderActions = (props: { order: Order }) => {
     <Show when={items().length > 0}>
       <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton variant="plain" aria-label={`Actions for ${props.order.number}`} size="2xs" {...triggerProps()}>
+          <IconButton variant="ghost" aria-label={`Actions for ${props.order.number}`} size="xs" {...triggerProps()}>
             <Ellipsis size={16} />
           </IconButton>
         )}
         items={items()}
       />
       <AttachmentsDialog order={props.order} open={attaching()} onOpenChange={setAttaching} />
-      <ConfirmDialog
+      {/* A confirmation that asks for a reason: a dialog with a form, as `ConfirmDialog` holds no fields. */}
+      <Modal
+        size="sm"
         open={refunding()}
-        onOpenChange={(open) => {
-          setRefunding(open)
-          if (!open) form.reset()
+        onOpenChange={(details) => {
+          setRefunding(details.open)
+          if (!details.open) form.reset()
         }}
         title={`Refund ${props.order.number}?`}
         description={`${formatCurrency(props.order.amountCents)} will be returned to ${props.order.customer}. This cannot be undone.`}
-        confirmLabel="Refund"
-        tone="danger"
-        loading={form.submitting()}
-        onConfirm={() => void form.submit()}
+        footer={
+          <>
+            <Dialog.CloseTrigger
+              asChild={(close) => (
+                <Button variant="outline" disabled={form.submitting()} {...close()}>
+                  Cancel
+                </Button>
+              )}
+            />
+            <Button type="submit" form={formId()} colorPalette="danger" loading={form.submitting()}>
+              Refund
+            </Button>
+          </>
+        }
       >
-        <TextField label="Reason" required placeholder="e.g. Damaged on arrival" {...form.field("reason")} />
-        <Show when={form.error()}>{(error) => <p role="alert">{error()}</p>}</Show>
-      </ConfirmDialog>
+        <form id={formId()} noValidate class={styles.form} onSubmit={form.submit}>
+          <TextField label="Reason" required placeholder="e.g. Damaged on arrival" {...form.field("reason")} />
+          <Show when={form.error()}>
+            {(error) => (
+              <p role="alert" class={styles.error}>
+                {error()}
+              </p>
+            )}
+          </Show>
+        </form>
+      </Modal>
     </Show>
   )
 }

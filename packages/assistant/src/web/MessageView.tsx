@@ -1,9 +1,10 @@
 import { formatDateTime } from "@mosaik/client"
-import { IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { IconButton, Tooltip } from "@mosaik/ui"
 import Check from "lucide-solid/icons/check"
 import Copy from "lucide-solid/icons/copy"
 import { createMemo, createSignal, Index, type JSX, Match, Show, Switch } from "solid-js"
+import { Portal } from "solid-js/web"
 import type { Message, ToolCallPart } from "../contract"
 import { ActivityGroup } from "./ActivityGroup"
 import { Markdown } from "./Markdown"
@@ -20,8 +21,8 @@ const styles = {
     py: "2",
     borderRadius: "l3",
     borderBottomRightRadius: "l1",
-    bg: "gray.subtle.bg",
-    color: "fg.default",
+    bg: "gray.subtle",
+    color: "fg",
     whiteSpace: "pre-wrap",
     overflowWrap: "anywhere",
   }),
@@ -58,8 +59,8 @@ const CopyButton = (props: { readonly text: string }) => {
   }
   return (
     <IconButton
-      variant="plain"
-      size="2xs"
+      variant="ghost"
+      size="xs"
       aria-label={copied() ? "Copied" : "Copy the reply"}
       onClick={() => void copy()}
     >
@@ -116,11 +117,20 @@ export const Reply = (props: {
       <Show when={props.complete && last()}>
         {(message) => (
           <div class={styles.actions}>
-            <Tooltip content={formatDateTime(message().createdAt.epochMilliseconds)}>
-              <time dateTime={new Date(message().createdAt.epochMilliseconds).toISOString()}>
-                {time.format(message().createdAt.epochMilliseconds)}
-              </time>
-            </Tooltip>
+            <Tooltip.Root>
+              <Tooltip.Trigger
+                asChild={(trigger) => (
+                  <time dateTime={new Date(message().createdAt.epochMilliseconds).toISOString()} {...trigger()}>
+                    {time.format(message().createdAt.epochMilliseconds)}
+                  </time>
+                )}
+              />
+              <Portal>
+                <Tooltip.Positioner>
+                  <Tooltip.Content>{formatDateTime(message().createdAt.epochMilliseconds)}</Tooltip.Content>
+                </Tooltip.Positioner>
+              </Portal>
+            </Tooltip.Root>
             <Show when={text() !== ""}>
               <CopyButton text={text()} />
             </Show>

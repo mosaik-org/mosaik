@@ -1,4 +1,4 @@
-import { Button, Kbd, Tabs, Textarea } from "@mosaik/mosaik-ui"
+import { Button, Kbd, Tabs, Textarea } from "@mosaik/ui"
 import { css } from "@mosaik/web-sdk/css"
 import { useQuery } from "@tanstack/solid-query"
 import { createSignal, onMount, Show } from "solid-js"
@@ -142,7 +142,7 @@ export const Composer = (props: {
           to send
         </span>
         <Show when={props.asAgent && (saved.data?.length ?? 0) > 0}>
-          <Button size="sm" variant="plain" onClick={insertSaved}>
+          <Button size="sm" variant="ghost" onClick={insertSaved}>
             Saved replies
           </Button>
         </Show>

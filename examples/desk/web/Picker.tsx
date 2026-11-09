@@ -1,6 +1,15 @@
-import { Command, createListCollection } from "@mosaik/mosaik-ui"
+import { Command, Dialog } from "@mosaik/ui"
+import { css } from "@mosaik/web-sdk/css"
 import { createMemo, createSignal, For, type JSX, onMount, Show } from "solid-js"
 import { Portal } from "solid-js/web"
+
+const styles = {
+  // As in a command palette: the search field and the list are the whole box.
+  content: css({ py: "0", gap: "0", overflow: "hidden" }),
+  text: css({ display: "flex", flexDirection: "column", flex: "1", minW: "0", py: "1" }),
+  description: css({ textStyle: "xs", color: "fg.muted", truncate: true }),
+  current: css({ flexShrink: "0", textStyle: "xs", color: "fg.muted" }),
+}
 
 export interface PickerItem {
   readonly value: string
@@ -26,6 +35,9 @@ export interface PickerControl {
 /**
  * Choosing one thing by typing a few letters of it, the same way from a key and from a click: assign,
  * status, priority, queue, a saved reply. Closing gives focus back to what opened it.
+ *
+ * A command list in a dialog of its own rather than in `Command.Dialog`, which cannot be told where
+ * focus goes back to.
  */
 export const Picker = (props: { ref: (control: PickerControl) => void }) => {
   const [request, setRequest] = createSignal<PickerRequest>()
@@ -49,15 +61,16 @@ export const Picker = (props: { ref: (control: PickerControl) => void }) => {
     return term === "" ? all : all.filter((item) => item.label.toLowerCase().includes(term))
   })
   const collection = createMemo(() =>
-    createListCollection({
+    Command.createListCollection<PickerItem>({
       items: items(),
-      itemToValue: (item: PickerItem) => item.value,
-      itemToString: (item: PickerItem) => item.label,
+      itemToValue: (item) => item.value,
+      itemToString: (item) => item.label,
     }),
   )
 
   return (
-    <Command.Dialog
+    <Dialog.Root
+      placement="top"
       open={request() !== undefined}
       finalFocusEl={() => (returnTo?.isConnected === true ? returnTo : null)}
       onOpenChange={(details) => {
@@ -65,51 +78,51 @@ export const Picker = (props: { ref: (control: PickerControl) => void }) => {
       }}
     >
       <Portal>
-        <Command.DialogBackdrop />
-        <Command.DialogContent title={request()?.title}>
-          <Show when={request()} keyed>
-            {(current) => (
-              <Command.Root
-                collection={collection()}
-                defaultHighlightedValue={current.current ?? collection().firstValue}
-                inputValue={query()}
-                onInputValueChange={(details) => setQuery(details.inputValue)}
-                onSelect={(details) => {
-                  setRequest(undefined)
-                  // Choosing what it already is changes nothing, so nothing should say it did.
-                  if (details.itemValue !== current.current) current.onPick(details.itemValue)
-                }}
-              >
-                <Command.Control>
-                  <Command.Indicator />
-                  <Command.Input placeholder={current.placeholder} autocomplete="off" spellcheck={false} />
-                </Command.Control>
-                <Command.List>
-                  <Command.Empty>Nothing matches</Command.Empty>
-                  <For each={items()}>
-                    {(item) => (
-                      <Command.Item item={item}>
-                        <Show when={item.icon}>
-                          <Command.ItemIcon>{item.icon}</Command.ItemIcon>
-                        </Show>
-                        <Command.ItemContent>
-                          <Command.ItemText>{item.label}</Command.ItemText>
-                          <Show when={item.description}>
-                            <Command.ItemDescription>{item.description}</Command.ItemDescription>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content class={styles.content} aria-label={request()?.title}>
+            <Show when={request()} keyed>
+              {(current) => (
+                <Command.Root
+                  collection={collection()}
+                  defaultHighlightedValue={current.current ?? collection().firstValue}
+                  onSelect={(details) => {
+                    setRequest(undefined)
+                    // Choosing what it already is changes nothing, so nothing should say it did.
+                    if (details.value !== current.current) current.onPick(details.value)
+                  }}
+                >
+                  <Command.Label>{current.title}</Command.Label>
+                  <Command.Input
+                    placeholder={current.placeholder}
+                    value={query()}
+                    onInput={(event) => setQuery(event.currentTarget.value)}
+                  />
+                  <Command.Content>
+                    <For each={items()}>
+                      {(item) => (
+                        <Command.Item item={item}>
+                          {item.icon}
+                          <span class={styles.text}>
+                            <Command.ItemText>{item.label}</Command.ItemText>
+                            <Show when={item.description}>
+                              <span class={styles.description}>{item.description}</span>
+                            </Show>
+                          </span>
+                          <Show when={item.value === current.current}>
+                            <span class={styles.current}>Current</span>
                           </Show>
-                        </Command.ItemContent>
-                        <Show when={item.value === current.current}>
-                          <Command.ItemCommand>Current</Command.ItemCommand>
-                        </Show>
-                      </Command.Item>
-                    )}
-                  </For>
-                </Command.List>
-              </Command.Root>
-            )}
-          </Show>
-        </Command.DialogContent>
+                        </Command.Item>
+                      )}
+                    </For>
+                  </Command.Content>
+                  <Command.Empty>Nothing matches</Command.Empty>
+                </Command.Root>
+              )}
+            </Show>
+          </Dialog.Content>
+        </Dialog.Positioner>
       </Portal>
-    </Command.Dialog>
+    </Dialog.Root>
   )
 }

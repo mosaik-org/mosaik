@@ -38,9 +38,8 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
-    "@pandacss/dev": "^2.2.0",
-    "@pandacss/preset-base": "^2.2.0",
-    "@pandacss/preset-panda": "^2.2.0"
+    "@pandacss/dev": "^2.5.0",
+    "@pandacss/preset-base": "^2.5.0"
   },
   "files": [
     "generated",
@@ -50,6 +49,6 @@
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
-    "@mosaik/mosaik-ui": "workspace:*"
+    "@mosaik/ui": "file:../../../mosaik-ui/dist/package"
   }
 }

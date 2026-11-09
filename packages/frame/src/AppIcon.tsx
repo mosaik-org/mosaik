@@ -67,7 +67,7 @@ export interface AppIconProps {
 
 // Its size whatever is beside it: long text in a row would otherwise squeeze it.
 const fixed = css({ flexShrink: "0" })
-const tinted = css({ color: "colorPalette.plain.fg" })
+const tinted = css({ color: "colorPalette.fg" })
 
 /** An app's icon by name (from its manifest); a box for apps without one, or with an unknown name. */
 export function AppIcon(props: AppIconProps) {

@@ -1,4 +1,4 @@
-import { Menu } from "@mosaik/mosaik-ui"
+import { Menu } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import { For, type JSX, Show } from "solid-js"

@@ -33,7 +33,8 @@ export const files = (t: BuiltinAppTemplate): Record<string, string> => {
         "@mosaik/server": ws,
         "@mosaik/styled-system": ws,
         "@mosaik/table": ws,
-        "@mosaik/mosaik-ui": ws,
+        // The component library, from its repository beside this one (`bun run build` there).
+        "@mosaik/ui": "file:../../../mosaik-ui/dist/package",
         "@mosaik/web-kit": ws,
         "@tanstack/solid-query": "^5.104.3",
         "@tanstack/solid-router": "^1.170.41",
@@ -213,7 +214,7 @@ export const Route = createFileRoute("/_app/${t.id}")({
     "web/routes/index.tsx": `import { Can } from "@mosaik/auth/web"
 import { css } from "@mosaik/styled-system/css"
 import { errorMessage, toast } from "@mosaik/client"
-import { Button, Card, TextField } from "@mosaik/mosaik-ui"
+import { Button, Card, Input } from "@mosaik/ui"
 import { QueryBoundary } from "@mosaik/web-kit"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -243,28 +244,33 @@ function Overview() {
         <Card.Title>Items</Card.Title>
         <Card.Description>Replace this page with your app.</Card.Description>
       </Card.Header>
-      <Card.Body>
-      <QueryBoundary query={items}>
-        {(data) => (
-          <ul class={css({ display: "flex", flexDirection: "column", gap: "1", mb: "4" })}>
-            <For each={data()}>{(item) => <li>{item.name}</li>}</For>
-          </ul>
-        )}
-      </QueryBoundary>
-      <Can permission={manifest.perm("items.edit")}>
-        <form
-          class={css({ display: "flex", gap: "2" })}
-          onSubmit={(event) => {
-            event.preventDefault()
-            create.mutate()
-          }}
-        >
-          <TextField aria-label="New item" placeholder="New item" value={name()} onValueChange={setName} />
-          <Button type="submit" loading={create.isPending}>
-            Add
-          </Button>
-        </form>
-      </Can>
+      <Card.Body gap="4">
+        <QueryBoundary query={items}>
+          {(data) => (
+            <ul class={css({ display: "flex", flexDirection: "column", gap: "1" })}>
+              <For each={data()}>{(item) => <li>{item.name}</li>}</For>
+            </ul>
+          )}
+        </QueryBoundary>
+        <Can permission={manifest.perm("items.edit")}>
+          <form
+            class={css({ display: "flex", gap: "2" })}
+            onSubmit={(event) => {
+              event.preventDefault()
+              create.mutate()
+            }}
+          >
+            <Input
+              aria-label="New item"
+              placeholder="New item"
+              value={name()}
+              onInput={(event) => setName(event.currentTarget.value)}
+            />
+            <Button type="submit" loading={create.isPending}>
+              Add
+            </Button>
+          </form>
+        </Can>
       </Card.Body>
     </Card.Root>
   )

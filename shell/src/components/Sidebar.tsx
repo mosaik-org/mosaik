@@ -3,8 +3,8 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { managesAnyApp } from "@mosaik/console"
 import type { AnyApp } from "@mosaik/core"
 import { AppIcon, appColorClass, StatusMark, type StatusSummary, useStatusSummary } from "@mosaik/frame"
-import { ActionMenu, IconButton, Tooltip } from "@mosaik/mosaik-ui"
 import { css, cx } from "@mosaik/styled-system/css"
+import { ActionMenu, IconButton, Tooltip } from "@mosaik/ui"
 import { useQuery } from "@tanstack/solid-query"
 import { Link } from "@tanstack/solid-router"
 import ArrowDown from "lucide-solid/icons/arrow-down"
@@ -18,6 +18,7 @@ import PinOff from "lucide-solid/icons/pin-off"
 import Settings2 from "lucide-solid/icons/settings-2"
 import Sparkles from "lucide-solid/icons/sparkles"
 import { type Accessor, createContext, For, type JSX, Show, useContext } from "solid-js"
+import { Portal } from "solid-js/web"
 import { appHref } from "../apps"
 import { FEW_APPS, type MyAppsState, useMyApps } from "../workspace/myApps"
 
@@ -44,7 +45,7 @@ const styles = {
     fontWeight: "semibold",
     color: "fg.muted",
     textTransform: "uppercase",
-    letterSpacing: "wider",
+    letterSpacing: "wide",
     whiteSpace: "nowrap",
     overflow: "hidden",
     // In the rail, a line in its place, as tall as it, so nothing below moves when the sidebar
@@ -85,20 +86,20 @@ const styles = {
     whiteSpace: "nowrap",
     transition: "background 0.15s, color 0.15s",
     // Each highlight is also the tint of the ring around a status's dot, which sits on it.
-    _hover: { bg: "gray.subtle.bg", color: "fg.default", "--status-mark-tint": "colors.gray.subtle.bg" },
-    _focusVisible: { outline: "2px solid", outlineColor: "accent.solid.bg", outlineOffset: "-2px" },
+    _hover: { bg: "gray.subtle", color: "fg", "--status-mark-tint": "colors.gray.subtle" },
+    _focusVisible: { outline: "2px solid", outlineColor: "accent.focusRing", outlineOffset: "-2px" },
     "&[data-status=active]": {
-      bg: "gray.subtle.bg.hover",
-      color: "fg.default",
-      "--status-mark-tint": "colors.gray.subtle.bg.hover",
+      bg: "gray.subtle.hover",
+      color: "fg",
+      "--status-mark-tint": "colors.gray.subtle.hover",
     },
   }),
   // An app's icon is grey like the rest of the list, in the app's colour while it is the open one;
   // the dot on it (collapsed) goes with it, as they read as one mark there.
   appIcon: css({
     "[data-status=active] &": {
-      color: "colorPalette.plain.fg",
-      "& [data-counted=true]": { bg: "colorPalette.plain.fg" },
+      color: "colorPalette.fg",
+      "& [data-counted=true]": { bg: "colorPalette.fg" },
     },
   }),
   // As tall as a line of the label beside it, so a row is as tall with its label (expanded) as without (rail).
@@ -113,7 +114,7 @@ const styles = {
     transition: "opacity 0.15s",
   }),
   hint: css({ px: "3", fontSize: "xs", color: "fg.muted", lineHeight: "relaxed" }),
-  hintLink: css({ color: "accent.plain.fg", _hover: { textDecoration: "underline" } }),
+  hintLink: css({ color: "accent.fg", _hover: { textDecoration: "underline" } }),
 }
 
 const NavLink = (props: {
@@ -133,23 +134,29 @@ const NavLink = (props: {
     <div>
       <div class={styles.row}>
         {/* In the rail, the label shows beside the icon on hover and focus. */}
-        <Tooltip content={props.label} disabled={mode() !== "rail"} positioning={{ placement: "right" }}>
-          <Link
-            to={props.to}
-            class={styles.link}
-            activeOptions={{ exact: props.exact ?? false }}
+        <Tooltip.Root disabled={mode() !== "rail"} positioning={{ placement: "right" }}>
+          {/* `onClick` on the trigger, which runs it after the tooltip's own (closing it), not instead. */}
+          <Tooltip.Trigger
             onClick={() => props.onNavigate?.()}
-          >
-            <span class={cx(styles.icon, props.iconClass)}>
-              {props.icon}
-              <Show when={mode() === "rail" && props.status}>
-                {(status) => <StatusMark summary={status()} corner />}
-              </Show>
-            </span>
-            <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
-            <Show when={mode() !== "rail" && props.status}>{(status) => <StatusMark summary={status()} />}</Show>
-          </Link>
-        </Tooltip>
+            asChild={(trigger) => (
+              <Link {...trigger()} to={props.to} class={styles.link} activeOptions={{ exact: props.exact ?? false }}>
+                <span class={cx(styles.icon, props.iconClass)}>
+                  {props.icon}
+                  <Show when={mode() === "rail" && props.status}>
+                    {(status) => <StatusMark summary={status()} corner />}
+                  </Show>
+                </span>
+                <span class={mode() === "rail" ? css({ srOnly: true }) : styles.label}>{props.label}</span>
+                <Show when={mode() !== "rail" && props.status}>{(status) => <StatusMark summary={status()} />}</Show>
+              </Link>
+            )}
+          />
+          <Portal>
+            <Tooltip.Positioner>
+              <Tooltip.Content>{props.label}</Tooltip.Content>
+            </Tooltip.Positioner>
+          </Portal>
+        </Tooltip.Root>
         <Show when={mode() === "full" && props.actions}>
           <div class={styles.actions} data-actions>
             {props.actions}
@@ -207,7 +214,7 @@ const AppEntry = (props: { app: AnyApp; actions?: JSX.Element; onNavigate?: () =
 const PinnedActions = (props: { apps: MyAppsState; app: AnyApp; index: number; count: number }) => (
   <ActionMenu
     trigger={(triggerProps) => (
-      <IconButton aria-label={`Options for ${props.app.name}`} size="2xs" variant="plain" {...triggerProps()}>
+      <IconButton aria-label={`Options for ${props.app.name}`} size="xs" variant="ghost" {...triggerProps()}>
         <Ellipsis size={14} />
       </IconButton>
     )}
@@ -300,7 +307,7 @@ export const Sidebar = (props: { mode?: SidebarMode; onNavigate?: () => void }) 
                     <IconButton
                       aria-label={`Pin ${app.name}`}
                       size="xs"
-                      variant="plain"
+                      variant="ghost"
                       onClick={() => apps.pin(app.id)}
                     >
                       <Pin size={14} />

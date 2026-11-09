@@ -1,4 +1,5 @@
 import { useCan } from "@mosaik/sdk/solid"
+import { EmptyState } from "@mosaik/ui"
 import { Navigate } from "@tanstack/solid-router"
 import Inbox from "lucide-solid/icons/inbox"
 import { Show } from "solid-js"
@@ -15,7 +16,17 @@ export default function All() {
         label="All requests"
         grouped
         withState
-        empty={{ icon: <Inbox />, title: "No requests here", description: "Try another queue, or clear the search." }}
+        empty={
+          <EmptyState.Root>
+            <EmptyState.Indicator>
+              <Inbox />
+            </EmptyState.Indicator>
+            <EmptyState.Content>
+              <EmptyState.Title>No requests here</EmptyState.Title>
+              <EmptyState.Description>Try another queue, or clear the search.</EmptyState.Description>
+            </EmptyState.Content>
+          </EmptyState.Root>
+        }
       />
     </Show>
   )

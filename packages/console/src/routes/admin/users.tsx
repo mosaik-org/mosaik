@@ -3,18 +3,19 @@ import { usePrincipal } from "@mosaik/auth/web"
 import { formatDate } from "@mosaik/client"
 import { createForm, useAction } from "@mosaik/client/solid"
 import { useCommands } from "@mosaik/frame"
+import { css } from "@mosaik/styled-system/css"
+import { createColumnHelper, DataTable } from "@mosaik/table"
 import {
   ActionMenu,
   Badge,
   Button,
   ConfirmDialog,
+  FormField,
   IconButton,
   Modal,
-  PasswordField,
+  PasswordInput,
   TextField,
-} from "@mosaik/mosaik-ui"
-import { css } from "@mosaik/styled-system/css"
-import { createColumnHelper, DataTable } from "@mosaik/table"
+} from "@mosaik/ui"
 import { QueryBoundary, UserAvatar } from "@mosaik/web-kit"
 import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
@@ -59,8 +60,8 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
     <>
       <ActionMenu
         trigger={(triggerProps) => (
-          <IconButton variant="plain" aria-label={`Actions for ${props.user.email}`} size="2xs" {...triggerProps()}>
-            <Ellipsis size={16} />
+          <IconButton variant="ghost" aria-label={`Actions for ${props.user.email}`} size="xs" {...triggerProps()}>
+            <Ellipsis />
           </IconButton>
         )}
         items={[
@@ -76,12 +77,12 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
       />
       <Modal
         open={editing()}
-        onOpenChange={setEditing}
+        onOpenChange={(details) => setEditing(details.open)}
         title={`Roles of ${props.user.name}`}
         description="Every logged-in user also has the Authenticated role."
         footer={
           <>
-            <Button variant="plain" onClick={() => setEditing(false)}>
+            <Button variant="ghost" onClick={() => setEditing(false)}>
               Cancel
             </Button>
             <Button
@@ -101,14 +102,14 @@ const UserRowActions = (props: { user: AdminUser; roles: ReadonlyArray<Role> }) 
       </Modal>
       <ConfirmDialog
         open={deleting()}
-        onOpenChange={setDeleting}
+        onOpenChange={(details) => setDeleting(details.open)}
         title={`Delete ${props.user.email}?`}
-        description="The user is signed out everywhere and loses all access. This cannot be undone."
+        message="The user is signed out everywhere and loses all access. This cannot be undone."
         confirmLabel="Delete"
         tone="danger"
-        loading={actions.remove.pending()}
         onConfirm={async () => {
-          if (await actions.remove.run({ params: { id: props.user.id } })) setDeleting(false)
+          // A rejection keeps the dialog open to try again; `run` has said why it failed.
+          if (!(await actions.remove.run({ params: { id: props.user.id } }))) throw new Error("User not deleted")
         }}
       />
     </>
@@ -134,19 +135,20 @@ const CreateUserDialog = (props: {
       props.onOpenChange(false)
     },
   })
+  const password = form.field("password")
 
   return (
     <Modal
       open={props.open}
-      onOpenChange={(open) => {
-        if (!open) form.reset()
-        props.onOpenChange(open)
+      onOpenChange={(details) => {
+        if (!details.open) form.reset()
+        props.onOpenChange(details.open)
       }}
       title="New user"
       description="For people without a Microsoft account. SSO users are created on their first login."
       footer={
         <>
-          <Button variant="plain" onClick={() => props.onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => props.onOpenChange(false)}>
             Cancel
           </Button>
           <Button type="submit" form="create-user" loading={form.submitting()}>
@@ -163,20 +165,34 @@ const CreateUserDialog = (props: {
       >
         <TextField label="Name" required {...form.field("name")} />
         <TextField label="Email" type="email" required {...form.field("email")} />
-        <PasswordField
+        {/* Composed, as `PasswordField` takes no `onBlur`: the form checks the field once it is left. */}
+        <FormField
           label="Initial password"
-          autocomplete="new-password"
           required
           helperText="At least 8 characters. Share it securely."
-          {...form.field("password")}
-        />
+          errorText={password.errorText}
+        >
+          <PasswordInput.Root autoComplete="new-password">
+            <PasswordInput.Control>
+              <PasswordInput.Input
+                name={password.name}
+                value={password.value}
+                onInput={(event) => password.onValueChange(event.currentTarget.value)}
+                onBlur={password.onBlur}
+              />
+              <PasswordInput.VisibilityTrigger>
+                <PasswordInput.Indicator />
+              </PasswordInput.VisibilityTrigger>
+            </PasswordInput.Control>
+          </PasswordInput.Root>
+        </FormField>
         <div>
           <div class={css({ fontSize: "sm", fontWeight: "medium", mb: "2" })}>Roles</div>
           <RolePicker roles={props.roles} value={form.values.roles} onChange={(roles) => form.set("roles", roles)} />
         </div>
         <Show when={form.error()}>
           {(error) => (
-            <p role="alert" class={css({ color: "danger.plain.fg", fontSize: "sm" })}>
+            <p role="alert" class={css({ color: "danger.fg", fontSize: "sm" })}>
               {error()}
             </p>
           )}
@@ -222,8 +238,8 @@ function Users() {
       enableSorting: false,
       cell: (info) => (
         <div class={css({ display: "flex", gap: "1", flexWrap: "wrap" })}>
-          <For each={info.getValue()} fallback={<span class={css({ color: "fg.subtle" })}>—</span>}>
-            {(role) => <Badge colorPalette={role === "superadmin" ? "accent" : "neutral"}>{roleName(role)}</Badge>}
+          <For each={info.getValue()} fallback={<span class={css({ color: "fg.muted" })}>—</span>}>
+            {(role) => <Badge>{roleName(role)}</Badge>}
           </For>
         </div>
       ),

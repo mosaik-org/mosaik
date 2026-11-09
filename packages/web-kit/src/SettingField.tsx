@@ -1,5 +1,5 @@
 import type { NumberSetting, Setting, TextSetting } from "@mosaik/core"
-import { NumberField, SelectField, SwitchField, TextareaField, TextField } from "@mosaik/mosaik-ui"
+import { NumberField, SelectField, SwitchField, TextareaField, TextField } from "@mosaik/ui"
 import { type JSX, Match, Switch } from "solid-js"
 
 export interface SettingFieldProps {
@@ -68,8 +68,8 @@ export const SettingField = (props: SettingFieldProps) => {
           <SelectField
             {...field()}
             label={setting().label}
-            items={Object.entries(setting().options).map(([value, label]) => ({ value, label }))}
-            value={text() || null}
+            options={Object.entries(setting().options).map(([value, label]) => ({ value, label }))}
+            value={text()}
             onValueChange={props.onValueChange}
           />
         )}

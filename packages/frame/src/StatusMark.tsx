@@ -1,6 +1,6 @@
 import { usePageStatuses } from "@mosaik/client/solid"
-import { Badge, Spinner } from "@mosaik/mosaik-ui"
 import { css, cva } from "@mosaik/styled-system/css"
+import { Badge, Spinner } from "@mosaik/ui"
 import { type Accessor, createMemo, type JSX, Match, Show, Switch } from "solid-js"
 import { isQuiet, type StatusSummary, statusesAt, summarize } from "./statusSummary"
 
@@ -15,9 +15,9 @@ const dot = cva({
   base: { display: "block", width: "2", height: "2", borderRadius: "full", flexShrink: "0" },
   variants: {
     tone: {
-      attention: { bg: "accent.solid.bg" },
-      warning: { bg: "warning.solid.bg" },
-      danger: { bg: "danger.solid.bg" },
+      attention: { bg: "accent.solid" },
+      warning: { bg: "warning.solid" },
+      danger: { bg: "danger.solid" },
       // Things waiting where there is no room for their number: grey, as that number is.
       counted: { bg: "gray.9" },
     },
@@ -46,7 +46,7 @@ const styles = {
       inset: "-2px",
       zIndex: "-1",
       borderRadius: "full",
-      bg: "canvas.sunken",
+      bg: "bg.subtle",
       backgroundImage: "linear-gradient(var(--status-mark-tint, transparent), var(--status-mark-tint, transparent))",
     },
   }),
@@ -75,6 +75,7 @@ export const StatusMark = (props: { readonly summary: StatusSummary; readonly co
       >
         <Match when={props.summary.count > 0 && props.corner !== true}>
           <Badge
+            size="sm"
             variant={badge[props.summary.tone].variant}
             colorPalette={badge[props.summary.tone].colorPalette}
             aria-hidden="true"
